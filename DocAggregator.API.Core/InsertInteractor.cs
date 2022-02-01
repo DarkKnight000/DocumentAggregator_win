@@ -17,31 +17,37 @@ namespace DocAggregator.API.Core
             _refRepo = refRepository;
         }
 
-        public string ParseField(string insertionFormat)
+        public BooleanInsertion ParseBoolField(string insertionFormat)
+        {
+            if (insertionFormat.StartsWith('!'))
+            {
+                insertionFormat = insertionFormat.Substring(1);
+                return new BooleanInsertion()
+                {
+                    Value = !bool.Parse(GetFieldByName(insertionFormat))
+                };
+            }
+            else
+            {
+                return new BooleanInsertion()
+                {
+                    Value = bool.Parse(GetFieldByName(insertionFormat))
+                };
+            }
+        }
+
+        public StringInsertion ParseField(string insertionFormat)
         {
             string recursiveResult;
             if (TryParseDelimetedFields(insertionFormat, ',', ", ", out recursiveResult))
             {
-                return recursiveResult;
+                return new StringInsertion() { Value = recursiveResult };
             }
             if (TryParseDelimetedFields(insertionFormat, '/', " / ", out recursiveResult))
             {
-                return recursiveResult;
+                return new StringInsertion() { Value = recursiveResult };
             }
-            Insertion insertion;
-            if (int.TryParse(insertionFormat, out int id))
-            {
-                insertion = _attrRepo.GetInsertion(id);
-            }
-            else
-            {
-                insertion = _refRepo.GetInsertion(insertionFormat);
-            }
-            if (insertion == null)
-            {
-                return "";
-            }
-            return insertion.Value;
+            return GetFieldByName(insertionFormat);
         }
 
         bool TryParseDelimetedFields(string insertionFormat, char delimiter, string connector, out string result)
@@ -50,8 +56,8 @@ namespace DocAggregator.API.Core
             {
                 string[] parts = insertionFormat.Split(delimiter, 2);
                 string left, right;
-                left = ParseField(parts[0]);
-                right = ParseField(parts[1]);
+                left = ParseField(parts[0]).Value;
+                right = ParseField(parts[1]).Value;
                 if (left == string.Empty || right == string.Empty)
                 {
                     result = left + right;
@@ -64,6 +70,24 @@ namespace DocAggregator.API.Core
             }
             result = null;
             return false;
+        }
+
+        StringInsertion GetFieldByName(string name)
+        {
+            StringInsertion insertion;
+            if (int.TryParse(name, out int id))
+            {
+                insertion = _attrRepo.GetInsertion(id);
+            }
+            else
+            {
+                insertion = _refRepo.GetInsertion(name);
+            }
+            if (insertion == null)
+            {
+                return new StringInsertion() { Value = "" };
+            }
+            return insertion;
         }
     }
 }
