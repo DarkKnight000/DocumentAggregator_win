@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace DocAggregator.API.Core
 {
-    public class ClaimResponse
+    public class Insertion
     {
-        public bool Success { get; set; }
+        public string Value { get; set; }
     }
 }

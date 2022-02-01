@@ -8,13 +8,30 @@ namespace DocAggregator.API.Core
 {
     public class InsertInteractor
     {
-        public InsertInteractor(Claim claim, IRepository<object> attributes)
+        IAttributeRepository _attrRepo;
+        IReferenceRepository _refRepo;
+
+        public InsertInteractor(Claim claim, IAttributeRepository attrRepository, IReferenceRepository refRepository)
         {
-            ;
+            _attrRepo = attrRepository;
+            _refRepo = refRepository;
         }
-        public string ParseField(string s)
+        public string ParseField(string insertionFormat)
         {
-            return "da";
+            Insertion insertion;
+            if (int.TryParse(insertionFormat, out int id))
+            {
+                insertion = _attrRepo.GetInsertion(id);
+            }
+            else
+            {
+                insertion = _refRepo.GetInsertion(insertionFormat);
+            }
+            if (insertion == null)
+            {
+                return "";
+            }
+            return insertion.Value;
         }
     }
 }

@@ -8,14 +8,19 @@ namespace DocAggregator.API.Core
 {
     public class ClaimInteractor
     {
-        public ClaimInteractor(IRepository<object> repository)
+        IClaimRepository _repo;
+
+        public ClaimInteractor(IEditorService editor, IClaimRepository repository)
         {
-            ;
+            _repo = repository;
         }
 
         public ClaimResponse Handle(ClaimRequest request)
         {
-            return new ClaimResponse();
+            ClaimResponse response = new ClaimResponse();
+            Claim claim = _repo.GetClaim(request.ClaimID);
+            response.Success = claim != null;
+            return response;
         }
     }
 }

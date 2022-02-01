@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace DocAggregator.API.Core
 {
-    public class ClaimResponse
+    public interface IReferenceRepository
     {
-        public bool Success { get; set; }
+        public Insertion GetInsertion(string name);
     }
 }

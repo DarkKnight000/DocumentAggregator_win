@@ -4,9 +4,6 @@ namespace DocAggregator.API.Core
 {
     public class ClaimRequest
     {
-        public ClaimRequest(int id)
-        {
-            ;
-        }
+        public int ClaimID { get; init; }
     }
 }

@@ -6,8 +6,7 @@ using System.Threading.Tasks;
 
 namespace DocAggregator.API.Core
 {
-    public class ClaimResponse
+    public interface IEditorService
     {
-        public bool Success { get; set; }
     }
 }

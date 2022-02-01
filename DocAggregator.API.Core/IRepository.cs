@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace DocAggregator.API.Core
 {
+    // TODO: delete or use
     public interface IRepository<T>
     {
     }
