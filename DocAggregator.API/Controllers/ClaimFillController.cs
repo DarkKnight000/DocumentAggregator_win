@@ -20,10 +20,12 @@ namespace DocAggregator.API.Controllers
         }
 
         [HttpGet]
-        public async Task<FileStreamResult> Get()
+        public async Task<FileStreamResult> Get([FromBody] ClaimRequest request,
+            IEditorService editorService, IClaimRepository claimRepository, IMixedFieldRepository fieldRepository)
         {
             var presenter = new Presentation.ClaimResponseStreamPresenter();
-            return presenter.Handle(null);
+            var claimInteractor = new ClaimInteractor(editorService, claimRepository);
+            return presenter.Handle(claimInteractor.Handle(request));
         }
     }
 }

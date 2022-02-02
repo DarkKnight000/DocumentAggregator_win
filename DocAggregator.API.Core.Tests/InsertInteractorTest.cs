@@ -11,13 +11,15 @@ namespace DocAggregator.API.Core.Tests
         public void ParseInsertInteractor_ParseField_NumberedClaimField(string insertionFormat, string fieldValue, string expected)
         {
             // 1. Берём все поля заявки
-            var mockAttributeRepository = new Mock<IAttributeRepository>();
-            var mockReferenceRepository = new Mock<IReferenceRepository>();
-            mockAttributeRepository.Setup(r => r.GetInsertion(It.IsAny<int>())).Returns(fieldValue);
+            var mockMixedFieldRepository = new Mock<IMixedFieldRepository>();
+            mockMixedFieldRepository
+                .Setup(r => r.GetFieldByNameOrId(It.IsAny<string>()))
+                // Returns correct output only for integers
+                .Returns<string>(arg => int.TryParse(arg, out _) ? fieldValue : "err");
             // 2. Берём заявку
             var request = new InsertRequest() { Inserts = { new Insert(insertionFormat) } };
             // 3. Получаем интерактор
-            var insertInteractor = new ParseInsertInteractor(mockAttributeRepository.Object, mockReferenceRepository.Object);
+            var insertInteractor = new ParseInsertInteractor(mockMixedFieldRepository.Object);
 
             // 4. Разбираем поле с числовым идентификатором заявки в значение поля
             var response = insertInteractor.Handle(request);
@@ -30,13 +32,15 @@ namespace DocAggregator.API.Core.Tests
         public void ParseInsertInteractor_ParseField_NumberedClaimFieldNotFound()
         {
             // 1. Берём все поля заявки
-            var mockAttributeRepository = new Mock<IAttributeRepository>();
-            var mockReferenceRepository = new Mock<IReferenceRepository>();
-            mockAttributeRepository.Setup(r => r.GetInsertion(It.IsAny<int>())).Returns((string)null);
+            var mockMixedFieldRepository = new Mock<IMixedFieldRepository>();
+            mockMixedFieldRepository
+                .Setup(r => r.GetFieldByNameOrId(It.IsAny<string>()))
+                // Returns correct output only for integers
+                .Returns<string>(arg => int.TryParse(arg, out _) ? null : "err");
             // 2. Берём заявку
             var request = new InsertRequest() { Inserts = { new Insert("10") } };
             // 3. Получаем интерактор
-            var insertInteractor = new ParseInsertInteractor(mockAttributeRepository.Object, mockReferenceRepository.Object);
+            var insertInteractor = new ParseInsertInteractor(mockMixedFieldRepository.Object);
             var expected = "";
 
             // 4. Разбираем поле с числовым идентификатором заявки в значение поля
@@ -52,13 +56,12 @@ namespace DocAggregator.API.Core.Tests
         public void ParseInsertInteractor_ParseField_DenominatedField(string insertionFormat, string fieldValue, string expected)
         {
             // 1. Берём все поля заявки
-            var mockAttributeRepository = new Mock<IAttributeRepository>();
-            var mockReferenceRepository = new Mock<IReferenceRepository>();
-            mockReferenceRepository.Setup(r => r.GetInsertion(It.IsAny<string>())).Returns(fieldValue);
+            var mockMixedFieldRepository = new Mock<IMixedFieldRepository>();
+            mockMixedFieldRepository.Setup(r => r.GetFieldByNameOrId(It.IsAny<string>())).Returns(fieldValue);
             // 2. Берём заявку
             var request = new InsertRequest() { Inserts = { new Insert(insertionFormat) } };
             // 3. Получаем интерактор
-            var insertInteractor = new ParseInsertInteractor(mockAttributeRepository.Object, mockReferenceRepository.Object);
+            var insertInteractor = new ParseInsertInteractor(mockMixedFieldRepository.Object);
 
             // 4. Разбираем поле с буквенным идентификатором заявки в значение поля
             var response = insertInteractor.Handle(request);
@@ -71,13 +74,12 @@ namespace DocAggregator.API.Core.Tests
         public void ParseInsertInteractor_ParseField_DenominatedFieldNotFound()
         {
             // 1. Берём все поля заявки
-            var mockAttributeRepository = new Mock<IAttributeRepository>();
-            var mockReferenceRepository = new Mock<IReferenceRepository>();
-            mockReferenceRepository.Setup(r => r.GetInsertion(It.IsAny<string>())).Returns((string)null);
+            var mockMixedFieldRepository = new Mock<IMixedFieldRepository>();
+            mockMixedFieldRepository.Setup(r => r.GetFieldByNameOrId(It.IsAny<string>())).Returns((string)null);
             // 2. Берём заявку
             var request = new InsertRequest() { Inserts = { new Insert("name") } };
             // 3. Получаем интерактор
-            var insertInteractor = new ParseInsertInteractor(mockAttributeRepository.Object, mockReferenceRepository.Object);
+            var insertInteractor = new ParseInsertInteractor(mockMixedFieldRepository.Object);
             var expected = "";
 
             // 4. Разбираем поле с буквенным идентификатором заявки в значение поля
@@ -105,14 +107,14 @@ namespace DocAggregator.API.Core.Tests
         public void ParseInsertInteractor_ParseField_MixedField(string insertionFormat, string attrValue, string refValue, string expected)
         {
             // 1. Берём все поля заявки
-            var mockAttributeRepository = new Mock<IAttributeRepository>();
-            mockAttributeRepository.Setup(r => r.GetInsertion(It.IsAny<int>())).Returns(attrValue);
-            var mockReferenceRepository = new Mock<IReferenceRepository>();
-            mockReferenceRepository.Setup(r => r.GetInsertion(It.IsAny<string>())).Returns(refValue);
+            var mockMixedFieldRepository = new Mock<IMixedFieldRepository>();
+            mockMixedFieldRepository
+                .Setup(r => r.GetFieldByNameOrId(It.IsAny<string>()))
+                .Returns<string>(arg => int.TryParse(arg, out _) ? attrValue : refValue);
             // 2. Берём заявку
             var request = new InsertRequest() { Inserts = { new Insert(insertionFormat) } };
             // 3. Получаем интерактор
-            var insertInteractor = new ParseInsertInteractor(mockAttributeRepository.Object, mockReferenceRepository.Object);
+            var insertInteractor = new ParseInsertInteractor(mockMixedFieldRepository.Object);
 
             // 4. Разбираем поле со смешанным идентификатором заявки в значение поля
             var response = insertInteractor.Handle(request);
@@ -129,14 +131,15 @@ namespace DocAggregator.API.Core.Tests
         public void ParseInsertInteractor_ParseField_BooleanField(string insertionFormat, bool expected)
         {
             // 1. Берём все поля заявки
-            var mockAttributeRepository = new Mock<IAttributeRepository>();
-            mockAttributeRepository.Setup(r => r.GetInsertion(It.IsAny<int>())).Returns("False");
-            var mockReferenceRepository = new Mock<IReferenceRepository>();
-            mockReferenceRepository.Setup(r => r.GetInsertion(It.IsAny<string>())).Returns("True");
+            var mockMixedFieldRepository = new Mock<IMixedFieldRepository>();
+            mockMixedFieldRepository
+                .Setup(r => r.GetFieldByNameOrId(It.IsAny<string>()))
+                // Returns only False for integers and True for strings
+                .Returns<string>(arg => int.TryParse(arg, out _) ? "False" : "True");
             // 2. Берём заявку
             var request = new InsertRequest() { Inserts = { new Insert(insertionFormat, InsertKind.CheckMark) } };
             // 3. Получаем интерактор
-            var insertInteractor = new ParseInsertInteractor(mockAttributeRepository.Object, mockReferenceRepository.Object);
+            var insertInteractor = new ParseInsertInteractor(mockMixedFieldRepository.Object);
 
             // 4. Разбираем поле с идентификатором поля заявки в значение логического поля
             var response = insertInteractor.Handle(request);

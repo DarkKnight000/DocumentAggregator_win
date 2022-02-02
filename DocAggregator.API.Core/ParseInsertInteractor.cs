@@ -8,13 +8,11 @@ namespace DocAggregator.API.Core
 {
     public class ParseInsertInteractor
     {
-        IAttributeRepository _attrRepo;
-        IReferenceRepository _refRepo;
+        IMixedFieldRepository _fieldRepo;
 
-        public ParseInsertInteractor(IAttributeRepository attrRepository, IReferenceRepository refRepository)
+        public ParseInsertInteractor(IMixedFieldRepository fieldRepository)
         {
-            _attrRepo = attrRepository;
-            _refRepo = refRepository;
+            _fieldRepo = fieldRepository;
         }
 
         public InsertResponse Handle(InsertRequest request)
@@ -40,11 +38,11 @@ namespace DocAggregator.API.Core
             if (insertionFormat.StartsWith('!'))
             {
                 insertionFormat = insertionFormat.Substring(1);
-                return  !bool.Parse(GetFieldByName(insertionFormat));
+                return  !bool.Parse(_fieldRepo.GetFieldByNameOrId(insertionFormat));
             }
             else
             {
-                return  bool.Parse(GetFieldByName(insertionFormat));
+                return  bool.Parse(_fieldRepo.GetFieldByNameOrId(insertionFormat));
             }
         }
 
@@ -59,7 +57,7 @@ namespace DocAggregator.API.Core
             {
                 return recursiveResult;
             }
-            return GetFieldByName(insertionFormat);
+            return _fieldRepo.GetFieldByNameOrId(insertionFormat) ?? "";
         }
 
         bool TryParseDelimetedFields(string insertionFormat, char delimiter, string connector, out string result)
@@ -82,20 +80,6 @@ namespace DocAggregator.API.Core
             }
             result = null;
             return false;
-        }
-
-        string GetFieldByName(string name)
-        {
-            string insertion;
-            if (int.TryParse(name, out int id))
-            {
-                insertion = _attrRepo.GetInsertion(id);
-            }
-            else
-            {
-                insertion = _refRepo.GetInsertion(name);
-            }
-            return insertion ?? "";
         }
     }
 }

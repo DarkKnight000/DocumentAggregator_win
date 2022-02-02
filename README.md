@@ -34,7 +34,7 @@
 ### Интерфейсы
 
 - IClaimRepository - Репозиторий объектов `Claim`
-- IInsertionRepository - Репозиторий объектов `Insertion`
+- IMixedFieldRepository - Репозиторий `string` для получения по имени поля `Insert`
 - IEditorService - Сервис редактора документа
 
 ## Уровень приложения - Случай использования
