@@ -8,38 +8,40 @@ namespace DocAggregator.API.Core.Tests
         [Theory]
         [InlineData("10", "val", "val")]
         [InlineData("10", "", "")]
-        public void InsertInteractor_ParseField_NumberedClaimField(string insertionFormat, string fieldValue, string expected)
+        public void ParseInsertInteractor_ParseField_NumberedClaimField(string insertionFormat, string fieldValue, string expected)
         {
             // 1. Берём все поля заявки
             var mockAttributeRepository = new Mock<IAttributeRepository>();
             var mockReferenceRepository = new Mock<IReferenceRepository>();
-            mockAttributeRepository.Setup(r => r.GetInsertion(It.IsAny<int>())).Returns(new StringInsertion() { Value = fieldValue });
+            mockAttributeRepository.Setup(r => r.GetInsertion(It.IsAny<int>())).Returns(fieldValue);
             // 2. Берём заявку
-            var claim = new Claim() { ID = 0 };
+            var request = new InsertRequest() { Inserts = { new Insert(insertionFormat) } };
             // 3. Получаем интерактор
-            var insertInteractor = new InsertInteractor(claim, mockAttributeRepository.Object, mockReferenceRepository.Object);
+            var insertInteractor = new ParseInsertInteractor(mockAttributeRepository.Object, mockReferenceRepository.Object);
 
             // 4. Разбираем поле с числовым идентификатором заявки в значение поля
-            var actual = insertInteractor.ParseField(insertionFormat);
+            var response = insertInteractor.Handle(request);
+            var actual = response.Inserts[0].ReplacedText;
 
             Assert.Equal(expected, actual);
         }
 
         [Fact]
-        public void InsertInteractor_ParseField_NumberedClaimFieldNotFound()
+        public void ParseInsertInteractor_ParseField_NumberedClaimFieldNotFound()
         {
             // 1. Берём все поля заявки
             var mockAttributeRepository = new Mock<IAttributeRepository>();
             var mockReferenceRepository = new Mock<IReferenceRepository>();
-            mockAttributeRepository.Setup(r => r.GetInsertion(It.IsAny<int>())).Returns((StringInsertion)null);
+            mockAttributeRepository.Setup(r => r.GetInsertion(It.IsAny<int>())).Returns((string)null);
             // 2. Берём заявку
-            var claim = new Claim() { ID = 0 };
+            var request = new InsertRequest() { Inserts = { new Insert("10") } };
             // 3. Получаем интерактор
-            var insertInteractor = new InsertInteractor(claim, mockAttributeRepository.Object, mockReferenceRepository.Object);
+            var insertInteractor = new ParseInsertInteractor(mockAttributeRepository.Object, mockReferenceRepository.Object);
             var expected = "";
 
             // 4. Разбираем поле с числовым идентификатором заявки в значение поля
-            var actual = insertInteractor.ParseField("10");
+            var response = insertInteractor.Handle(request);
+            var actual = response.Inserts[0].ReplacedText;
 
             Assert.Equal(expected, actual);
         }
@@ -47,38 +49,40 @@ namespace DocAggregator.API.Core.Tests
         [Theory]
         [InlineData("name", "val", "val")]
         [InlineData("name", "", "")]
-        public void InsertInteractor_ParseField_DenominatedField(string insertionFormat, string fieldValue, string expected)
+        public void ParseInsertInteractor_ParseField_DenominatedField(string insertionFormat, string fieldValue, string expected)
         {
             // 1. Берём все поля заявки
             var mockAttributeRepository = new Mock<IAttributeRepository>();
             var mockReferenceRepository = new Mock<IReferenceRepository>();
-            mockReferenceRepository.Setup(r => r.GetInsertion(It.IsAny<string>())).Returns(new StringInsertion() { Value = fieldValue });
+            mockReferenceRepository.Setup(r => r.GetInsertion(It.IsAny<string>())).Returns(fieldValue);
             // 2. Берём заявку
-            var claim = new Claim() { ID = 0 };
+            var request = new InsertRequest() { Inserts = { new Insert(insertionFormat) } };
             // 3. Получаем интерактор
-            var insertInteractor = new InsertInteractor(claim, mockAttributeRepository.Object, mockReferenceRepository.Object);
+            var insertInteractor = new ParseInsertInteractor(mockAttributeRepository.Object, mockReferenceRepository.Object);
 
             // 4. Разбираем поле с буквенным идентификатором заявки в значение поля
-            var actual = insertInteractor.ParseField(insertionFormat);
+            var response = insertInteractor.Handle(request);
+            var actual = response.Inserts[0].ReplacedText;
 
             Assert.Equal(expected, actual);
         }
 
         [Fact]
-        public void InsertInteractor_ParseField_DenominatedFieldNotFound()
+        public void ParseInsertInteractor_ParseField_DenominatedFieldNotFound()
         {
             // 1. Берём все поля заявки
             var mockAttributeRepository = new Mock<IAttributeRepository>();
             var mockReferenceRepository = new Mock<IReferenceRepository>();
-            mockReferenceRepository.Setup(r => r.GetInsertion(It.IsAny<string>())).Returns((StringInsertion)null);
+            mockReferenceRepository.Setup(r => r.GetInsertion(It.IsAny<string>())).Returns((string)null);
             // 2. Берём заявку
-            var claim = new Claim() { ID = 0 };
+            var request = new InsertRequest() { Inserts = { new Insert("name") } };
             // 3. Получаем интерактор
-            var insertInteractor = new InsertInteractor(claim, mockAttributeRepository.Object, mockReferenceRepository.Object);
+            var insertInteractor = new ParseInsertInteractor(mockAttributeRepository.Object, mockReferenceRepository.Object);
             var expected = "";
 
             // 4. Разбираем поле с буквенным идентификатором заявки в значение поля
-            var actual = insertInteractor.ParseField("name");
+            var response = insertInteractor.Handle(request);
+            var actual = response.Inserts[0].ReplacedText;
 
             Assert.Equal(expected, actual);
         }
@@ -98,20 +102,21 @@ namespace DocAggregator.API.Core.Tests
         [InlineData("name,23", "attr", "ref", "ref, attr")]
         [InlineData("32,23", "attr", "", "attr, attr")]
         [InlineData("32,val,name", "attr", "ref", "attr, ref, ref")]
-        public void InsertInteractor_ParseField_MixedField(string insertionFormat, string attrValue, string refValue, string expected)
+        public void ParseInsertInteractor_ParseField_MixedField(string insertionFormat, string attrValue, string refValue, string expected)
         {
             // 1. Берём все поля заявки
             var mockAttributeRepository = new Mock<IAttributeRepository>();
-            mockAttributeRepository.Setup(r => r.GetInsertion(It.IsAny<int>())).Returns(new StringInsertion() { Value = attrValue });
+            mockAttributeRepository.Setup(r => r.GetInsertion(It.IsAny<int>())).Returns(attrValue);
             var mockReferenceRepository = new Mock<IReferenceRepository>();
-            mockReferenceRepository.Setup(r => r.GetInsertion(It.IsAny<string>())).Returns(new StringInsertion() { Value = refValue });
+            mockReferenceRepository.Setup(r => r.GetInsertion(It.IsAny<string>())).Returns(refValue);
             // 2. Берём заявку
-            var claim = new Claim() { ID = 0 };
+            var request = new InsertRequest() { Inserts = { new Insert(insertionFormat) } };
             // 3. Получаем интерактор
-            var insertInteractor = new InsertInteractor(claim, mockAttributeRepository.Object, mockReferenceRepository.Object);
+            var insertInteractor = new ParseInsertInteractor(mockAttributeRepository.Object, mockReferenceRepository.Object);
 
             // 4. Разбираем поле со смешанным идентификатором заявки в значение поля
-            var actual = insertInteractor.ParseField(insertionFormat);
+            var response = insertInteractor.Handle(request);
+            var actual = response.Inserts[0].ReplacedText;
 
             Assert.Equal(expected, actual);
         }
@@ -121,22 +126,24 @@ namespace DocAggregator.API.Core.Tests
         [InlineData("foi", true)]
         [InlineData("!22", true)]
         [InlineData("!foi", false)]
-        public void InsertInteractor_ParseField_BooleanField(string insertionFormat, bool expected)
+        public void ParseInsertInteractor_ParseField_BooleanField(string insertionFormat, bool expected)
         {
             // 1. Берём все поля заявки
             var mockAttributeRepository = new Mock<IAttributeRepository>();
-            mockAttributeRepository.Setup(r => r.GetInsertion(It.IsAny<int>())).Returns(new StringInsertion() { Value = "False" });
+            mockAttributeRepository.Setup(r => r.GetInsertion(It.IsAny<int>())).Returns("False");
             var mockReferenceRepository = new Mock<IReferenceRepository>();
-            mockReferenceRepository.Setup(r => r.GetInsertion(It.IsAny<string>())).Returns(new StringInsertion() { Value = "True" });
+            mockReferenceRepository.Setup(r => r.GetInsertion(It.IsAny<string>())).Returns("True");
             // 2. Берём заявку
-            var claim = new Claim() { ID = 0 };
+            var request = new InsertRequest() { Inserts = { new Insert(insertionFormat, InsertKind.CheckMark) } };
             // 3. Получаем интерактор
-            var insertInteractor = new InsertInteractor(claim, mockAttributeRepository.Object, mockReferenceRepository.Object);
+            var insertInteractor = new ParseInsertInteractor(mockAttributeRepository.Object, mockReferenceRepository.Object);
 
             // 4. Разбираем поле с идентификатором поля заявки в значение логического поля
-            var actual = insertInteractor.ParseBoolField(insertionFormat);
+            var response = insertInteractor.Handle(request);
+            var actual = response.Inserts[0].ReplacedCheckmark;
 
-            Assert.Equal(expected, actual);
+            Assert.True(actual.HasValue);
+            Assert.Equal(expected, actual.Value);
         }
     }
 }

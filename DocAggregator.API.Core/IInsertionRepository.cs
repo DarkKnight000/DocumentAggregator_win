@@ -8,12 +8,12 @@ namespace DocAggregator.API.Core
 {
     public interface IInsertionRepository
     {
-        public StringInsertion GetInsertion(string name);
+        public string GetInsertion(string name);
     }
 
     public interface IAttributeRepository : IInsertionRepository
     {
-        public StringInsertion GetInsertion(int id);
+        public string GetInsertion(int id);
     }
 
     public interface IReferenceRepository : IInsertionRepository

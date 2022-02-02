@@ -6,46 +6,58 @@ using System.Threading.Tasks;
 
 namespace DocAggregator.API.Core
 {
-    public class InsertInteractor
+    public class ParseInsertInteractor
     {
         IAttributeRepository _attrRepo;
         IReferenceRepository _refRepo;
 
-        public InsertInteractor(Claim claim, IAttributeRepository attrRepository, IReferenceRepository refRepository)
+        public ParseInsertInteractor(IAttributeRepository attrRepository, IReferenceRepository refRepository)
         {
             _attrRepo = attrRepository;
             _refRepo = refRepository;
         }
 
-        public BooleanInsertion ParseBoolField(string insertionFormat)
+        public InsertResponse Handle(InsertRequest request)
+        {
+            var response = new InsertResponse();
+            response.Inserts = request.Inserts;
+            foreach (Insert insert in request.Inserts)
+            {
+                if (insert.Kind == InsertKind.CheckMark)
+                {
+                    insert.ReplacedCheckmark = ParseBoolField(insert.OriginalMask);
+                }
+                else
+                {
+                    insert.ReplacedText = ParseField(insert.OriginalMask);
+                }
+            }
+            return response;
+        }
+
+        bool ParseBoolField(string insertionFormat)
         {
             if (insertionFormat.StartsWith('!'))
             {
                 insertionFormat = insertionFormat.Substring(1);
-                return new BooleanInsertion()
-                {
-                    Value = !bool.Parse(GetFieldByName(insertionFormat))
-                };
+                return  !bool.Parse(GetFieldByName(insertionFormat));
             }
             else
             {
-                return new BooleanInsertion()
-                {
-                    Value = bool.Parse(GetFieldByName(insertionFormat))
-                };
+                return  bool.Parse(GetFieldByName(insertionFormat));
             }
         }
 
-        public StringInsertion ParseField(string insertionFormat)
+        string ParseField(string insertionFormat)
         {
             string recursiveResult;
             if (TryParseDelimetedFields(insertionFormat, ',', ", ", out recursiveResult))
             {
-                return new StringInsertion() { Value = recursiveResult };
+                return recursiveResult;
             }
             if (TryParseDelimetedFields(insertionFormat, '/', " / ", out recursiveResult))
             {
-                return new StringInsertion() { Value = recursiveResult };
+                return recursiveResult;
             }
             return GetFieldByName(insertionFormat);
         }
@@ -56,8 +68,8 @@ namespace DocAggregator.API.Core
             {
                 string[] parts = insertionFormat.Split(delimiter, 2);
                 string left, right;
-                left = ParseField(parts[0]).Value;
-                right = ParseField(parts[1]).Value;
+                left = ParseField(parts[0]);
+                right = ParseField(parts[1]);
                 if (left == string.Empty || right == string.Empty)
                 {
                     result = left + right;
@@ -72,9 +84,9 @@ namespace DocAggregator.API.Core
             return false;
         }
 
-        StringInsertion GetFieldByName(string name)
+        string GetFieldByName(string name)
         {
-            StringInsertion insertion;
+            string insertion;
             if (int.TryParse(name, out int id))
             {
                 insertion = _attrRepo.GetInsertion(id);
@@ -83,11 +95,7 @@ namespace DocAggregator.API.Core
             {
                 insertion = _refRepo.GetInsertion(name);
             }
-            if (insertion == null)
-            {
-                return new StringInsertion() { Value = "" };
-            }
-            return insertion;
+            return insertion ?? "";
         }
     }
 }
