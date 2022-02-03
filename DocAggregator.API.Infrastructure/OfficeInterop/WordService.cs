@@ -9,5 +9,13 @@ namespace DocAggregator.API.Infrastructure.OfficeInterop
 {
     public class WordService : IEditorService
     {
+        public IList<Insert> GetInserts()
+        {
+            return null;
+        }
+        public void SetInserts(IList<Insert> inserts)
+        {
+            ;
+        }
     }
 }

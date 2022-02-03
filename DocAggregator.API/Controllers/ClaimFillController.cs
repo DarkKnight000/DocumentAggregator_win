@@ -24,7 +24,7 @@ namespace DocAggregator.API.Controllers
             IEditorService editorService, IClaimRepository claimRepository, IMixedFieldRepository fieldRepository)
         {
             var presenter = new Presentation.ClaimResponseStreamPresenter();
-            var claimInteractor = new ClaimInteractor(editorService, claimRepository);
+            var claimInteractor = new ClaimInteractor(editorService, claimRepository, fieldRepository);
             return presenter.Handle(claimInteractor.Handle(request));
         }
     }
