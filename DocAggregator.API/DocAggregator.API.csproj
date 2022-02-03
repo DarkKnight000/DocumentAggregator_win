@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DocAggregator.API.Core\DocAggregator.API.Core.csproj" />
+    <ProjectReference Include="..\DocAggregator.API.Infrastructure\DocAggregator.API.Infrastructure.csproj" />
   </ItemGroup>
 
 

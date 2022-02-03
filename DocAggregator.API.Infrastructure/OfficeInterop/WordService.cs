@@ -11,7 +11,7 @@ namespace DocAggregator.API.Infrastructure.OfficeInterop
     {
         public IList<Insert> GetInserts()
         {
-            return null;
+            return new List<Insert>();
         }
         public void SetInserts(IList<Insert> inserts)
         {

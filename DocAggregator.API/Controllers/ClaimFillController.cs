@@ -13,18 +13,28 @@ namespace DocAggregator.API.Controllers
     public class ClaimFillController : ControllerBase
     {
         private readonly ILogger<ClaimFillController> _logger;
+        private readonly IEditorService _editorService;
+        private readonly IClaimRepository _claimRepository;
+        private readonly IMixedFieldRepository _fieldRepository;
 
-        public ClaimFillController(ILogger<ClaimFillController> logger)
+        public ClaimFillController(
+            ILogger<ClaimFillController> logger,
+            IEditorService editorService,
+            IClaimRepository claimRepository,
+            IMixedFieldRepository fieldRepository)
         {
             _logger = logger;
+            _editorService = editorService;
+            _claimRepository = claimRepository;
+            _fieldRepository = fieldRepository;
         }
 
-        [HttpGet]
-        public async Task<FileStreamResult> Get([FromBody] ClaimRequest request,
-            IEditorService editorService, IClaimRepository claimRepository, IMixedFieldRepository fieldRepository)
+        [HttpPost]
+        [Consumes("application/json")]
+        public async Task<FileStreamResult> Post([FromBody] ClaimRequest request)
         {
             var presenter = new Presentation.ClaimResponseStreamPresenter();
-            var claimInteractor = new ClaimInteractor(editorService, claimRepository, fieldRepository);
+            var claimInteractor = new ClaimInteractor(_editorService, _claimRepository, _fieldRepository);
             return presenter.Handle(claimInteractor.Handle(request));
         }
     }

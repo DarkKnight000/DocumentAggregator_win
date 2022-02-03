@@ -7,7 +7,11 @@ using System.Threading.Tasks;
 
 namespace DocAggregator.API.Infrastructure
 {
-    public class AttributeRepository : IRepository<object>
+    public class MixedFieldRepository : IMixedFieldRepository
     {
+        public string GetFieldByNameOrId(string name)
+        {
+            return null;
+        }
     }
 }
