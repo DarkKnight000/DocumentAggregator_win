@@ -9,11 +9,31 @@ namespace DocAggregator.API.Infrastructure.OfficeInterop
 {
     public class WordService : IEditorService
     {
-        public IList<Insert> GetInserts()
+        private string _templatesDirectory;
+        private string _temporaryOutputDirectory;
+
+        public string TemplatesDirectory
         {
-            return new List<Insert>();
+            get => _templatesDirectory;
+            set
+            {
+                _templatesDirectory = System.IO.Path.GetFullPath(value);
+            }
         }
-        public void SetInserts(IList<Insert> inserts)
+        public string TemporaryOutputDirectory
+        {
+            get => _temporaryOutputDirectory;
+            set
+            {
+                _temporaryOutputDirectory = System.IO.Path.GetFullPath(value);
+            }
+        }
+
+        public IEnumerable<Insert> GetInserts()
+        {
+            return Array.Empty<Insert>();
+        }
+        public void SetInserts(IEnumerable<Insert> inserts)
         {
             ;
         }

@@ -6,12 +6,7 @@ using System.Threading.Tasks;
 
 namespace DocAggregator.API.Core
 {
-    public class InsertRequest
+    public class DocumentResponse : InteractorResponseBase
     {
-        public IList<Insert> Inserts;
-        public InsertRequest()
-        {
-            Inserts = new List<Insert>();
-        }
     }
 }

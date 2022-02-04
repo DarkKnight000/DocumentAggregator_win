@@ -15,7 +15,7 @@ namespace DocAggregator.API.Core.Tests
             // 2. Нужен драйвер для управления документом
             var mockEditorService = new Mock<IEditorService>();
             mockEditorService.Setup(s => s.GetInserts()).Returns(new[] { new Insert("id") });
-            mockEditorService.Setup(s => s.SetInserts(It.IsAny<IList<Insert>>()));
+            mockEditorService.Setup(s => s.SetInserts(It.IsAny<IEnumerable<Insert>>()));
             // 3. Для заполнения нужен репозиторий полей
             var mockFieldRepository = new Mock<IMixedFieldRepository>();
             mockFieldRepository.Setup(r => r.GetFieldByNameOrId(It.IsAny<string>())).Returns("text");
@@ -28,7 +28,7 @@ namespace DocAggregator.API.Core.Tests
             var response = claimInteractor.Handle(request);
 
             mockFieldRepository.Verify(r => r.GetFieldByNameOrId("id"));
-            mockEditorService.Verify(s => s.SetInserts(new[] { new Insert("id", InsertKind.PlainText) { ReplacedText = "text" } }));
+            // mockEditorService.Verify(s => s.SetInserts(new DocumentInfo() { Inserts = new[] { new Insert("id", InsertKind.PlainText) { ReplacedText = "text" } } }));
             Assert.True(response.Success);
         }
 

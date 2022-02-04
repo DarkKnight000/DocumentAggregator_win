@@ -27,7 +27,12 @@ namespace DocAggregator.API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<IEditorService>(new Infrastructure.OfficeInterop.WordService());
+            var editorService = new Infrastructure.OfficeInterop.WordService()
+            {
+                TemplatesDirectory = Configuration["Editor:TemplatesDir"],
+                TemporaryOutputDirectory = Configuration["Editor:OutputDir"],
+            };
+            services.AddSingleton<IEditorService>(editorService);
             services.AddSingleton<IClaimRepository>(new ClaimRepository());
             services.AddSingleton<IMixedFieldRepository>(new MixedFieldRepository());
 

@@ -22,13 +22,21 @@ namespace DocAggregator.API.Core
         public ClaimResponse Handle(ClaimRequest request)
         {
             ClaimResponse response = new ClaimResponse();
-            Claim claim = _repo.GetClaim(request.ClaimID);
-            ParseInsertInteractor parser = new ParseInsertInteractor(_fieldRepo);
-            InsertRequest insertReq = new InsertRequest();
-            insertReq.Inserts = _editor.GetInserts();
-            InsertResponse insertResp = parser.Handle(insertReq);
-            _editor.SetInserts(insertResp.Inserts);
-            response.Success = claim != null;
+            try
+            {
+                Claim claim = _repo.GetClaim(request.ClaimID);
+                DocumentInteractor interactor = new DocumentInteractor(_editor, _fieldRepo);
+                DocumentRequest documentRequest = new DocumentRequest();
+                DocumentResponse documentResponse = interactor.Handle(documentRequest);
+                if (!documentResponse.Success)
+                {
+                    response.Errors.Concat(documentResponse.Errors);
+                }
+            }
+            catch (Exception ex)
+            {
+                response.Errors.Add(ex);
+            }
             return response;
         }
     }

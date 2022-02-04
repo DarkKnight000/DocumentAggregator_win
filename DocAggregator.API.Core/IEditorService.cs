@@ -8,7 +8,7 @@ namespace DocAggregator.API.Core
 {
     public interface IEditorService
     {
-        public IList<Insert> GetInserts();
-        public void SetInserts(IList<Insert> inserts);
+        public IEnumerable<Insert> GetInserts();
+        public void SetInserts(IEnumerable<Insert> inserts);
     }
 }

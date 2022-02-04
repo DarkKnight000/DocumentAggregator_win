@@ -6,29 +6,34 @@ using System.Threading.Tasks;
 
 namespace DocAggregator.API.Core
 {
-    public class ParseInsertInteractor
+    public class ParseInteractor
     {
         IMixedFieldRepository _fieldRepo;
 
-        public ParseInsertInteractor(IMixedFieldRepository fieldRepository)
+        public ParseInteractor(IMixedFieldRepository fieldRepository)
         {
             _fieldRepo = fieldRepository;
         }
 
-        public InsertResponse Handle(InsertRequest request)
+        public ParseResponse Handle(ParseRequest request)
         {
-            var response = new InsertResponse();
-            response.Inserts = request.Inserts;
-            foreach (Insert insert in request.Inserts)
+            var response = new ParseResponse();
+            var insert = request.Insertion;
+            try
             {
-                if (insert.Kind == InsertKind.CheckMark)
+                switch (insert.Kind)
                 {
-                    insert.ReplacedCheckmark = ParseBoolField(insert.OriginalMask);
+                    case InsertKind.CheckMark:
+                        insert.ReplacedCheckmark = ParseBoolField(insert.OriginalMask);
+                        break;
+                    default: // InsertKind.PlainText
+                        insert.ReplacedText = ParseField(insert.OriginalMask);
+                        break;
                 }
-                else
-                {
-                    insert.ReplacedText = ParseField(insert.OriginalMask);
-                }
+            }
+            catch (Exception ex)
+            {
+                response.Errors.Add(ex);
             }
             return response;
         }
@@ -38,11 +43,11 @@ namespace DocAggregator.API.Core
             if (insertionFormat.StartsWith('!'))
             {
                 insertionFormat = insertionFormat.Substring(1);
-                return  !bool.Parse(_fieldRepo.GetFieldByNameOrId(insertionFormat));
+                return !bool.Parse(_fieldRepo.GetFieldByNameOrId(insertionFormat));
             }
             else
             {
-                return  bool.Parse(_fieldRepo.GetFieldByNameOrId(insertionFormat));
+                return bool.Parse(_fieldRepo.GetFieldByNameOrId(insertionFormat));
             }
         }
 

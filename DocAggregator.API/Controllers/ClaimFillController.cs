@@ -31,7 +31,7 @@ namespace DocAggregator.API.Controllers
 
         [HttpPost]
         [Consumes("application/json")]
-        public async Task<FileStreamResult> Post([FromBody] ClaimRequest request)
+        public FileStreamResult Post([FromBody] ClaimRequest request)
         {
             var presenter = new Presentation.ClaimResponseStreamPresenter();
             var claimInteractor = new ClaimInteractor(_editorService, _claimRepository, _fieldRepository);

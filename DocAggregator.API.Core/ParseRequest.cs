@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace DocAggregator.API.Core
 {
-    public class ClaimResponse : InteractorResponseBase
+    public class ParseRequest
     {
+        public Insert Insertion { get; set; }
     }
 }
