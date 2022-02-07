@@ -8,5 +8,6 @@ namespace DocAggregator.API.Core
 {
     public class DocumentRequest
     {
+        public Claim Claim { get; set; }
     }
 }

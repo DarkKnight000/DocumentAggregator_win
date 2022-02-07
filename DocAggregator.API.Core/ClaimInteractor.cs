@@ -25,8 +25,14 @@ namespace DocAggregator.API.Core
             try
             {
                 Claim claim = _repo.GetClaim(request.ClaimID);
+                if (claim == null)
+                {
+                    response.Errors.Add(new ArgumentException("Заявка не найдена.", nameof(request.ClaimID)));
+                    return response;
+                }
                 DocumentInteractor interactor = new DocumentInteractor(_editor, _fieldRepo);
                 DocumentRequest documentRequest = new DocumentRequest();
+                documentRequest.Claim = claim;
                 DocumentResponse documentResponse = interactor.Handle(documentRequest);
                 if (!documentResponse.Success)
                 {

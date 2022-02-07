@@ -23,7 +23,13 @@ namespace DocAggregator.API.Core
             ParseInteractor parser = new ParseInteractor(_fieldRepo);
             try
             {
-                IEnumerable<Insert> inserts = _editor.GetInserts();
+                Document document = _editor.OpenTemplate(request.Claim.Template);
+                if (document == null)
+                {
+                    response.Errors.Add(new ArgumentException("Шаблон не найден.", nameof(request.Claim.Template)));
+                    return response;
+                }
+                IEnumerable<Insert> inserts = _editor.GetInserts(document);
                 ParseRequest parseReq = new ParseRequest();
                 foreach (Insert insert in inserts)
                 {
@@ -34,6 +40,7 @@ namespace DocAggregator.API.Core
                         response.Errors.Concat(parseResp.Errors);
                     }
                 }
+                _editor.SetInserts(document, inserts);
             }
             catch(Exception ex)
             {

@@ -29,11 +29,17 @@ namespace DocAggregator.API.Infrastructure.OfficeInterop
             }
         }
 
-        public IEnumerable<Insert> GetInserts()
+        public Document OpenTemplate(string path)
+        {
+            return null;
+        }
+
+        public IEnumerable<Insert> GetInserts(Document document)
         {
             return Array.Empty<Insert>();
         }
-        public void SetInserts(IEnumerable<Insert> inserts)
+
+        public void SetInserts(Document document, IEnumerable<Insert> inserts)
         {
             ;
         }
