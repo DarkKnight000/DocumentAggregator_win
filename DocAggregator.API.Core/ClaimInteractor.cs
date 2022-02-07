@@ -34,9 +34,13 @@ namespace DocAggregator.API.Core
                 DocumentRequest documentRequest = new DocumentRequest();
                 documentRequest.Claim = claim;
                 DocumentResponse documentResponse = interactor.Handle(documentRequest);
-                if (!documentResponse.Success)
+                if (documentResponse.Success)
                 {
-                    response.Errors.Concat(documentResponse.Errors);
+                    response.File = documentResponse.Output;
+                }
+                else
+                {
+                    response.AddErrors(documentResponse.Errors.ToArray());
                 }
             }
             catch (Exception ex)

@@ -8,5 +8,6 @@ namespace DocAggregator.API.Core
 {
     public class DocumentResponse : InteractorResponseBase
     {
+        public string Output { get; set; }
     }
 }

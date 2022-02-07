@@ -1,47 +1,126 @@
 ﻿using DocAggregator.API.Core;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.IO;
+using Word = Microsoft.Office.Interop.Word;
 
 namespace DocAggregator.API.Infrastructure.OfficeInterop
 {
-    public class WordService : IEditorService
+    public class WordService : IEditorService, IDisposable
     {
-        private string _templatesDirectory;
-        private string _temporaryOutputDirectory;
+        Word.Application app;
 
         public string TemplatesDirectory
         {
             get => _templatesDirectory;
             set
             {
-                _templatesDirectory = System.IO.Path.GetFullPath(value);
+                _templatesDirectory = Path.GetFullPath(value);
             }
         }
+        private string _templatesDirectory;
+
         public string TemporaryOutputDirectory
         {
             get => _temporaryOutputDirectory;
             set
             {
-                _temporaryOutputDirectory = System.IO.Path.GetFullPath(value);
+                _temporaryOutputDirectory = Path.GetFullPath(value);
             }
+        }
+        private string _temporaryOutputDirectory;
+
+        private bool disposedValue;
+
+        public WordService()
+        {
+            // Очистка кучи для предупреждения COM+ ошибки HRESULT: 0x80080005
+            GC.Collect();
+            app = new Word.Application();
         }
 
         public Document OpenTemplate(string path)
         {
-            return null;
+            Document result = new Document();
+            string file = Path.Combine(TemplatesDirectory, path);
+            if (!File.Exists(file))
+            {
+                // TODO: log this
+                return null;
+            }
+            object template = file;
+            object newTemp = false;
+            object docType = Word.WdNewDocumentType.wdNewBlankDocument;
+            object vis = false;
+            Word.Document doc = app.Documents.Add(Template: ref template, NewTemplate: ref newTemp, DocumentType: ref docType, Visible: ref vis);
+            result.State = doc;
+            return result;
         }
 
         public IEnumerable<Insert> GetInserts(Document document)
         {
-            return Array.Empty<Insert>();
+            var doc = document.State as Word.Document;
+            if (doc == null)
+            {
+                // TODO: log this
+                yield break;
+            }
+            var controls = new Dictionary<string, Word.ContentControl>();
+            var range = doc.Range(doc.Content.Start, doc.Content.End);
+            foreach (Word.ContentControl control in range.ContentControls)
+            {
+                controls.Add(control.Tag, control);
+                yield return new Insert(control.Tag) { AssociatedChunk = control };
+            }
         }
 
         public void SetInserts(Document document, IEnumerable<Insert> inserts)
         {
-            ;
+            foreach (Insert insert in inserts)
+            {
+                Console.WriteLine($"Putting \"{insert.ReplacedText}\" in the control with tag \"{insert.OriginalMask}\".");
+                Word.ContentControl control = insert.AssociatedChunk as Word.ContentControl;
+                if (control == null)
+                {
+                    // TODO: log this
+                    continue;
+                }
+                control.Range.Text = insert.ReplacedText;
+            }
         }
+
+        public string Export(Document document)
+        {
+            var doc = document.State as Word.Document;
+            var output = Path.Combine(TemporaryOutputDirectory, "Output.pdf");
+            doc.ExportAsFixedFormat(output, Word.WdExportFormat.wdExportFormatPDF);
+            return output;
+        }
+
+        #region IDisposable impl
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    object save = false;
+                    app.Quit(ref save);
+                }
+
+                app = null;
+                disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            // Не изменяйте этот код. Разместите код очистки в методе "Dispose(bool disposing)".
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+
+        #endregion
     }
 }

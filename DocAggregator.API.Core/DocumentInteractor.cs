@@ -37,10 +37,11 @@ namespace DocAggregator.API.Core
                     ParseResponse parseResp = parser.Handle(parseReq);
                     if (!parseResp.Success)
                     {
-                        response.Errors.Concat(parseResp.Errors);
+                        response.AddErrors(parseResp.Errors.ToArray());
                     }
                 }
                 _editor.SetInserts(document, inserts);
+                response.Output = _editor.Export(document);
             }
             catch(Exception ex)
             {

@@ -8,5 +8,6 @@ namespace DocAggregator.API.Core
 {
     public class ClaimResponse : InteractorResponseBase
     {
+        public string File { get; set; }
     }
 }

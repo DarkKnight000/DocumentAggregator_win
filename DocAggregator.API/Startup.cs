@@ -1,5 +1,4 @@
 using DocAggregator.API.Core;
-using DocAggregator.API.Infrastructure;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -33,8 +32,8 @@ namespace DocAggregator.API
                 TemporaryOutputDirectory = Configuration["Editor:OutputDir"],
             };
             services.AddSingleton<IEditorService>(editorService);
-            services.AddSingleton<IClaimRepository>(new ClaimRepository());
-            services.AddSingleton<IMixedFieldRepository>(new MixedFieldRepository());
+            services.AddSingleton<IClaimRepository>(new Infrastructure.OracleManaged.ClaimRepository());
+            services.AddSingleton<IMixedFieldRepository>(new Infrastructure.OracleManaged.MixedFieldRepository());
 
             services.AddControllers();
         }

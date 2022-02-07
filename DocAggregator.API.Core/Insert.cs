@@ -18,6 +18,7 @@ namespace DocAggregator.API.Core
         public string ReplacedText { get; set; }
         public bool? ReplacedCheckmark { get; set; }
         public string OriginalMask { get; set; }
+        public object AssociatedChunk { get; set; }
 
         public Insert(string mask, InsertKind kind = InsertKind.PlainText)
         {

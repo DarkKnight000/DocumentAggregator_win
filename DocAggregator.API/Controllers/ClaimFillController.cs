@@ -31,11 +31,20 @@ namespace DocAggregator.API.Controllers
 
         [HttpPost]
         [Consumes("application/json")]
-        public FileStreamResult Post([FromBody] ClaimRequest request)
+        public IActionResult Post([FromBody] ClaimRequest request)
         {
-            var presenter = new Presentation.ClaimResponseStreamPresenter();
             var claimInteractor = new ClaimInteractor(_editorService, _claimRepository, _fieldRepository);
-            return presenter.Handle(claimInteractor.Handle(request));
+            var response = claimInteractor.Handle(request);
+            if (response.Success)
+            {
+                var presenter = new Presentation.ClaimResponseStreamPresenter();
+                return presenter.Handle(response);
+            }
+            else
+            {
+                var presenter = new Presentation.InternalErrorResponsePresenter();
+                return presenter.Handle(response);
+            }
         }
     }
 }

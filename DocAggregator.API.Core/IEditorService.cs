@@ -8,8 +8,9 @@ namespace DocAggregator.API.Core
 {
     public interface IEditorService
     {
-        public Document OpenTemplate(string path);
-        public IEnumerable<Insert> GetInserts(Document document);
-        public void SetInserts(Document document, IEnumerable<Insert> inserts);
+        Document OpenTemplate(string path);
+        IEnumerable<Insert> GetInserts(Document document);
+        void SetInserts(Document document, IEnumerable<Insert> inserts);
+        string Export(Document document);
     }
 }

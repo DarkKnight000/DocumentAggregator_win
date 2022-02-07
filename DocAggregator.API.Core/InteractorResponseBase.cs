@@ -15,5 +15,13 @@ namespace DocAggregator.API.Core
         {
             Errors = new List<Exception>();
         }
+
+        internal void AddErrors(params Exception[] exceptions)
+        {
+            foreach (var ex in exceptions)
+            {
+                Errors.Add(ex);
+            }
+        }
     }
 }

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DocAggregator.API.Infrastructure
+namespace DocAggregator.API.Infrastructure.OracleManaged
 {
     public class MixedFieldRepository : IMixedFieldRepository
     {

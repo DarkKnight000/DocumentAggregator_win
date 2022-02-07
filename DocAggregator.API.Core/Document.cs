@@ -8,5 +8,6 @@ namespace DocAggregator.API.Core
 {
     public class Document
     {
+        public object State { get; set; }
     }
 }
