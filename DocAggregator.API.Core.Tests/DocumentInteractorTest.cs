@@ -17,12 +17,12 @@ namespace DocAggregator.API.Core.Tests
             var request = new DocumentRequest();
             request.Claim = new Claim();
             // 3. Создаём обект интерактора документа
-            var documentInteractor = new DocumentInteractor(mockEditor.Object, Mock.Of<IMixedFieldRepository>());
+            var documentInteractor = new DocumentInteractor(Mock.Of<ParseInteractorProxy>(), mockEditor.Object);
 
             // 4. Заполняем содержимое документа
             var response = documentInteractor.Handle(request);
 
-            Assert.True(response.Success);
+            Assert.True(response.Success, ResponseDebugPresenter.Handle(response));
         }
 
         [Fact]
@@ -35,7 +35,7 @@ namespace DocAggregator.API.Core.Tests
             var request = new DocumentRequest();
             request.Claim = new Claim();
             // 3. Создаём обект интерактора документа
-            var documentInteractor = new DocumentInteractor(mockEditor.Object, Mock.Of<IMixedFieldRepository>());
+            var documentInteractor = new DocumentInteractor(Mock.Of<ParseInteractorProxy>(), mockEditor.Object);
 
             // 4. Заполняем содержимое документа
             var response = documentInteractor.Handle(request);

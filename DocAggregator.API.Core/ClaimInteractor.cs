@@ -17,15 +17,13 @@ namespace DocAggregator.API.Core
 
     public class ClaimInteractor : InteractorBase<ClaimResponse, ClaimRequest>
     {
-        IEditorService _editor;
+        DocumentInteractor _creator;
         IClaimRepository _repo;
-        IMixedFieldRepository _fieldRepo;
 
-        public ClaimInteractor(IEditorService editor, IClaimRepository repository, IMixedFieldRepository fieldRepository)
+        public ClaimInteractor(DocumentInteractor creator, IClaimRepository repository)
         {
-            _editor = editor;
+            _creator = creator;
             _repo = repository;
-            _fieldRepo = fieldRepository;
         }
 
         protected override void Handle()
@@ -35,10 +33,9 @@ namespace DocAggregator.API.Core
             {
                 throw new ArgumentException("Заявка не найдена.", nameof(Request.ClaimID));
             }
-            DocumentInteractor interactor = new DocumentInteractor(_editor, _fieldRepo);
             DocumentRequest documentRequest = new DocumentRequest();
             documentRequest.Claim = claim;
-            DocumentResponse documentResponse = interactor.Handle(documentRequest);
+            DocumentResponse documentResponse = _creator.Handle(documentRequest);
             if (documentResponse.Success)
             {
                 Response.File = documentResponse.Output;

@@ -13,24 +13,24 @@ namespace DocAggregator.API.Core.Tests
             var mockClaimRepository = new Mock<IClaimRepository>();
             mockClaimRepository.Setup(r => r.GetClaim(It.IsAny<int>())).Returns(new Claim());
             // 2. Нужен драйвер для управления документом
-            var mockEditorService = new Mock<IEditorService>();
-            mockEditorService.Setup(s => s.OpenTemplate(It.IsAny<string>())).Returns(new Document());
-            mockEditorService.Setup(s => s.GetInserts(It.IsAny<Document>())).Returns(new[] { new Insert("id") });
-            mockEditorService.Setup(s => s.SetInserts(It.IsAny<Document>(), It.IsAny<IEnumerable<Insert>>()));
+            //var mockEditorService = new Mock<IEditorService>();
+            //mockEditorService.Setup(s => s.OpenTemplate(It.IsAny<string>())).Returns(new Document());
+            //mockEditorService.Setup(s => s.GetInserts(It.IsAny<Document>())).Returns(new[] { new Insert("id") });
+            //mockEditorService.Setup(s => s.SetInserts(It.IsAny<Document>(), It.IsAny<IEnumerable<Insert>>()));
             // 3. Для заполнения нужен репозиторий полей
-            var mockFieldRepository = new Mock<IMixedFieldRepository>();
-            mockFieldRepository.Setup(r => r.GetFieldByNameOrId(It.IsAny<string>())).Returns("text");
+            //var mockFieldRepository = new Mock<IMixedFieldRepository>();
+            //mockFieldRepository.Setup(r => r.GetFieldByNameOrId(It.IsAny<string>())).Returns("text");
             // 4. Потом отработать заполнение
-            var claimInteractor = new ClaimInteractor(mockEditorService.Object, mockClaimRepository.Object, mockFieldRepository.Object);
+            var claimInteractor = new ClaimInteractor(Mock.Of<DocumentInteractorProxy>(), mockClaimRepository.Object);
             // 5. Получить запрос
             var request = new ClaimRequest() { ClaimID = 18012 };
 
             // 6. Сгенерировать документ
             var response = claimInteractor.Handle(request);
 
-            mockFieldRepository.Verify(r => r.GetFieldByNameOrId("id"));
-            mockEditorService.Verify(s => s.SetInserts(new Document(), new[] { new Insert("id", InsertKind.PlainText) { ReplacedText = "text" } }));
-            Assert.True(response.Success);
+            //mockFieldRepository.Verify(r => r.GetFieldByNameOrId("id"));
+            //mockEditorService.Verify(s => s.SetInserts(new Document(), new[] { new Insert("id", InsertKind.PlainText) { ReplacedText = "text" } }));
+            Assert.True(response.Success, ResponseDebugPresenter.Handle(response));
         }
 
         [Fact]
@@ -40,12 +40,12 @@ namespace DocAggregator.API.Core.Tests
             var mockClaimRepository = new Mock<IClaimRepository>();
             mockClaimRepository.Setup(r => r.GetClaim(It.IsAny<int>())).Returns((Claim)null);
             // 2. Нужен драйвер для управления документом
-            var mockEditorService = new Mock<IEditorService>();
-            mockEditorService.Setup(s => s.GetInserts(It.IsAny<Document>())).Returns(System.Array.Empty<Insert>());
+            //var mockEditorService = new Mock<IEditorService>();
+            //mockEditorService.Setup(s => s.GetInserts(It.IsAny<Document>())).Returns(System.Array.Empty<Insert>());
             // 3. Для заполнения нужен репозиторий полей
-            var mockFieldRepository = new Mock<IMixedFieldRepository>();
+            //var mockFieldRepository = new Mock<IMixedFieldRepository>();
             // 4. Потом отработать заполнение
-            var claimInteractor = new ClaimInteractor(mockEditorService.Object, mockClaimRepository.Object, mockFieldRepository.Object);
+            var claimInteractor = new ClaimInteractor(null, mockClaimRepository.Object);
             // 5. Получить запрос
             var request = new ClaimRequest() { ClaimID = 18011 };
 

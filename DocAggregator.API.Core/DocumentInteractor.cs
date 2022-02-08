@@ -17,18 +17,17 @@ namespace DocAggregator.API.Core
 
     public class DocumentInteractor : InteractorBase<DocumentResponse, DocumentRequest>
     {
+        ParseInteractor _parser;
         IEditorService _editor;
-        IMixedFieldRepository _fieldRepo;
 
-        public DocumentInteractor(IEditorService editor, IMixedFieldRepository mixedFieldRepository)
+        public DocumentInteractor(ParseInteractor parser, IEditorService editor)
         {
+            _parser = parser;
             _editor = editor;
-            _fieldRepo = mixedFieldRepository;
         }
 
         protected override void Handle()
         {
-            ParseInteractor parser = new ParseInteractor(_fieldRepo);
             Document document = _editor.OpenTemplate(Request.Claim.Template);
             if (document == null)
             {
@@ -39,7 +38,7 @@ namespace DocAggregator.API.Core
             foreach (Insert insert in inserts)
             {
                 parseReq.Insertion = insert;
-                ParseResponse parseResp = parser.Handle(parseReq);
+                ParseResponse parseResp = _parser.Handle(parseReq);
                 if (!parseResp.Success)
                 {
                     Response.AddErrors(parseResp.Errors.ToArray());
