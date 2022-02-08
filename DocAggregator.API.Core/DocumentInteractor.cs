@@ -6,7 +6,16 @@ using System.Threading.Tasks;
 
 namespace DocAggregator.API.Core
 {
-    public class DocumentInteractor
+    public class DocumentRequest
+    {
+        public Claim Claim { get; set; }
+    }
+    public class DocumentResponse : InteractorResponseBase
+    {
+        public string Output { get; set; }
+    }
+
+    public class DocumentInteractor : InteractorBase<DocumentResponse, DocumentRequest>
     {
         IEditorService _editor;
         IMixedFieldRepository _fieldRepo;
@@ -17,37 +26,27 @@ namespace DocAggregator.API.Core
             _fieldRepo = mixedFieldRepository;
         }
 
-        public DocumentResponse Handle(DocumentRequest request)
+        protected override void Handle()
         {
-            DocumentResponse response = new DocumentResponse();
             ParseInteractor parser = new ParseInteractor(_fieldRepo);
-            try
+            Document document = _editor.OpenTemplate(Request.Claim.Template);
+            if (document == null)
             {
-                Document document = _editor.OpenTemplate(request.Claim.Template);
-                if (document == null)
-                {
-                    response.Errors.Add(new ArgumentException("Шаблон не найден.", nameof(request.Claim.Template)));
-                    return response;
-                }
-                IEnumerable<Insert> inserts = _editor.GetInserts(document);
-                ParseRequest parseReq = new ParseRequest();
-                foreach (Insert insert in inserts)
-                {
-                    parseReq.Insertion = insert;
-                    ParseResponse parseResp = parser.Handle(parseReq);
-                    if (!parseResp.Success)
-                    {
-                        response.AddErrors(parseResp.Errors.ToArray());
-                    }
-                }
-                _editor.SetInserts(document, inserts);
-                response.Output = _editor.Export(document);
+                throw new ArgumentException("Шаблон не найден.", nameof(Request.Claim.Template));
             }
-            catch(Exception ex)
+            IEnumerable<Insert> inserts = _editor.GetInserts(document);
+            ParseRequest parseReq = new ParseRequest();
+            foreach (Insert insert in inserts)
             {
-                response.Errors.Add(ex);
+                parseReq.Insertion = insert;
+                ParseResponse parseResp = parser.Handle(parseReq);
+                if (!parseResp.Success)
+                {
+                    Response.AddErrors(parseResp.Errors.ToArray());
+                }
             }
-            return response;
+            _editor.SetInserts(document, inserts);
+            Response.Output = _editor.Export(document);
         }
     }
 }

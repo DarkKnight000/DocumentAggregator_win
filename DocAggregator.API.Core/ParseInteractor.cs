@@ -6,7 +6,13 @@ using System.Threading.Tasks;
 
 namespace DocAggregator.API.Core
 {
-    public class ParseInteractor
+    public class ParseRequest
+    {
+        public Insert Insertion { get; set; }
+    }
+    public class ParseResponse : InteractorResponseBase { }
+
+    public class ParseInteractor : InteractorBase<ParseResponse, ParseRequest>
     {
         IMixedFieldRepository _fieldRepo;
 
@@ -15,27 +21,18 @@ namespace DocAggregator.API.Core
             _fieldRepo = fieldRepository;
         }
 
-        public ParseResponse Handle(ParseRequest request)
+        protected override void Handle()
         {
-            var response = new ParseResponse();
-            var insert = request.Insertion;
-            try
+            var insert = Request.Insertion;
+            switch (insert.Kind)
             {
-                switch (insert.Kind)
-                {
-                    case InsertKind.CheckMark:
-                        insert.ReplacedCheckmark = ParseBoolField(insert.OriginalMask);
-                        break;
-                    default: // InsertKind.PlainText
-                        insert.ReplacedText = ParseField(insert.OriginalMask);
-                        break;
-                }
+                case InsertKind.CheckMark:
+                    insert.ReplacedCheckmark = ParseBoolField(insert.OriginalMask);
+                    break;
+                default: // InsertKind.PlainText
+                    insert.ReplacedText = ParseField(insert.OriginalMask);
+                    break;
             }
-            catch (Exception ex)
-            {
-                response.Errors.Add(ex);
-            }
-            return response;
         }
 
         bool ParseBoolField(string insertionFormat)

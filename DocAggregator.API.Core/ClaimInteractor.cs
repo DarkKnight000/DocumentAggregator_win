@@ -6,7 +6,16 @@ using System.Threading.Tasks;
 
 namespace DocAggregator.API.Core
 {
-    public class ClaimInteractor
+    public class ClaimRequest
+    {
+        public int ClaimID { get; init; }
+    }
+    public class ClaimResponse : InteractorResponseBase
+    {
+        public string File { get; set; }
+    }
+
+    public class ClaimInteractor : InteractorBase<ClaimResponse, ClaimRequest>
     {
         IEditorService _editor;
         IClaimRepository _repo;
@@ -19,35 +28,25 @@ namespace DocAggregator.API.Core
             _fieldRepo = fieldRepository;
         }
 
-        public ClaimResponse Handle(ClaimRequest request)
+        protected override void Handle()
         {
-            ClaimResponse response = new ClaimResponse();
-            try
+            Claim claim = _repo.GetClaim(Request.ClaimID);
+            if (claim == null)
             {
-                Claim claim = _repo.GetClaim(request.ClaimID);
-                if (claim == null)
-                {
-                    response.Errors.Add(new ArgumentException("Заявка не найдена.", nameof(request.ClaimID)));
-                    return response;
-                }
-                DocumentInteractor interactor = new DocumentInteractor(_editor, _fieldRepo);
-                DocumentRequest documentRequest = new DocumentRequest();
-                documentRequest.Claim = claim;
-                DocumentResponse documentResponse = interactor.Handle(documentRequest);
-                if (documentResponse.Success)
-                {
-                    response.File = documentResponse.Output;
-                }
-                else
-                {
-                    response.AddErrors(documentResponse.Errors.ToArray());
-                }
+                throw new ArgumentException("Заявка не найдена.", nameof(Request.ClaimID));
             }
-            catch (Exception ex)
+            DocumentInteractor interactor = new DocumentInteractor(_editor, _fieldRepo);
+            DocumentRequest documentRequest = new DocumentRequest();
+            documentRequest.Claim = claim;
+            DocumentResponse documentResponse = interactor.Handle(documentRequest);
+            if (documentResponse.Success)
             {
-                response.Errors.Add(ex);
+                Response.File = documentResponse.Output;
             }
-            return response;
+            else
+            {
+                Response.AddErrors(documentResponse.Errors.ToArray());
+            }
         }
     }
 }
