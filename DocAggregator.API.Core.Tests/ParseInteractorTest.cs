@@ -13,9 +13,9 @@ namespace DocAggregator.API.Core.Tests
             // 1. Берём все поля заявки
             var mockMixedFieldRepository = new Mock<IMixedFieldRepository>();
             mockMixedFieldRepository
-                .Setup(r => r.GetFieldByNameOrId(It.IsAny<string>()))
+                .Setup(r => r.GetFieldByNameOrId(It.IsAny<int>(), It.IsAny<string>()))
                 // Returns correct output only for integers
-                .Returns<string>(arg => int.TryParse(arg, out _) ? fieldValue : "err");
+                .Returns<int, string>((id, arg) => int.TryParse(arg, out _) ? fieldValue : "err");
             // 2. Берём заявку
             var request = new ParseRequest() { Insertion = new Insert(insertionFormat) };
             // 3. Получаем интерактор
@@ -34,9 +34,9 @@ namespace DocAggregator.API.Core.Tests
             // 1. Берём все поля заявки
             var mockMixedFieldRepository = new Mock<IMixedFieldRepository>();
             mockMixedFieldRepository
-                .Setup(r => r.GetFieldByNameOrId(It.IsAny<string>()))
+                .Setup(r => r.GetFieldByNameOrId(It.IsAny<int>(), It.IsAny<string>()))
                 // Returns correct output only for integers
-                .Returns<string>(arg => int.TryParse(arg, out _) ? null : "err");
+                .Returns<int, string>((id, arg) => int.TryParse(arg, out _) ? null : "err");
             // 2. Берём заявку
             var request = new ParseRequest() { Insertion = new Insert("10") };
             // 3. Получаем интерактор
@@ -57,7 +57,7 @@ namespace DocAggregator.API.Core.Tests
         {
             // 1. Берём все поля заявки
             var mockMixedFieldRepository = new Mock<IMixedFieldRepository>();
-            mockMixedFieldRepository.Setup(r => r.GetFieldByNameOrId(It.IsAny<string>())).Returns(fieldValue);
+            mockMixedFieldRepository.Setup(r => r.GetFieldByNameOrId(It.IsAny<int>(), It.IsAny<string>())).Returns(fieldValue);
             // 2. Берём заявку
             var request = new ParseRequest() { Insertion = new Insert(insertionFormat) };
             // 3. Получаем интерактор
@@ -75,7 +75,7 @@ namespace DocAggregator.API.Core.Tests
         {
             // 1. Берём все поля заявки
             var mockMixedFieldRepository = new Mock<IMixedFieldRepository>();
-            mockMixedFieldRepository.Setup(r => r.GetFieldByNameOrId(It.IsAny<string>())).Returns((string)null);
+            mockMixedFieldRepository.Setup(r => r.GetFieldByNameOrId(It.IsAny<int>(), It.IsAny<string>())).Returns((string)null);
             // 2. Берём заявку
             var request = new ParseRequest() { Insertion = new Insert("name") };
             // 3. Получаем интерактор
@@ -109,8 +109,8 @@ namespace DocAggregator.API.Core.Tests
             // 1. Берём все поля заявки
             var mockMixedFieldRepository = new Mock<IMixedFieldRepository>();
             mockMixedFieldRepository
-                .Setup(r => r.GetFieldByNameOrId(It.IsAny<string>()))
-                .Returns<string>(arg => int.TryParse(arg, out _) ? attrValue : refValue);
+                .Setup(r => r.GetFieldByNameOrId(It.IsAny<int>(), It.IsAny<string>()))
+                .Returns<int, string>((id, arg) => int.TryParse(arg, out _) ? attrValue : refValue);
             // 2. Берём заявку
             var request = new ParseRequest() { Insertion = new Insert(insertionFormat) };
             // 3. Получаем интерактор
@@ -133,9 +133,9 @@ namespace DocAggregator.API.Core.Tests
             // 1. Берём все поля заявки
             var mockMixedFieldRepository = new Mock<IMixedFieldRepository>();
             mockMixedFieldRepository
-                .Setup(r => r.GetFieldByNameOrId(It.IsAny<string>()))
+                .Setup(r => r.GetFieldByNameOrId(It.IsAny<int>(), It.IsAny<string>()))
                 // Returns only False for integers and True for strings
-                .Returns<string>(arg => int.TryParse(arg, out _) ? "False" : "True");
+                .Returns<int, string>((id, arg) => int.TryParse(arg, out _) ? "False" : "True");
             // 2. Берём заявку
             var request = new ParseRequest() { Insertion = new Insert(insertionFormat, InsertKind.CheckMark) };
             // 3. Получаем интерактор

@@ -9,7 +9,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
 {
     public class MixedFieldRepository : IMixedFieldRepository
     {
-        public string GetFieldByNameOrId(string name)
+        public string GetFieldByNameOrId(int claimID, string name)
         {
             return null;
         }

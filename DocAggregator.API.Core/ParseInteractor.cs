@@ -8,12 +8,14 @@ namespace DocAggregator.API.Core
 {
     public class ParseRequest
     {
+        public int ClaimID { get; set; }
         public Insert Insertion { get; set; }
     }
     public class ParseResponse : InteractorResponseBase { }
 
     public class ParseInteractor : InteractorBase<ParseResponse, ParseRequest>
     {
+        // TODO: Убрать лишние дополнительные claim_id поля (возможно переместить внутрь Insert)
         IMixedFieldRepository _fieldRepo;
 
         public ParseInteractor(IMixedFieldRepository fieldRepository)
@@ -27,49 +29,49 @@ namespace DocAggregator.API.Core
             switch (insert.Kind)
             {
                 case InsertKind.CheckMark:
-                    insert.ReplacedCheckmark = ParseBoolField(insert.OriginalMask);
+                    insert.ReplacedCheckmark = ParseBoolField(Request.ClaimID, insert.OriginalMask);
                     break;
                 default: // InsertKind.PlainText
-                    insert.ReplacedText = ParseField(insert.OriginalMask);
+                    insert.ReplacedText = ParseField(Request.ClaimID, insert.OriginalMask);
                     break;
             }
         }
 
-        bool ParseBoolField(string insertionFormat)
+        bool ParseBoolField(int claimID, string insertionFormat)
         {
             if (insertionFormat.StartsWith('!'))
             {
                 insertionFormat = insertionFormat.Substring(1);
-                return !bool.Parse(_fieldRepo.GetFieldByNameOrId(insertionFormat));
+                return !bool.Parse(_fieldRepo.GetFieldByNameOrId(claimID, insertionFormat));
             }
             else
             {
-                return bool.Parse(_fieldRepo.GetFieldByNameOrId(insertionFormat));
+                return bool.Parse(_fieldRepo.GetFieldByNameOrId(claimID, insertionFormat));
             }
         }
 
-        string ParseField(string insertionFormat)
+        string ParseField(int claimID, string insertionFormat)
         {
             string recursiveResult;
-            if (TryParseDelimetedFields(insertionFormat, ',', ", ", out recursiveResult))
+            if (TryParseDelimetedFields(claimID, insertionFormat, ',', ", ", out recursiveResult))
             {
                 return recursiveResult;
             }
-            if (TryParseDelimetedFields(insertionFormat, '/', " / ", out recursiveResult))
+            if (TryParseDelimetedFields(claimID, insertionFormat, '/', " / ", out recursiveResult))
             {
                 return recursiveResult;
             }
-            return _fieldRepo.GetFieldByNameOrId(insertionFormat) ?? "";
+            return _fieldRepo.GetFieldByNameOrId(claimID, insertionFormat) ?? "";
         }
 
-        bool TryParseDelimetedFields(string insertionFormat, char delimiter, string connector, out string result)
+        bool TryParseDelimetedFields(int claimID, string insertionFormat, char delimiter, string connector, out string result)
         {
             if (insertionFormat.Contains(delimiter))
             {
                 string[] parts = insertionFormat.Split(delimiter, 2);
                 string left, right;
-                left = ParseField(parts[0]);
-                right = ParseField(parts[1]);
+                left = ParseField(claimID, parts[0]);
+                right = ParseField(claimID, parts[1]);
                 if (left == string.Empty || right == string.Empty)
                 {
                     result = left + right;

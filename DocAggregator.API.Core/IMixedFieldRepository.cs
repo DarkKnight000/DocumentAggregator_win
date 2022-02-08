@@ -8,6 +8,6 @@ namespace DocAggregator.API.Core
 {
     public interface IMixedFieldRepository
     {
-        public string GetFieldByNameOrId(string fieldName);
+        public string GetFieldByNameOrId(int claimID, string fieldName);
     }
 }
