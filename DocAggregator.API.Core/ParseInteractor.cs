@@ -39,14 +39,17 @@ namespace DocAggregator.API.Core
 
         bool ParseBoolField(int claimID, string insertionFormat)
         {
+            string fieldVal;
             if (insertionFormat.StartsWith('!'))
             {
                 insertionFormat = insertionFormat.Substring(1);
-                return !bool.Parse(_fieldRepo.GetFieldByNameOrId(claimID, insertionFormat));
+                fieldVal = _fieldRepo.GetFieldByNameOrId(claimID, insertionFormat);
+                return fieldVal != null ? !bool.Parse(fieldVal) : false;
             }
             else
             {
-                return bool.Parse(_fieldRepo.GetFieldByNameOrId(claimID, insertionFormat));
+                fieldVal = _fieldRepo.GetFieldByNameOrId(claimID, insertionFormat);
+                return fieldVal != null ? bool.Parse(fieldVal) : false;
             }
         }
 

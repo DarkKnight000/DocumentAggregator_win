@@ -1,5 +1,6 @@
 ﻿using DocAggregator.API.Core;
 using Microsoft.AspNetCore.Mvc;
+using System.Text;
 
 namespace DocAggregator.API.Presentation
 {
@@ -7,7 +8,18 @@ namespace DocAggregator.API.Presentation
     {
         public ObjectResult Handle(ClaimResponse response)
         {
-            return new ObjectResult(response.Errors)
+            StringBuilder result = new StringBuilder();
+            foreach (var err in response.Errors)
+            {
+                if (result.Length != 0)
+                {
+                    result.AppendLine(new string('-', 14));
+                }
+                result.AppendLine(err.GetType().ToString());
+                result.AppendLine(err.Message);
+                result.AppendLine(err.StackTrace);
+            }
+            return new ObjectResult(result.ToString())
             {
                 StatusCode = 500,
             };

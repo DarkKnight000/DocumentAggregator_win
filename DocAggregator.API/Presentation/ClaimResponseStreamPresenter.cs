@@ -8,7 +8,7 @@ namespace DocAggregator.API.Presentation
         public FileStreamResult Handle(ClaimResponse response)
         {
             var stream = System.IO.File.OpenRead(response.File);
-            return new FileStreamResult(stream, "application/octet-stream");
+            return new FileStreamResult(stream, "application/pdf");
         }
     }
 }

@@ -34,7 +34,7 @@ namespace DocAggregator.API.Infrastructure.OfficeInterop
 
         public WordService()
         {
-            // Очистка кучи для предупреждения COM+ ошибки HRESULT: 0x80080005
+            // Очистка кучи для предупреждения COM+ ошибки HRESULT: 0x80080005 (не работает)
             GC.Collect();
             app = new Word.Application();
         }
@@ -65,12 +65,31 @@ namespace DocAggregator.API.Infrastructure.OfficeInterop
                 // TODO: log this
                 yield break;
             }
-            var controls = new Dictionary<string, Word.ContentControl>();
             var range = doc.Range(doc.Content.Start, doc.Content.End);
             foreach (Word.ContentControl control in range.ContentControls)
             {
-                controls.Add(control.Tag, control);
-                yield return new Insert(control.Tag) { AssociatedChunk = control };
+                Console.WriteLine($"Register content control {control.Type} with a Title \"{control.Title}\".");
+                if (control.Title == null)
+                {
+                    // TODO: log this
+                    Console.WriteLine("The Title is null! Skipped.");
+                    continue;
+                }
+                InsertKind kind = InsertKind.Unknown;
+                switch (control.Type)
+                {
+                    case Word.WdContentControlType.wdContentControlCheckBox:
+                        kind = InsertKind.CheckMark;
+                        break;
+                    case Word.WdContentControlType.wdContentControlText:
+                        kind = InsertKind.PlainText;
+                        break;
+                    default:
+                        // TODO: log this
+                        Console.WriteLine("Unknown control type!");
+                        break;
+                }
+                yield return new Insert(control.Title, kind) { AssociatedChunk = control };
             }
         }
 
@@ -78,14 +97,24 @@ namespace DocAggregator.API.Infrastructure.OfficeInterop
         {
             foreach (Insert insert in inserts)
             {
-                Console.WriteLine($"Putting \"{insert.ReplacedText}\" in the control with tag \"{insert.OriginalMask}\".");
+                Console.WriteLine($"Putting \"{insert.ReplacedText ?? insert.ReplacedCheckmark.ToString()}\" in the control with tag \"{insert.OriginalMask}\".");
                 Word.ContentControl control = insert.AssociatedChunk as Word.ContentControl;
                 if (control == null)
                 {
                     // TODO: log this
                     continue;
                 }
-                control.Range.Text = insert.ReplacedText;
+                switch (insert.Kind)
+                {
+                    case InsertKind.CheckMark:
+                        control.Checked = insert.ReplacedCheckmark.Value;
+                        break;
+                    default: // InsertKind.PlainText
+                        control.Range.Text = insert.ReplacedText;
+                        break;
+                }
+                // Убирает пустые поля с текстом "Место для ввода текста."
+                control.Delete();
             }
         }
 
