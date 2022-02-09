@@ -17,12 +17,12 @@ namespace DocAggregator.API.Core
 
     public class ClaimInteractor : InteractorBase<ClaimResponse, ClaimRequest>
     {
-        DocumentInteractor _creator;
+        FormInteractor _former;
         IClaimRepository _repo;
 
-        public ClaimInteractor(DocumentInteractor creator, IClaimRepository repository)
+        public ClaimInteractor(FormInteractor former, IClaimRepository repository)
         {
-            _creator = creator;
+            _former = former;
             _repo = repository;
         }
 
@@ -33,16 +33,16 @@ namespace DocAggregator.API.Core
             {
                 throw new ArgumentException("Заявка не найдена.", nameof(Request.ClaimID));
             }
-            DocumentRequest documentRequest = new DocumentRequest();
-            documentRequest.Claim = claim;
-            DocumentResponse documentResponse = _creator.Handle(documentRequest);
-            if (documentResponse.Success)
+            FormRequest formRequest = new FormRequest();
+            formRequest.Claim = claim;
+            FormResponse formResponse = _former.Handle(formRequest);
+            if (formResponse.Success)
             {
-                Response.File = documentResponse.Output;
+                Response.File = formResponse.Output;
             }
             else
             {
-                Response.AddErrors(documentResponse.Errors.ToArray());
+                Response.AddErrors(formResponse.Errors.ToArray());
             }
         }
     }

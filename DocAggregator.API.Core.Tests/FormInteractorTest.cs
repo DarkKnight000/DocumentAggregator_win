@@ -4,41 +4,41 @@ using Xunit;
 
 namespace DocAggregator.API.Core.Tests
 {
-    public class DocumentInteractorTest
+    public class FormInteractorTest
     {
         [Fact]
-        public void DocumentInteractor_SuccessScenario()
+        public void FormInteractor_SuccessScenario()
         {
             // 1. Получаем сервис редактора документов
             Mock<IEditorService> mockEditor = new Mock<IEditorService>();
             mockEditor.Setup(e => e.OpenTemplate(It.IsAny<string>())).Returns(new Document());
             mockEditor.Setup(e => e.GetInserts(It.IsAny<Document>())).Returns(new[] { new Insert("s") });
             // 2. Создаём объект запроса документа
-            var request = new DocumentRequest();
+            var request = new FormRequest();
             request.Claim = new Claim();
             // 3. Создаём обект интерактора документа
-            var documentInteractor = new DocumentInteractor(Mock.Of<ParseInteractorProxy>(), mockEditor.Object);
+            var formInteractor = new FormInteractor(Mock.Of<ParseInteractorProxy>(), mockEditor.Object);
 
             // 4. Заполняем содержимое документа
-            var response = documentInteractor.Handle(request);
+            var response = formInteractor.Handle(request);
 
             Assert.True(response.Success, ResponseDebugPresenter.Handle(response));
         }
 
         [Fact]
-        public void DocumentInteractor_TemplateNotFound()
+        public void FormInteractor_TemplateNotFound()
         {
             // 1. Получаем сервис редактора документов
             Mock<IEditorService> mockEditor = new Mock<IEditorService>();
             mockEditor.Setup(e => e.OpenTemplate(It.IsAny<string>())).Returns((Document)null);
             // 2. Создаём объект запроса документа
-            var request = new DocumentRequest();
+            var request = new FormRequest();
             request.Claim = new Claim();
             // 3. Создаём обект интерактора документа
-            var documentInteractor = new DocumentInteractor(Mock.Of<ParseInteractorProxy>(), mockEditor.Object);
+            var formInteractor = new FormInteractor(Mock.Of<ParseInteractorProxy>(), mockEditor.Object);
 
             // 4. Заполняем содержимое документа
-            var response = documentInteractor.Handle(request);
+            var response = formInteractor.Handle(request);
 
             Assert.False(response.Success);
         }

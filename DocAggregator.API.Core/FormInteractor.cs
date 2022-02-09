@@ -6,21 +6,21 @@ using System.Threading.Tasks;
 
 namespace DocAggregator.API.Core
 {
-    public class DocumentRequest
+    public class FormRequest
     {
         public Claim Claim { get; set; }
     }
-    public class DocumentResponse : InteractorResponseBase
+    public class FormResponse : InteractorResponseBase
     {
         public string Output { get; set; }
     }
 
-    public class DocumentInteractor : InteractorBase<DocumentResponse, DocumentRequest>
+    public class FormInteractor : InteractorBase<FormResponse, FormRequest>
     {
         ParseInteractor _parser;
         IEditorService _editor;
 
-        public DocumentInteractor(ParseInteractor parser, IEditorService editor)
+        public FormInteractor(ParseInteractor parser, IEditorService editor)
         {
             _parser = parser;
             _editor = editor;

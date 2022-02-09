@@ -34,8 +34,8 @@ namespace DocAggregator.API.Controllers
         public IActionResult Post([FromBody] ClaimRequest request)
         {
             var parseInteractor = new ParseInteractor(_fieldRepository);
-            var documentInteractor = new DocumentInteractor(parseInteractor, _editorService);
-            var claimInteractor = new ClaimInteractor(documentInteractor, _claimRepository);
+            var formInteractor = new FormInteractor(parseInteractor, _editorService);
+            var claimInteractor = new ClaimInteractor(formInteractor, _claimRepository);
             var response = claimInteractor.Handle(request);
             if (response.Success)
             {

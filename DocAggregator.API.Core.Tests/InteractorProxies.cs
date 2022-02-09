@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace DocAggregator.API.Core.Tests
 {
-    public class DocumentInteractorProxy : DocumentInteractor
+    public class DocumentInteractorProxy : FormInteractor
     {
         public DocumentInteractorProxy() : base(null, null) { }
     }
