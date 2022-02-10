@@ -1,18 +1,20 @@
 ﻿using DocAggregator.API.Core;
 using Oracle.ManagedDataAccess.Client;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DocAggregator.API.Infrastructure.OracleManaged
 {
+    /// <summary>
+    /// Реализует интерфейс <see cref="IMixedFieldRepository"/> используя базу данных Oracle.
+    /// </summary>
     public class MixedFieldRepository : IMixedFieldRepository
     {
         OracleConnection _connection;
         Dictionary<int, Dictionary<string, string>> _claimFieldsCache;
 
+        /// <summary>
+        /// Инициализирует объект <see cref="MixedFieldRepository"/>.
+        /// </summary>
         public MixedFieldRepository()
         {
             _connection = new OracleConnection(StaticExtensions.CONNECTION_STRING);
@@ -23,16 +25,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
         {
             if (!_claimFieldsCache.ContainsKey(claimID))
             {
-                // Initialize fields of a claim.
-                Dictionary<string, string> fieldsCache = _claimFieldsCache[claimID] = new Dictionary<string, string>();
-                foreach (var f in GetValues(claimID))
-                {
-                    fieldsCache[f.Key.ToString()] = f.Value;
-                }
-                foreach (var f in GetOtherValues(claimID))
-                {
-                    fieldsCache[f.Key] = f.Value;
-                }
+                _claimFieldsCache[claimID] = GetFields(claimID);
             }
             if (_claimFieldsCache[claimID].TryGetValue(name.ToUpper(), out string field))
             {
@@ -41,25 +34,54 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
             return null;
         }
 
-        public Dictionary<int, string> GetValues(int request)
+        /// <summary>
+        /// Получает все поля из общей таблицы атрибутов и представления дополнительных атрибутов.
+        /// </summary>
+        /// <param name="claimID">Идентификатор заявки.</param>
+        /// <returns>
+        /// Полный перечень связанных с данным типом заявки атрибутами
+        /// и дополными данными общего представления, основанного на данных выбранной заявки.
+        /// </returns>
+        private Dictionary<string, string> GetFields(int claimID)
         {
-            Dictionary<int, string> result = new Dictionary<int, string>();
-            string query = string.Format(SqlResource.GetStringByName("Q_HRDAttributeIdsValues_ByRequest"), request);
+            Dictionary<string, string> result = new Dictionary<string, string>();
+            string attributesQuery = string.Format(SqlResource.GetStringByName("Q_HRDAttributeIdsValues_ByRequest"), claimID);
+            string viewQuery = string.Format(SqlResource.GetStringByName("Q_HRDAddressAction_ByRequest"), claimID);
             OracleCommand command = null;
+            OracleDataReader reader = null;
             try
             {
                 _connection.Open();
-                command = new OracleCommand(query, _connection);
-                OracleDataReader reader = command.ExecuteReader();
-                while (reader.Read())
+                using (command = new OracleCommand(attributesQuery, _connection))
+                using (reader = command.ExecuteReader())
                 {
-                    int attributeId = reader.GetInt32(0);
-                    string attributeVal = string.Empty;
-                    if (!reader.IsDBNull(1))
+                    while (reader.Read())
                     {
-                        attributeVal = reader.GetString(1);
+                        string attributeId = reader.GetString(0);
+                        string attributeVal = string.Empty;
+                        if (!reader.IsDBNull(1))
+                        {
+                            attributeVal = reader.GetString(1);
+                        }
+                        result.Add(attributeId, attributeVal);
                     }
-                    result.Add(attributeId, attributeVal);
+                }
+                using (command = new OracleCommand(viewQuery, _connection))
+                using (reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        for (int i = 0; i < reader.FieldCount; i++)
+                        {
+                            string attributeName = reader.GetName(i);
+                            string attributeVal = string.Empty;
+                            if (!reader.IsDBNull(i))
+                            {
+                                attributeVal = reader.GetString(i);
+                            }
+                            result.Add(attributeName, attributeVal);
+                        }
+                    }
                 }
                 _connection.Close();
             }
@@ -69,38 +91,6 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                 {
                     StaticExtensions.ShowExceptionMessage(_connection, ex, command.CommandText);
                 }
-            }
-            return result;
-        }
-
-        public Dictionary<string, string> GetOtherValues(int request)
-        {
-            Dictionary<string, string> result = new Dictionary<string, string>();
-            string query = string.Format(SqlResource.GetStringByName("Q_HRDAddressAction_ByRequest"), request);
-            OracleCommand command = null;
-            try
-            {
-                _connection.Open();
-                command = new OracleCommand(query, _connection);
-                OracleDataReader reader = command.ExecuteReader();
-                while (reader.Read())
-                {
-                    for (int i = 0; i < reader.FieldCount; i++)
-                    {
-                        string attributeName = reader.GetName(i);
-                        string attributeVal = string.Empty;
-                        if (!reader.IsDBNull(i))
-                        {
-                            attributeVal = reader.GetString(i);
-                        }
-                        result.Add(attributeName, attributeVal);
-                    }
-                }
-                _connection.Close();
-            }
-            catch (OracleException ex)
-            {
-                StaticExtensions.ShowExceptionMessage(_connection, ex, command.CommandText);
             }
             return result;
         }

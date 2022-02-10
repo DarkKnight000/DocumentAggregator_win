@@ -1,8 +1,10 @@
 ﻿using DocAggregator.API.Core;
-using System;
 
 namespace DocAggregator.API.Infrastructure.OracleManaged
 {
+    /// <summary>
+    /// Реализует интерфейс <see cref="IClaimRepository"/> на основе базы данных Oracle.
+    /// </summary>
     public class ClaimRepository : IClaimRepository
     {
         public Claim GetClaim(int id)

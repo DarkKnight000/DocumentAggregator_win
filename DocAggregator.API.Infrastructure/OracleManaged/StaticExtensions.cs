@@ -1,20 +1,28 @@
 ﻿using Oracle.ManagedDataAccess.Client;
 using Oracle.ManagedDataAccess.Types;
 using System;
-using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace DocAggregator.API.Infrastructure.OracleManaged
 {
+    /// <summary>
+    /// Содержит статические методы и методы расширения для работы с базой данных Oracle.
+    /// </summary>
     internal static class StaticExtensions
     {
+        // TODO: Убрать строку подключения во вне проекта - в конфигурацию.
         internal const string CONNECTION_STRING = "Data Source=(DESCRIPTION =(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST = 10.50.12.6)(PORT = 1521)))(CONNECT_DATA =(SERVICE_NAME = WDB)));User ID=HRD_NEW_DOC;Password=123;";
 
+        /// <summary>
+        /// Выводит сообщение об ошибке и часть запроса, вызвавшую её.
+        /// В данной реализации пытается вызвать точку останова отладчика
+        /// или выбрасывает исключение с отформатированным сообщением об исходном исключении.
+        /// </summary>
+        /// <param name="connection">Открытое подключение к БД.</param>
+        /// <param name="exception">Отловленное исключение.</param>
+        /// <param name="query">Проблемный запрос.</param>
         internal static void ShowExceptionMessage(OracleConnection connection, OracleException exception, string query)
         {
             if (connection == null || exception == null || query == null)
@@ -46,7 +54,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                         "In the following query:\n" + query;
                     break;
                 default:
-                    message += "In the following query:\n" + query + "\n";
+                    message += "In the following query:\n" + query + "\n\n";
                     message += exception.StackTrace;
                     break;
             }
