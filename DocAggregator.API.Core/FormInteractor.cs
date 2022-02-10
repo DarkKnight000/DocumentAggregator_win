@@ -33,8 +33,9 @@ namespace DocAggregator.API.Core
             {
                 throw new ArgumentException("Шаблон не найден.", nameof(Request.Claim.Template));
             }
-            IEnumerable<Insert> inserts = _editor.GetInserts(document);
+            IEnumerable<Insert> inserts = _editor.GetInserts(document).ToList();
             ParseRequest parseReq = new ParseRequest();
+            parseReq.ClaimID = Request.Claim.ID;
             foreach (Insert insert in inserts)
             {
                 parseReq.Insertion = insert;

@@ -15,6 +15,7 @@ namespace DocAggregator.API.Core
 
     public class Insert
     {
+        // TODEL: Проблема была с yield return, который возвращал объект с другим значением.
         private bool? replacedCheckmark;
 
         public InsertKind Kind { get; private set; }
