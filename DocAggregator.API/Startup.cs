@@ -33,7 +33,14 @@ namespace DocAggregator.API
             };
             services.AddSingleton<IEditorService>(editorService);
             services.AddSingleton<IClaimRepository>(new Infrastructure.OracleManaged.ClaimRepository());
-            services.AddSingleton<IMixedFieldRepository>(new Infrastructure.OracleManaged.MixedFieldRepository());
+            var fieldRepository = new Infrastructure.OracleManaged.MixedFieldRepository()
+            {
+                QueriesSource = Configuration["DB:QueriesFile"],
+                Server = Configuration["DB:DataSource"],
+                Username = Configuration["DB:UserID"],
+                Password = Configuration["DB:Password"],
+            };
+            services.AddSingleton<IMixedFieldRepository>(fieldRepository);
 
             services.AddControllers();
         }

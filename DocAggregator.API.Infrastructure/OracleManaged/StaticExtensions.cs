@@ -12,9 +12,6 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
     /// </summary>
     internal static class StaticExtensions
     {
-        // TODO: Убрать строку подключения во вне проекта - в конфигурацию.
-        internal const string CONNECTION_STRING = "Data Source=(DESCRIPTION =(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST = 10.50.12.6)(PORT = 1521)))(CONNECT_DATA =(SERVICE_NAME = WDB)));User ID=HRD_NEW_DOC;Password=123;";
-
         /// <summary>
         /// Выводит сообщение об ошибке и часть запроса, вызвавшую её.
         /// В данной реализации пытается вызвать точку останова отладчика
@@ -40,7 +37,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                 case 911: // ORA-00911: invalid character
                 case 942: // ORA-00942: table or view does not exist
                 case 12170: // ORA-12170: TNS:Connect timeout occurred
-                    OracleCommand command = new OracleCommand(SqlResource.GetStringByName("P_SQLErrorIndexRetrieve"), connection);
+                    OracleCommand command = new OracleCommand(SqlResource.GetSqlResource(null).GetStringByName("P_SQLErrorIndexRetrieve"), connection);
                     command.Parameters.Add("sqltext", query);
                     command.Parameters.Add("errorpos", OracleDbType.Decimal, ParameterDirection.Output);
                     command.ExecuteNonQuery();

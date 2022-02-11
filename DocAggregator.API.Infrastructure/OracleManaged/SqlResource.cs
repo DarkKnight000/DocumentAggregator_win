@@ -29,16 +29,17 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
     }
 
     /// <summary>
-    /// Статический класс, предоставляющий ресурс именнованных запросов.
+    /// Класс, предоставляющий ресурс именнованных запросов.
     /// </summary>
-    public static class SqlResource
+    public class SqlResource
     {
-        private static Dictionary<string, SqlQuery> dictionary;
+        private static SqlResource _singletone;
+        private Dictionary<string, SqlQuery> _dictionary;
+        private string _configuration;
 
-        static SqlResource()
+        SqlResource(string file)
         {
-            // TODO: Убрать в конфигурацию проекта
-            string file = @"D:\Users\akkostin\source\repos\DocumentGeneration\WordprocessingWebAPI\App_Data\SqlResource.xml";
+            _configuration = file;
             List<SqlQuery> list;
 
             // deserialize the xml file
@@ -47,23 +48,50 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                 XmlSerializer deserializer = new XmlSerializer(typeof(List<SqlQuery>));
                 list = (List<SqlQuery>)deserializer.Deserialize(streamReader);
             }
-            dictionary = new Dictionary<string, SqlQuery>();
+            _dictionary = new Dictionary<string, SqlQuery>();
             foreach (var item in list)
             {
-                dictionary.Add(item.Name, item);
+                _dictionary.Add(item.Name, item);
             }
         }
 
-        public static string GetStringByName(string name) => GetQueryByName(name).Query;
+        /// <summary>
+        /// Получает статически хранимый синглтон ресурса запросов.
+        /// </summary>
+        /// <param name="configuration">Путь к файлу с запросами. Разрешён null, если прежде вызван с корректным файлом.</param>
+        /// <returns>Ресурс запросов.</returns>
+        public static SqlResource GetSqlResource(string configuration)
+        {
+            if (_singletone == null)
+            {
+                if (configuration == null)
+                {
+                    throw new ArgumentNullException(nameof(configuration));
+                }
+                _singletone = new SqlResource(configuration);
+            }
+            else if (configuration != null && _singletone._configuration != configuration)
+            {
+                throw new ArgumentException("Попытка получить ресурс другой конфигурации.", nameof(configuration));
+            }
+            return _singletone;
+        }
+
+        /// <summary>
+        /// Получает тело запроса по его имени.
+        /// </summary>
+        /// <param name="name">Имя запроса.</param>
+        /// <returns>Тело запроса.</returns>
+        public string GetStringByName(string name) => GetQueryByName(name).Query;
 
         /// <summary>
         /// Получает запрос по его имени.
         /// </summary>
         /// <param name="name">Имя запроса.</param>
         /// <returns>Объект запроса.</returns>
-        public static SqlQuery GetQueryByName(string name)
+        public SqlQuery GetQueryByName(string name)
         {
-            SqlQuery query = dictionary[name];
+            SqlQuery query = _dictionary[name];
 
             if (query == null)
                 throw new ArgumentException("The query '" + name + "' is not valid.");

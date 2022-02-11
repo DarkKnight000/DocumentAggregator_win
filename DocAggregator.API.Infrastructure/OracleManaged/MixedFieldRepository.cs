@@ -1,6 +1,8 @@
 ﻿using DocAggregator.API.Core;
 using Oracle.ManagedDataAccess.Client;
+using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace DocAggregator.API.Infrastructure.OracleManaged
 {
@@ -9,15 +11,54 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
     /// </summary>
     public class MixedFieldRepository : IMixedFieldRepository
     {
-        OracleConnection _connection;
+        /// <summary>
+        /// Подключение к БД. Тип <see cref="Lazy{T}"/> использован для поддержки инициализации поля после определения необходимых конструктору свойств.
+        /// </summary>
+        Lazy<OracleConnection> _lazyConnection;
         Dictionary<int, Dictionary<string, string>> _claimFieldsCache;
+
+        /// <summary>
+        /// Получает или задаёт путь к файлу запросов.
+        /// </summary>
+        public string QueriesSource
+        {
+            get => _queriesSource;
+            set
+            {
+                _queriesSource = Path.GetFullPath(value);
+            }
+        }
+        private string _queriesSource;
+
+        /// <summary>
+        /// DataSource подключения к БД.
+        /// </summary>
+        public string Server { get; set; }
+
+        /// <summary>
+        /// UserID подключения к БД.
+        /// </summary>
+        public string Username { get; set; }
+
+        /// <summary>
+        /// Password подключения к БД.
+        /// </summary>
+        public string Password { get; set; }
 
         /// <summary>
         /// Инициализирует объект <see cref="MixedFieldRepository"/>.
         /// </summary>
         public MixedFieldRepository()
         {
-            _connection = new OracleConnection(StaticExtensions.CONNECTION_STRING);
+            _lazyConnection = new Lazy<OracleConnection>(delegate
+            {
+                return new OracleConnection(new OracleConnectionStringBuilder()
+                {
+                    DataSource = Server,
+                    UserID = Username,
+                    Password = Password,
+                }.ToString());
+            });
             _claimFieldsCache = new Dictionary<int, Dictionary<string, string>>();
         }
 
@@ -44,15 +85,16 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
         /// </returns>
         private Dictionary<string, string> GetFields(int claimID)
         {
+            SqlResource resource = SqlResource.GetSqlResource(QueriesSource);
             Dictionary<string, string> result = new Dictionary<string, string>();
-            string attributesQuery = string.Format(SqlResource.GetStringByName("Q_HRDAttributeIdsValues_ByRequest"), claimID);
-            string viewQuery = string.Format(SqlResource.GetStringByName("Q_HRDAddressAction_ByRequest"), claimID);
+            string attributesQuery = string.Format(resource.GetStringByName("Q_HRDAttributeIdsValues_ByRequest"), claimID);
+            string viewQuery = string.Format(resource.GetStringByName("Q_HRDAddressAction_ByRequest"), claimID);
             OracleCommand command = null;
             OracleDataReader reader = null;
             try
             {
-                _connection.Open();
-                using (command = new OracleCommand(attributesQuery, _connection))
+                _lazyConnection.Value.Open();
+                using (command = new OracleCommand(attributesQuery, _lazyConnection.Value))
                 using (reader = command.ExecuteReader())
                 {
                     while (reader.Read())
@@ -66,7 +108,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                         result.Add(attributeId, attributeVal);
                     }
                 }
-                using (command = new OracleCommand(viewQuery, _connection))
+                using (command = new OracleCommand(viewQuery, _lazyConnection.Value))
                 using (reader = command.ExecuteReader())
                 {
                     while (reader.Read())
@@ -83,13 +125,13 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                         }
                     }
                 }
-                _connection.Close();
+                _lazyConnection.Value.Close();
             }
             catch (OracleException ex)
             {
                 if (command != null)
                 {
-                    StaticExtensions.ShowExceptionMessage(_connection, ex, command.CommandText);
+                    StaticExtensions.ShowExceptionMessage(_lazyConnection.Value, ex, command.CommandText);
                 }
             }
             return result;
