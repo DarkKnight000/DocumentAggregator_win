@@ -137,8 +137,19 @@ namespace DocAggregator.API.Infrastructure.OfficeInterop
                     object save = false;
                     app.Quit(ref save);
                 }
-
-                app = null;
+#pragma warning disable CA1416 // Проверка совместимости платформы
+                // Освобождение COM объектов
+                // Может также пригодиться Marshal.ReleaseComObject(app)
+#if DEBUG
+                if (System.Runtime.InteropServices.Marshal.FinalReleaseComObject(app) != 0
+                    && System.Diagnostics.Debugger.IsAttached)
+                {
+                    System.Diagnostics.Debugger.Break();
+                }
+#else
+                System.Runtime.InteropServices.Marshal.FinalReleaseComObject(app);
+#endif
+#pragma warning restore CA1416 // Проверка совместимости платформы
                 disposedValue = true;
             }
         }
@@ -150,6 +161,6 @@ namespace DocAggregator.API.Infrastructure.OfficeInterop
             GC.SuppressFinalize(this);
         }
 
-        #endregion
+#endregion
     }
 }
