@@ -30,8 +30,8 @@ namespace DocAggregator.API
             {
                 TemplatesDirectory = Configuration["Editor:TemplatesDir"],
                 TemporaryOutputDirectory = Configuration["Editor:OutputDir"],
-            };
-            services.AddSingleton<IEditorService>(editorService);
+            } as IEditorService<IDocument>;
+            services.AddSingleton<IEditorService<IDocument>>(editorService);
             services.AddSingleton<IClaimRepository>(new Infrastructure.OracleManaged.ClaimRepository());
             var fieldRepository = new Infrastructure.OracleManaged.MixedFieldRepository()
             {

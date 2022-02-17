@@ -10,9 +10,9 @@ namespace DocAggregator.API.Core.Tests
         public void FormInteractor_SuccessScenario()
         {
             // 1. Получаем сервис редактора документов
-            Mock<IEditorService> mockEditor = new Mock<IEditorService>();
-            mockEditor.Setup(e => e.OpenTemplate(It.IsAny<string>())).Returns(new Document());
-            mockEditor.Setup(e => e.GetInserts(It.IsAny<Document>())).Returns(new[] { new Insert("s") });
+            Mock<IEditorService<IDocument>> mockEditor = new Mock<IEditorService<IDocument>>();
+            mockEditor.Setup(e => e.OpenTemplate(It.IsAny<string>())).Returns(Mock.Of<IDocument>);
+            mockEditor.Setup(e => e.GetInserts(It.IsAny<IDocument>())).Returns(new[] { new Insert("s") });
             // 2. Создаём объект запроса документа
             var request = new FormRequest();
             request.Claim = new Claim();
@@ -29,8 +29,8 @@ namespace DocAggregator.API.Core.Tests
         public void FormInteractor_TemplateNotFound()
         {
             // 1. Получаем сервис редактора документов
-            Mock<IEditorService> mockEditor = new Mock<IEditorService>();
-            mockEditor.Setup(e => e.OpenTemplate(It.IsAny<string>())).Returns((Document)null);
+            Mock<IEditorService<IDocument>> mockEditor = new Mock<IEditorService<IDocument>>();
+            mockEditor.Setup(e => e.OpenTemplate(It.IsAny<string>())).Returns((IDocument)null);
             // 2. Создаём объект запроса документа
             var request = new FormRequest();
             request.Claim = new Claim();

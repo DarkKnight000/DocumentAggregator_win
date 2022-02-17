@@ -6,7 +6,7 @@ using Word = Microsoft.Office.Interop.Word;
 
 namespace DocAggregator.API.Infrastructure.OfficeInterop
 {
-    public class WordService : IEditorService, IDisposable
+    public class WordService : IEditorService<WordDocument>, IDisposable
     {
         Word.Application app;
 
@@ -39,9 +39,9 @@ namespace DocAggregator.API.Infrastructure.OfficeInterop
             app = new Word.Application();
         }
 
-        public Document OpenTemplate(string path)
+        public WordDocument OpenTemplate(string path)
         {
-            Document result = new Document();
+            WordDocument result = new WordDocument();
             string file = Path.Combine(TemplatesDirectory, path);
             if (!File.Exists(file))
             {
@@ -53,19 +53,18 @@ namespace DocAggregator.API.Infrastructure.OfficeInterop
             object docType = Word.WdNewDocumentType.wdNewBlankDocument;
             object vis = false;
             Word.Document doc = app.Documents.Add(Template: ref template, NewTemplate: ref newTemp, DocumentType: ref docType, Visible: ref vis);
-            result.State = doc;
+            result.Body = doc;
             return result;
         }
 
-        public IEnumerable<Insert> GetInserts(Document document)
+        public IEnumerable<Insert> GetInserts(WordDocument document)
         {
-            var doc = document.State as Word.Document;
-            if (doc == null)
+            if (document.Body == null)
             {
                 // TODO: log this
                 yield break;
             }
-            var range = doc.Range(doc.Content.Start, doc.Content.End);
+            var range = document.Body.Range(document.Body.Content.Start, document.Body.Content.End);
             foreach (Word.ContentControl control in range.ContentControls)
             {
                 Console.WriteLine($"Register content control {control.Type} with a Title \"{control.Title}\".");
@@ -93,7 +92,7 @@ namespace DocAggregator.API.Infrastructure.OfficeInterop
             }
         }
 
-        public void SetInserts(Document document, IEnumerable<Insert> inserts)
+        public void SetInserts(WordDocument document, IEnumerable<Insert> inserts)
         {
             foreach (Insert insert in inserts)
             {
@@ -118,11 +117,10 @@ namespace DocAggregator.API.Infrastructure.OfficeInterop
             }
         }
 
-        public string Export(Document document)
+        public string Export(WordDocument document)
         {
-            var doc = document.State as Word.Document;
             var output = Path.Combine(TemporaryOutputDirectory, "Output.pdf");
-            doc.ExportAsFixedFormat(output, Word.WdExportFormat.wdExportFormatPDF);
+            document.Body.ExportAsFixedFormat(output, Word.WdExportFormat.wdExportFormatPDF);
             return output;
         }
 

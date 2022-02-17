@@ -18,9 +18,9 @@ namespace DocAggregator.API.Core
     public class FormInteractor : InteractorBase<FormResponse, FormRequest>
     {
         ParseInteractor _parser;
-        IEditorService _editor;
+        IEditorService<IDocument> _editor;
 
-        public FormInteractor(ParseInteractor parser, IEditorService editor)
+        public FormInteractor(ParseInteractor parser, IEditorService<IDocument> editor)
         {
             _parser = parser;
             _editor = editor;
@@ -28,7 +28,7 @@ namespace DocAggregator.API.Core
 
         protected override void Handle()
         {
-            Document document = _editor.OpenTemplate(Request.Claim.Template);
+            IDocument document = _editor.OpenTemplate(Request.Claim.Template);
             if (document == null)
             {
                 throw new ArgumentException("Шаблон не найден.", nameof(Request.Claim.Template));
