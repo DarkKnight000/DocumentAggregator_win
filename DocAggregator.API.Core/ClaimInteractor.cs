@@ -1,25 +1,43 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DocAggregator.API.Core
 {
+    /// <summary>
+    /// Запрос на обработку заявки.
+    /// </summary>
     public class ClaimRequest
     {
+        /// <summary>
+        /// Идентификатор обрабатываемой заявки.
+        /// </summary>
         public int ClaimID { get; init; }
     }
+
+    /// <summary>
+    /// Ответ на обработку заявки.
+    /// </summary>
     public class ClaimResponse : InteractorResponseBase
     {
+        /// <summary>
+        /// Имя результирующего PDF файла.
+        /// </summary>
         public string File { get; set; }
     }
 
+    /// <summary>
+    /// Обработчик заявки.
+    /// </summary>
     public class ClaimInteractor : InteractorBase<ClaimResponse, ClaimRequest>
     {
         FormInteractor _former;
         IClaimRepository _repo;
 
+        /// <summary>
+        /// Создаёт обработчик заявки с использованием обработчика документа и репозитория заявок.
+        /// </summary>
+        /// <param name="former">Обработчик документов.</param>
+        /// <param name="repository">Репозиторий заявок.</param>
         public ClaimInteractor(FormInteractor former, IClaimRepository repository)
         {
             _former = former;

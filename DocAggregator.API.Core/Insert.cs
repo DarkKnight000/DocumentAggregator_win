@@ -1,25 +1,49 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DocAggregator.API.Core
 {
+    /// <summary>
+    /// Вариант вставки.
+    /// </summary>
     public enum InsertKind
     {
+        /// <summary>
+        /// Неизвестный тип.
+        /// </summary>
         Unknown,
+
+        /// <summary>
+        /// Обыкновенный текст.
+        /// </summary>
         PlainText,
+
+        /// <summary>
+        /// Флажок.
+        /// </summary>
         CheckMark,
     }
 
+    /// <summary>
+    /// Вставка - элемент документа, заполняемый информацией из базы данных.
+    /// </summary>
     public class Insert
     {
         // TODEL: Проблема была с yield return, который возвращал объект с другим значением.
         private bool? replacedCheckmark;
 
+        /// <summary>
+        /// Вид элемента.
+        /// </summary>
         public InsertKind Kind { get; private set; }
+
+        /// <summary>
+        /// Обработанный текст.
+        /// </summary>
         public string ReplacedText { get; set; }
+
+        /// <summary>
+        /// Обработанное значение (для элементов типа флажок).
+        /// </summary>
         public bool? ReplacedCheckmark
         {
             get
@@ -35,9 +59,22 @@ namespace DocAggregator.API.Core
                 replacedCheckmark = value;
             }
         }
+
+        /// <summary>
+        /// Исходная строка формата с полем(ями).
+        /// </summary>
         public string OriginalMask { get; set; }
+
+        /// <summary>
+        /// Специфичный объект элемента документа, асоциированный с этой вставкой.
+        /// </summary>
         public object AssociatedChunk { get; set; }
 
+        /// <summary>
+        /// Создаёт вставку с заданной строкой формата и типом.
+        /// </summary>
+        /// <param name="mask">Строка формата, содержащяя поля заявки.</param>
+        /// <param name="kind">Тип элемента документа.</param>
         public Insert(string mask, InsertKind kind = InsertKind.PlainText)
         {
             OriginalMask = mask;

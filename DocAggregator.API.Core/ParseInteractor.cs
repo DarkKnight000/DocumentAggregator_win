@@ -1,23 +1,38 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DocAggregator.API.Core
+﻿namespace DocAggregator.API.Core
 {
+    /// <summary>
+    /// Запрос на разбор вставки.
+    /// </summary>
     public class ParseRequest
     {
+        /// <summary>
+        /// Идентификатор заявки.
+        /// </summary>
         public int ClaimID { get; set; }
+
+        /// <summary>
+        /// Вставка, изменяемая в процессе обработки.
+        /// </summary>
         public Insert Insertion { get; set; }
     }
+
+    /// <summary>
+    /// Ответ на разбор вставки.
+    /// </summary>
     public class ParseResponse : InteractorResponseBase { }
 
+    /// <summary>
+    /// Обработчик разбора вставки.
+    /// </summary>
     public class ParseInteractor : InteractorBase<ParseResponse, ParseRequest>
     {
         // TODO: Убрать лишние дополнительные claim_id поля (возможно переместить внутрь Insert)
         IMixedFieldRepository _fieldRepo;
 
+        /// <summary>
+        /// Создаёт обработчик на основе репозитория полей заявки.
+        /// </summary>
+        /// <param name="fieldRepository">Репозиторий полей заявки.</param>
         public ParseInteractor(IMixedFieldRepository fieldRepository)
         {
             _fieldRepo = fieldRepository;

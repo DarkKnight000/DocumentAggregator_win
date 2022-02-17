@@ -1,14 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DocAggregator.API.Core
+﻿namespace DocAggregator.API.Core
 {
+    /// <summary>
+    /// Представляет объект заявки.
+    /// </summary>
     public class Claim
     {
+        /// <summary>
+        /// Идентификатор заявки, согласно базе данных.
+        /// </summary>
         public int ID { get; init; }
+
+        /// <summary>
+        /// Шаблон соответствующий типу заявки.
+        /// </summary>
         public string Template { get; init; }
     }
 }

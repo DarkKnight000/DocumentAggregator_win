@@ -1,13 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DocAggregator.API.Core
+﻿namespace DocAggregator.API.Core
 {
+    /// <summary>
+    /// Описывает репозиторий заявок.
+    /// </summary>
     public interface IClaimRepository
     {
+        /// <summary>
+        /// Получает данные заявки по известному идентификатору.
+        /// </summary>
+        /// <param name="id">Идентификатор заявки.</param>
+        /// <returns>Данные заявки.</returns>
         public Claim GetClaim(int id);
     }
 }
