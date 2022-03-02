@@ -1,12 +1,15 @@
 ﻿using DocAggregator.API.Core;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Reflection;
+using System.Runtime.InteropServices;
 using Word = Microsoft.Office.Interop.Word;
 
 namespace DocAggregator.API.Infrastructure.OfficeInterop
 {
-    public class WordService : IEditorService<WordDocument>, IDisposable
+    public class WordService : IEditorService, IDisposable
     {
         Word.Application app;
 
@@ -39,32 +42,34 @@ namespace DocAggregator.API.Infrastructure.OfficeInterop
             app = new Word.Application();
         }
 
-        public WordDocument OpenTemplate(string path)
+        public IDocument OpenTemplate(string path)
         {
             WordDocument result = new WordDocument();
             string file = Path.Combine(TemplatesDirectory, path);
             if (!File.Exists(file))
             {
                 // TODO: log this
-                return null;
+                throw new FileNotFoundException("Шаблон не найден.", file);
             }
             object template = file;
-            object newTemp = false;
-            object docType = Word.WdNewDocumentType.wdNewBlankDocument;
-            object vis = false;
-            Word.Document doc = app.Documents.Add(Template: ref template, NewTemplate: ref newTemp, DocumentType: ref docType, Visible: ref vis);
+            object newTemplate = false;
+            object documentType = Word.WdNewDocumentType.wdNewBlankDocument;
+            object visible = false;
+            Word.Document doc = null;
+            doc = app.Documents.Add(ref template, ref newTemplate, ref documentType, ref visible);
             result.Body = doc;
             return result;
         }
 
-        public IEnumerable<Insert> GetInserts(WordDocument document)
+        public IEnumerable<Insert> GetInserts(IDocument document)
         {
-            if (document.Body == null)
+            var wordDocument = (WordDocument)document;
+            if (wordDocument.Body == null)
             {
                 // TODO: log this
                 yield break;
             }
-            var range = document.Body.Range(document.Body.Content.Start, document.Body.Content.End);
+            var range = wordDocument.Body.Range(wordDocument.Body.Content.Start, wordDocument.Body.Content.End);
             foreach (Word.ContentControl control in range.ContentControls)
             {
                 Console.WriteLine($"Register content control {control.Type} with a Title \"{control.Title}\".");
@@ -92,7 +97,7 @@ namespace DocAggregator.API.Infrastructure.OfficeInterop
             }
         }
 
-        public void SetInserts(WordDocument document, IEnumerable<Insert> inserts)
+        public void SetInserts(IDocument document, IEnumerable<Insert> inserts)
         {
             foreach (Insert insert in inserts)
             {
@@ -117,10 +122,11 @@ namespace DocAggregator.API.Infrastructure.OfficeInterop
             }
         }
 
-        public string Export(WordDocument document)
+        public string Export(IDocument document)
         {
+            var wordDocument = (WordDocument)document;
             var output = Path.Combine(TemporaryOutputDirectory, "Output.pdf");
-            document.Body.ExportAsFixedFormat(output, Word.WdExportFormat.wdExportFormatPDF);
+            wordDocument.Body.ExportAsFixedFormat(output, Word.WdExportFormat.wdExportFormatPDF);
             return output;
         }
 
@@ -132,24 +138,37 @@ namespace DocAggregator.API.Infrastructure.OfficeInterop
             {
                 if (disposing)
                 {
-                    object save = false;
-                    app.Quit(ref save);
+                    ;
                 }
 #pragma warning disable CA1416 // Проверка совместимости платформы
-                // Освобождение COM объектов
-                // Может также пригодиться Marshal.ReleaseComObject(app)
-#if DEBUG
-                if (System.Runtime.InteropServices.Marshal.FinalReleaseComObject(app) != 0
-                    && System.Diagnostics.Debugger.IsAttached)
+                if (app != null)
                 {
-                    System.Diagnostics.Debugger.Break();
-                }
+                    object saveChanges = Word.WdSaveOptions.wdDoNotSaveChanges;
+                    object originalFormat = Missing.Value;
+                    object routeDocument = Missing.Value;
+                    app.Quit(ref saveChanges, ref originalFormat, ref routeDocument);
+                    // Освобождение COM объектов
+                    // Может также пригодиться Marshal.ReleaseComObject(app)
+#if DEBUG
+                    if (Marshal.FinalReleaseComObject(app) != 0
+                        && Debugger.IsAttached)
+                    {
+                        Debugger.Break();
+                    }
 #else
-                System.Runtime.InteropServices.Marshal.FinalReleaseComObject(app);
+                    Marshal.FinalReleaseComObject(app);
 #endif
+                }
 #pragma warning restore CA1416 // Проверка совместимости платформы
+                app = null;
                 disposedValue = true;
             }
+        }
+
+        ~WordService()
+        {
+            // Не изменяйте этот код. Разместите код очистки в методе "Dispose(bool disposing)".
+            Dispose(disposing: false);
         }
 
         public void Dispose()
@@ -159,6 +178,6 @@ namespace DocAggregator.API.Infrastructure.OfficeInterop
             GC.SuppressFinalize(this);
         }
 
-#endregion
+        #endregion
     }
 }

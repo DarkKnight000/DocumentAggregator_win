@@ -13,13 +13,13 @@ namespace DocAggregator.API.Controllers
     public class ClaimFillController : ControllerBase
     {
         private readonly ILogger<ClaimFillController> _logger;
-        private readonly IEditorService<IDocument> _editorService;
+        private readonly IEditorService _editorService;
         private readonly IClaimRepository _claimRepository;
         private readonly IMixedFieldRepository _fieldRepository;
 
         public ClaimFillController(
             ILogger<ClaimFillController> logger,
-            IEditorService<IDocument> editorService,
+            IEditorService editorService,
             IClaimRepository claimRepository,
             IMixedFieldRepository fieldRepository)
         {

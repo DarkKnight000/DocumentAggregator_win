@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace DocAggregator.API.Core
@@ -32,14 +33,14 @@ namespace DocAggregator.API.Core
     public class FormInteractor : InteractorBase<FormResponse, FormRequest>
     {
         ParseInteractor _parser;
-        IEditorService<IDocument> _editor;
+        IEditorService _editor;
 
         /// <summary>
         /// Создаёт обработчик документа с использованием обработчика вставки и редактора документа.
         /// </summary>
         /// <param name="parser">Обработчик вставки.</param>
         /// <param name="editor">Редактор документа.</param>
-        public FormInteractor(ParseInteractor parser, IEditorService<IDocument> editor)
+        public FormInteractor(ParseInteractor parser, IEditorService editor)
         {
             _parser = parser;
             _editor = editor;
@@ -47,10 +48,26 @@ namespace DocAggregator.API.Core
 
         protected override void Handle()
         {
-            IDocument document = _editor.OpenTemplate(Request.Claim.Template);
+            IDocument document = null;
+            try
+            {
+                document = _editor.OpenTemplate(Request.Claim.Template);
+            }
+            // Шаблон не найден.
+            catch (FileNotFoundException ex)
+            {
+                Response.Errors.Add(ex);
+            }
+            // System.Runtime.InteropServices.COMException:
+            // Приложению Word не удалось прочитать документ. Возможно, он поврежден.
+            catch (Exception ex)
+            {
+                // TODO: log this
+                Response.Errors.Add(ex);
+            }
             if (document == null)
             {
-                throw new ArgumentException("Шаблон не найден.", nameof(Request.Claim.Template));
+                throw new ArgumentException($"Ошибка при открытии шаблона по пути {System.IO.Path.Combine(_editor.TemplatesDirectory, Request.Claim.Template)}.", nameof(Request.Claim.Template));
             }
             IEnumerable<Insert> inserts = _editor.GetInserts(document).ToList();
             ParseRequest parseReq = new ParseRequest();

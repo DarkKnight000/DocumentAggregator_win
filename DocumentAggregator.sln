@@ -15,7 +15,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DocAggregator.API.Core", "D
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DocAggregator.API.Infrastructure", "DocAggregator.API.Infrastructure\DocAggregator.API.Infrastructure.csproj", "{5AEB5DE3-1AA3-4F14-90E3-D2670E3D66B2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DocAggregator.API.Core.Tests", "DocAggregator.API.Core.Tests\DocAggregator.API.Core.Tests.csproj", "{2811B57A-156E-4A50-8C03-5DD46AACF68B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DocAggregator.API.Core.Tests", "DocAggregator.API.Core.Tests\DocAggregator.API.Core.Tests.csproj", "{2811B57A-156E-4A50-8C03-5DD46AACF68B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DocAggregator.Proxy", "DocAggregator.Proxy\DocAggregator.Proxy.csproj", "{953EF0EA-97E8-4A46-818F-8FE2CD2E2385}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,10 @@ Global
 		{2811B57A-156E-4A50-8C03-5DD46AACF68B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2811B57A-156E-4A50-8C03-5DD46AACF68B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2811B57A-156E-4A50-8C03-5DD46AACF68B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{953EF0EA-97E8-4A46-818F-8FE2CD2E2385}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{953EF0EA-97E8-4A46-818F-8FE2CD2E2385}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{953EF0EA-97E8-4A46-818F-8FE2CD2E2385}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{953EF0EA-97E8-4A46-818F-8FE2CD2E2385}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

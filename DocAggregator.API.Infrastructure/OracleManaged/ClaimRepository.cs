@@ -10,7 +10,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
         public Claim GetClaim(int id)
         {
             int typeID = 10;
-            string template = $"Claim{typeID}.docx";
+            string template = $"Claim{typeID}.doc";
             Claim result = new Claim()
             {
                 ID = id,
