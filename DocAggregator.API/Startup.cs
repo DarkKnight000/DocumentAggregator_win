@@ -26,11 +26,14 @@ namespace DocAggregator.API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            var editorService = new Infrastructure.OfficeInterop.WordService()
+            var editorService = new Infrastructure.OpenXMLProcessing.EditorService()
             {
                 TemplatesDirectory = Configuration["Editor:TemplatesDir"],
                 TemporaryOutputDirectory = Configuration["Editor:OutputDir"],
+                LibreOfficeFolder = Configuration["Editor:LibreOffice"],
+                Scripts = Configuration["Editor:Scripts"],
             };
+            editorService.Initialize();
             services.AddSingleton<IEditorService>(editorService);
             services.AddSingleton<IClaimRepository>(new Infrastructure.OracleManaged.ClaimRepository());
             var fieldRepository = new Infrastructure.OracleManaged.MixedFieldRepository()
