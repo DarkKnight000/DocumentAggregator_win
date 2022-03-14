@@ -1,8 +1,8 @@
 ﻿using System.Xml.Linq;
 
-namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
+namespace DocAggregator.API.Core.Wml
 {
-    internal static class W14
+    public static class W14
     {
         public static readonly XNamespace w14 = "http://schemas.microsoft.com/office/word/2010/wordml";
 
@@ -11,7 +11,7 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
         public static readonly XName val = w14 + "val";
     }
 
-    internal static class W
+    public static class W
     {
         public static readonly XNamespace w = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
 
@@ -24,5 +24,6 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
         public static readonly XName p = w + "p";
         public static readonly XName r = w + "r";
         public static readonly XName t = w + "t";
+        public static readonly XName text = w + "text";
     }
 }

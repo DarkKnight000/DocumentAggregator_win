@@ -1,4 +1,5 @@
 ﻿using DocAggregator.API.Core;
+using DocAggregator.API.Core.Wml;
 using DocumentFormat.OpenXml.Packaging;
 using System.Collections.Generic;
 using System.IO;
