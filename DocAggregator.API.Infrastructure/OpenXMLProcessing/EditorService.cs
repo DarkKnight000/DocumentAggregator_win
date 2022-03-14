@@ -1,22 +1,12 @@
 ﻿using DocAggregator.API.Core;
-using DocumentFormat.OpenXml.Packaging;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Xml;
-using System.Xml.Linq;
 
 namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
 {
-    public class Document : IDocument
-    {
-        public string ResultPath { get; set; }
-        public WordprocessingDocument Content { get; set; }
-        public XDocument MainPart { get; set; }
-    }
-
     public class EditorService : IEditorService, IDisposable
     {
         Process _serverConverterProc;
@@ -113,107 +103,28 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
         {
             string tempFile = Path.Combine(TemporaryOutputDirectory, "TempCopy.docx");
             File.Copy(Path.Combine(TemplatesDirectory, path), tempFile, true);
-            var document = new Document()
-            {
-                ResultPath = tempFile,
-                Content = WordprocessingDocument.Open(tempFile, true),
-            };
-            document.MainPart = LoadPart(document.Content.MainDocumentPart);
-            return document;
+            return new WordMLDocument(tempFile);
         }
 
         public IEnumerable<Insert> GetInserts(IDocument document)
         {
-            var root = (document as Document).MainPart.Root;
-            return from sdt in root.DescendantsAndSelf(W.sdt)
-                   select new Insert(
-                       sdt.Element(W.sdtPr)
-                          .Element(W.alias)//? // w14:checkbox hasn't a tag element
-                          .Attribute(W.val)
-                          .Value /*?? string.Empty*/)
-                   { AssociatedChunk = sdt };
-        }
-
-        private XDocument LoadPart(OpenXmlPart source)
-        {
-            if (source == null)
-            {
-                return null;
-            }
-            var part = source.Annotation<XDocument>();
-            if (part != null)
-            {
-                return part;
-            }
-            using (var str = source.GetStream())
-            using (var streamReader = new StreamReader(str))
-            using (var xr = XmlReader.Create(streamReader))
-            {
-                part = XDocument.Load(xr);
-            }
-            return part;
+            return (document as WordMLDocument).GetInserts();
         }
 
         public void SetInserts(IDocument document, IEnumerable<Insert> inserts)
         {
-            foreach (var insert in inserts)
-            {
-                var sdt = insert.AssociatedChunk as XElement;
-                var sdtContent = sdt.Element(W.sdtContent);
-                if (sdtContent == null)
-                {
-                    sdt.Add(new XElement(W.sdtContent, new XElement(W.p), new XElement(W.r, new XElement(W.t, insert.ReplacedText))));
-                }
-                else
-                {
-                    var elementsWithText = sdtContent.Elements()
-                                                     .Where(e => e.DescendantsAndSelf(W.t).Any() && !e.DescendantsAndSelf(W.sdt).Any())
-                                                     .ToList();
-                    var firstContentElementWithText = elementsWithText.FirstOrDefault(d => d.DescendantsAndSelf(W.t).Any());
-                    if (firstContentElementWithText == null)
-                    {
-                        if (sdtContent.Elements(W.p).Any())
-                        {
-                            sdtContent.Element(W.p).Add(new XElement(W.r, new XElement(W.t, insert.ReplacedText)));
-                        }
-                        else
-                        {
-                            sdtContent.Add(new XElement(W.p), new XElement(W.r, new XElement(W.t, insert.ReplacedText)));
-                        }
-                    }
-                    else
-                    {
-                        var firstTextElement = firstContentElementWithText
-                            .Descendants(W.t)
-                            .First();
-                        firstTextElement.Value = insert.ReplacedText;
-
-                        var firstElementAncestors = firstTextElement.AncestorsAndSelf().ToList();
-                        foreach (var descendants in elementsWithText.DescendantsAndSelf().ToList())
-                        {
-                            if (!firstElementAncestors.Contains(descendants) && descendants.DescendantsAndSelf(W.t).Any())
-                            {
-                                descendants.Remove();
-                            }
-                        }
-
-                        var contentReplacementElement = new XElement(firstContentElementWithText);
-                        firstContentElementWithText.AddAfterSelf(contentReplacementElement);
-                        firstContentElementWithText.Remove();
-                    }
-                }
-            }
+            (document as WordMLDocument).SetInserts(inserts);
         }
 
         public string Export(IDocument document)
         {
             string outputFile = Path.Combine(TemporaryOutputDirectory, "Output.pdf");
             //string inputFile = Path.Combine(TemporaryOutputDirectory, "Output.docx");
-            string inputFile = (document as Document).ResultPath;
-            var wordDocument = (document as Document).Content;
+            string inputFile = (document as WordMLDocument).ResultPath;
+            var wordDocument = (document as WordMLDocument).Content;
             using (var xw = XmlWriter.Create(wordDocument.MainDocumentPart.GetStream(FileMode.Create, FileAccess.Write)))
             {
-                (document as Document).MainPart.Save(xw);
+                (document as WordMLDocument).MainPart.Save(xw);
             }
             wordDocument.Save();
             wordDocument.Close();

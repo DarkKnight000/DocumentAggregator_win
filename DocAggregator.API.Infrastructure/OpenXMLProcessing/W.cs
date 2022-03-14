@@ -2,6 +2,15 @@
 
 namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
 {
+    internal static class W14
+    {
+        public static readonly XNamespace w14 = "http://schemas.microsoft.com/office/word/2010/wordml";
+
+        public static readonly XName checkbox = w14 + "checkbox";
+        public static readonly XName check = w14 + "checked";
+        public static readonly XName val = w14 + "val";
+    }
+
     internal static class W
     {
         public static readonly XNamespace w = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
