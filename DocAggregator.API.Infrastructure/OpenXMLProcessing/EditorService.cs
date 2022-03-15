@@ -108,12 +108,14 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
 
         public IEnumerable<Insert> GetInserts(IDocument document)
         {
-            return (document as WordMLDocument).GetInserts();
+            // return (document as WordMLDocument).GetInserts();
+            return Core.Wml.WordprocessingMLTools.FindInserts((document as WordMLDocument).MainPart);
         }
 
         public void SetInserts(IDocument document, IEnumerable<Insert> inserts)
         {
-            (document as WordMLDocument).SetInserts(inserts);
+            // (document as WordMLDocument).SetInserts(inserts);
+            Core.Wml.WordprocessingMLTools.SetInserts(System.Linq.Enumerable.ToArray(inserts));
         }
 
         public string Export(IDocument document)

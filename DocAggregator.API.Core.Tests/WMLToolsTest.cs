@@ -65,5 +65,47 @@ namespace DocAggregator.API.Core.Tests
             Assert.Equal(Wml.W.sdt, sdtText.Name);
             Assert.Contains(sdtText.Descendants(), e => e.Name == Wml.W14.checkbox);
         }
+
+        [Theory]
+        [XmlData("..\\..\\..\\XmlData\\SingleEmptyTextField.xml")]
+        public void WMLTools_SetInserts_SetPlainTextField(string input)
+        {
+            var expected = "Test";
+            var WMLDocument = XDocument.Parse(input);
+            var textInsert = Wml.WordprocessingMLTools.FindInserts(WMLDocument).First();
+            textInsert.ReplacedText = expected;
+
+            Wml.WordprocessingMLTools.SetInserts(textInsert);
+
+            var inserts = Wml.WordprocessingMLTools.FindInserts(WMLDocument);
+            Assert.Empty(inserts);
+
+            var contentRoot = textInsert.AssociatedChunk as XElement;
+            Assert.Equal(Wml.W.p, contentRoot.Name);
+
+            var exactContent = contentRoot.Element(Wml.W.r).Element(Wml.W.t).Value;
+            Assert.Equal(expected, exactContent);
+        }
+
+        [Theory]
+        [XmlData("..\\..\\..\\XmlData\\SingleEmptyCheckBox.xml")]
+        public void WMLTools_SetInserts_SetCheckBoxField(string input)
+        {
+            var expected = "☐";
+            var WMLDocument = XDocument.Parse(input);
+            var checkInsert = Wml.WordprocessingMLTools.FindInserts(WMLDocument).First();
+            checkInsert.ReplacedCheckmark = false;
+
+            Wml.WordprocessingMLTools.SetInserts(checkInsert);
+
+            var inserts = Wml.WordprocessingMLTools.FindInserts(WMLDocument);
+            Assert.Empty(inserts);
+
+            var contentRoot = checkInsert.AssociatedChunk as XElement;
+            Assert.Equal(Wml.W.p, contentRoot.Name);
+
+            var exactContent = contentRoot.Element(Wml.W.r).Element(Wml.W.t).Value;
+            Assert.Equal(expected, exactContent);
+        }
     }
 }
