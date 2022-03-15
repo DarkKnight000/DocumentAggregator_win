@@ -82,6 +82,7 @@ namespace DocAggregator.API.Core.Tests
 
             var contentRoot = textInsert.AssociatedChunk as XElement;
             Assert.Equal(Wml.W.p, contentRoot.Name);
+            Assert.Null(contentRoot.Element(Wml.W.r).Element(Wml.W.rPr).Element(Wml.W.rStyle));
 
             var exactContent = contentRoot.Element(Wml.W.r).Element(Wml.W.t).Value;
             Assert.Equal(expected, exactContent);
@@ -105,6 +106,27 @@ namespace DocAggregator.API.Core.Tests
             Assert.Equal(Wml.W.p, contentRoot.Name);
 
             var exactContent = contentRoot.Element(Wml.W.r).Element(Wml.W.t).Value;
+            Assert.Equal(expected, exactContent);
+        }
+
+        [Theory]
+        [XmlData("..\\..\\..\\XmlData\\TableEmptyTextField.xml")]
+        public void WMLTools_SetInserts_SetPlainTextFieldInTable(string input)
+        {
+            var expected = "Test";
+            var WMLDocument = XDocument.Parse(input);
+            var textInsert = Wml.WordprocessingMLTools.FindInserts(WMLDocument).First();
+            textInsert.ReplacedText = expected;
+
+            Wml.WordprocessingMLTools.SetInserts(textInsert);
+
+            var inserts = Wml.WordprocessingMLTools.FindInserts(WMLDocument);
+            Assert.Empty(inserts);
+
+            var contentRoot = textInsert.AssociatedChunk as XElement;
+            Assert.Equal(Wml.W.tc, contentRoot.Name);
+
+            var exactContent = contentRoot.Element(Wml.W.p).Element(Wml.W.r).Element(Wml.W.t).Value;
             Assert.Equal(expected, exactContent);
         }
     }

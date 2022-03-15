@@ -61,13 +61,21 @@ namespace DocAggregator.API.Core.Wml
         /// </summary>
         public static readonly XName sdtContent = w + "sdtContent";
         /// <summary>
-        /// Article.
+        /// Paragraph.
         /// </summary>
         public static readonly XName p = w + "p";
         /// <summary>
         /// Run.
         /// </summary>
         public static readonly XName r = w + "r";
+        /// <summary>
+        /// Run properties.
+        /// </summary>
+        public static readonly XName rPr = w + "rPr";
+        /// <summary>
+        /// Run style.
+        /// </summary>
+        public static readonly XName rStyle = w + "rStyle";
         /// <summary>
         /// Text.
         /// </summary>

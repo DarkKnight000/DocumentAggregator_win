@@ -57,29 +57,47 @@ namespace DocAggregator.API.Core.Wml
             foreach (Insert insert in inserts)
             {
                 XElement sdt = insert.AssociatedChunk as XElement;
-                XElement innerContent;
-                switch (insert.Kind)
-                {
-                    case InsertKind.CheckMark:
-                        innerContent = sdt.Element(W.sdtContent).Element(W.p) ?? sdt.Element(W.sdtContent).Element(W.tc);
-                        if (innerContent == null)
-                        {
-                            continue;
-                        }
-                        innerContent.Descendants(W.t).Single().Value = insert.ReplacedCheckmark.Value ? "☒" : "☐";
-                        break;
-                    default:
-                        innerContent = sdt.Element(W.sdtContent).Element(W.p) ?? sdt.Element(W.sdtContent).Element(W.tc);
-                        if (innerContent == null)
-                        {
-                            continue;
-                        }
-                        innerContent.Descendants(W.t).Single().Value = insert.ReplacedText;
-                        break;
+                XElement innerContent = sdt.Element(W.sdtContent);
+                XElement cell = innerContent.Element(W.tc);
+                if (cell != null)
+                {   // We are inside a table cell.
+                    Test(sdt, cell, cell.Element(W.p), insert);
+                    continue;
                 }
-                sdt.ReplaceWith(innerContent);
-                insert.AssociatedChunk = innerContent;
+                XElement par = innerContent.Element(W.p);
+                if (par != null)
+                {   // We are in a paragraph.
+                    Test(sdt, par, par, insert);
+                    continue;
+                }
+                XElement run = innerContent.Element(W.r);
+                if (run != null)
+                {
+                    Test(sdt, run, run, insert);
+                    continue;
+                }
+                // TODO: Log, there are no text data.
             }
+        }
+
+        public static void Test(XElement sdt, XElement innerContent, XElement textContainer, Insert insert)
+        {
+            if (textContainer == null)
+            {
+                return;
+            }
+            switch (insert.Kind)
+            {
+                case InsertKind.CheckMark:
+                    textContainer.Descendants(W.t).Single().Value = insert.ReplacedCheckmark.Value ? "☒" : "☐";
+                    break;
+                default:
+                    textContainer.Descendants(W.rStyle).SingleOrDefault()?.Remove();
+                    textContainer.Descendants(W.t).Single().Value = insert.ReplacedText;
+                    break;
+            }
+            sdt?.ReplaceWith(innerContent);
+            insert.AssociatedChunk = innerContent;
         }
     }
 }
