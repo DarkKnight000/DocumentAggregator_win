@@ -32,6 +32,7 @@ namespace DocAggregator.API.Core
     /// </summary>
     public class FormInteractor : InteractorBase<FormResponse, FormRequest>
     {
+        ILogger _logger;
         ParseInteractor _parser;
         IEditorService _editor;
 
@@ -40,8 +41,9 @@ namespace DocAggregator.API.Core
         /// </summary>
         /// <param name="parser">Обработчик вставки.</param>
         /// <param name="editor">Редактор документа.</param>
-        public FormInteractor(ParseInteractor parser, IEditorService editor)
+        public FormInteractor(ParseInteractor parser, IEditorService editor, ILogger logger)
         {
+            _logger = logger;
             _parser = parser;
             _editor = editor;
         }
@@ -62,7 +64,7 @@ namespace DocAggregator.API.Core
             // Приложению Word не удалось прочитать документ. Возможно, он поврежден.
             catch (Exception ex)
             {
-                // TODO: log this
+                _logger.Error(ex, "Непридвиденная ошибка обнаружена при попытке открыть и прочитать шаблон.");
                 Response.Errors.Add(ex);
             }
             if (document == null)

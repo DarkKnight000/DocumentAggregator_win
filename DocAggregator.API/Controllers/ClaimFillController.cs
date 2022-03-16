@@ -1,4 +1,5 @@
 ﻿using DocAggregator.API.Core;
+using DocAggregator.API.Presentation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
@@ -13,9 +14,7 @@ namespace DocAggregator.API.Controllers
     public class ClaimFillController : ControllerBase
     {
         private readonly ILogger<ClaimFillController> _logger;
-        private readonly IEditorService _editorService;
-        private readonly IClaimRepository _claimRepository;
-        private readonly IMixedFieldRepository _fieldRepository;
+        private readonly ClaimInteractor _claimInteractor;
 
         public ClaimFillController(
             ILogger<ClaimFillController> logger,
@@ -24,27 +23,24 @@ namespace DocAggregator.API.Controllers
             IMixedFieldRepository fieldRepository)
         {
             _logger = logger;
-            _editorService = editorService;
-            _claimRepository = claimRepository;
-            _fieldRepository = fieldRepository;
+            ParseInteractor parseInteractor = new ParseInteractor(fieldRepository);
+            FormInteractor formInteractor = new FormInteractor(parseInteractor, editorService, _logger.Adapt());
+            _claimInteractor = new ClaimInteractor(formInteractor, claimRepository);
         }
 
         [HttpPost]
         [Consumes("application/json")]
         public IActionResult Post([FromBody] ClaimRequest request)
         {
-            var parseInteractor = new ParseInteractor(_fieldRepository);
-            var formInteractor = new FormInteractor(parseInteractor, _editorService);
-            var claimInteractor = new ClaimInteractor(formInteractor, _claimRepository);
-            var response = claimInteractor.Handle(request);
+            ClaimResponse response = _claimInteractor.Handle(request);
             if (response.Success)
             {
-                var presenter = new Presentation.ClaimResponseStreamPresenter();
+                Presentation.ClaimResponseStreamPresenter presenter = new();
                 return presenter.Handle(response);
             }
             else
             {
-                var presenter = new Presentation.InternalErrorResponsePresenter();
+                Presentation.InternalErrorResponsePresenter presenter = new();
                 return presenter.Handle(response);
             }
         }
