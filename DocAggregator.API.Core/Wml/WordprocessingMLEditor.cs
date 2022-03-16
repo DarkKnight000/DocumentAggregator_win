@@ -5,9 +5,16 @@ using System.Xml.Linq;
 
 namespace DocAggregator.API.Core.Wml
 {
-    public static class WordprocessingMLTools
+    public class WordprocessingMLEditor
     {
-        public static IEnumerable<Insert> FindInserts(XDocument document)
+        ILogger _logger;
+
+        public WordprocessingMLEditor(ILogger logger)
+        {
+            _logger = logger;
+        }
+
+        public IEnumerable<Insert> FindInserts(XDocument document)
         {
             if (document == null || document.Root == null)
             {
@@ -27,12 +34,14 @@ namespace DocAggregator.API.Core.Wml
                 XElement properties = sdt.Element(W.sdtPr);
                 if (properties == null)
                 {
-                    continue; // TODO: Log this?
+                    _logger.Warning("Current content control has no properties child element.");
+                    continue;
                 }
                 string alias = properties.Element(W.alias)?.Attribute(W.val)?.Value;
                 if (alias == null)
                 {
-                    continue; // TODO: Log this?
+                    _logger.Warning("Have found a content control with empty alias.");
+                    continue;
                 }
                 if (properties.Element(W.text) != null)
                 {
@@ -44,13 +53,14 @@ namespace DocAggregator.API.Core.Wml
                 }
                 if (!detectedKind.HasValue)
                 {
-                    continue; // TODO: Log this?
+                    _logger.Warning("Have found a content control, but not its kind.");
+                    continue;
                 }
                 yield return new Insert(alias, detectedKind.Value) { AssociatedChunk = sdt };
             }
         }
 
-        public static void SetInserts(params Insert[] inserts)
+        public void SetInserts(params Insert[] inserts)
         {
             foreach (Insert insert in inserts)
             {
@@ -74,7 +84,7 @@ namespace DocAggregator.API.Core.Wml
                     ReplaceContentControl(sdt, run, insert);
                     continue;
                 }
-                // TODO: Log, there are no text data.
+                _logger.Warning("There are no text element in the content control.");
             }
         }
 
@@ -85,7 +95,7 @@ namespace DocAggregator.API.Core.Wml
         /// <param name="sdt">Content control.</param>
         /// <param name="innerTextContainer">The inner element of <see cref="W.sdtPr"/> element.</param>
         /// <param name="insert">Target value of the content control.</param>
-        public static void ReplaceContentControl(XElement sdt, XElement innerTextContainer, Insert insert)
+        public void ReplaceContentControl(XElement sdt, XElement innerTextContainer, Insert insert)
         {
             if (innerTextContainer == null)
             {

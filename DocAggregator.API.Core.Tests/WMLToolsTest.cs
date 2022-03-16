@@ -13,7 +13,7 @@ namespace DocAggregator.API.Core.Tests
         {
             var WMLDocument = new XDocument();
 
-            var controls = Wml.WordprocessingMLTools.FindInserts(WMLDocument);
+            var controls = Wml.WordprocessingMLEditor.FindInserts(WMLDocument);
 
             Assert.Empty(controls);
         }
@@ -24,7 +24,7 @@ namespace DocAggregator.API.Core.Tests
         {
             var WMLDocument = XDocument.Parse(input);
 
-            var controls = Wml.WordprocessingMLTools.FindInserts(WMLDocument);
+            var controls = Wml.WordprocessingMLEditor.FindInserts(WMLDocument);
 
             var expectedCount = 1;
             var actualCount = controls.Count();
@@ -48,7 +48,7 @@ namespace DocAggregator.API.Core.Tests
         {
             var WMLDocument = XDocument.Parse(input);
 
-            var controls = Wml.WordprocessingMLTools.FindInserts(WMLDocument);
+            var controls = Wml.WordprocessingMLEditor.FindInserts(WMLDocument);
 
             var expectedCount = 1;
             var actualCount = controls.Count();
@@ -72,12 +72,12 @@ namespace DocAggregator.API.Core.Tests
         {
             var expected = "Test";
             var WMLDocument = XDocument.Parse(input);
-            var textInsert = Wml.WordprocessingMLTools.FindInserts(WMLDocument).First();
+            var textInsert = Wml.WordprocessingMLEditor.FindInserts(WMLDocument).First();
             textInsert.ReplacedText = expected;
 
-            Wml.WordprocessingMLTools.SetInserts(textInsert);
+            Wml.WordprocessingMLEditor.SetInserts(textInsert);
 
-            var inserts = Wml.WordprocessingMLTools.FindInserts(WMLDocument);
+            var inserts = Wml.WordprocessingMLEditor.FindInserts(WMLDocument);
             Assert.Empty(inserts);
 
             var contentRoot = textInsert.AssociatedChunk as XElement;
@@ -94,12 +94,12 @@ namespace DocAggregator.API.Core.Tests
         {
             var expected = "☐";
             var WMLDocument = XDocument.Parse(input);
-            var checkInsert = Wml.WordprocessingMLTools.FindInserts(WMLDocument).First();
+            var checkInsert = Wml.WordprocessingMLEditor.FindInserts(WMLDocument).First();
             checkInsert.ReplacedCheckmark = false;
 
-            Wml.WordprocessingMLTools.SetInserts(checkInsert);
+            Wml.WordprocessingMLEditor.SetInserts(checkInsert);
 
-            var inserts = Wml.WordprocessingMLTools.FindInserts(WMLDocument);
+            var inserts = Wml.WordprocessingMLEditor.FindInserts(WMLDocument);
             Assert.Empty(inserts);
 
             var contentRoot = checkInsert.AssociatedChunk as XElement;
@@ -115,12 +115,12 @@ namespace DocAggregator.API.Core.Tests
         {
             var expected = "Test";
             var WMLDocument = XDocument.Parse(input);
-            var textInsert = Wml.WordprocessingMLTools.FindInserts(WMLDocument).First();
+            var textInsert = Wml.WordprocessingMLEditor.FindInserts(WMLDocument).First();
             textInsert.ReplacedText = expected;
 
-            Wml.WordprocessingMLTools.SetInserts(textInsert);
+            Wml.WordprocessingMLEditor.SetInserts(textInsert);
 
-            var inserts = Wml.WordprocessingMLTools.FindInserts(WMLDocument);
+            var inserts = Wml.WordprocessingMLEditor.FindInserts(WMLDocument);
             Assert.Empty(inserts);
 
             var contentRoot = textInsert.AssociatedChunk as XElement;

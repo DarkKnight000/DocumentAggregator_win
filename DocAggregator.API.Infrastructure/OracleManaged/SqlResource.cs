@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DocAggregator.API.Core;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Xml.Serialization;
@@ -33,12 +34,14 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
     /// </summary>
     public class SqlResource
     {
+        private ILogger _logger;
         private static SqlResource _singletone;
         private Dictionary<string, SqlQuery> _dictionary;
         private string _configuration;
 
-        SqlResource(string file)
+        SqlResource(string file, ILogger logger)
         {
+            _logger = logger;
             _configuration = file;
             List<SqlQuery> list;
 
@@ -60,7 +63,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
         /// </summary>
         /// <param name="configuration">Путь к файлу с запросами. Разрешён null, если прежде вызван с корректным файлом.</param>
         /// <returns>Ресурс запросов.</returns>
-        public static SqlResource GetSqlResource(string configuration)
+        public static SqlResource GetSqlResource(string configuration, ILogger logger)
         {
             if (_singletone == null)
             {
@@ -68,7 +71,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                 {
                     throw new ArgumentNullException(nameof(configuration));
                 }
-                _singletone = new SqlResource(configuration);
+                _singletone = new SqlResource(configuration, logger);
             }
             else if (configuration != null && _singletone._configuration != configuration)
             {
@@ -98,7 +101,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
 
             if (query.IsObsolete)
             {
-                // TODO: log this.
+                _logger.Warning("Trying to get an obsolete query.");
             }
             return query;
         }

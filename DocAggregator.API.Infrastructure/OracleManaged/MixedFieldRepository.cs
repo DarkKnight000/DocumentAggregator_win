@@ -11,6 +11,8 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
     /// </summary>
     public class MixedFieldRepository : IMixedFieldRepository
     {
+        private ILogger _logger;
+
         /// <summary>
         /// Подключение к БД. Тип <see cref="Lazy{T}"/> использован для поддержки инициализации поля после определения необходимых конструктору свойств.
         /// </summary>
@@ -48,8 +50,9 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
         /// <summary>
         /// Инициализирует объект <see cref="MixedFieldRepository"/>.
         /// </summary>
-        public MixedFieldRepository()
+        public MixedFieldRepository(ILogger logger)
         {
+            _logger = logger;
             _lazyConnection = new Lazy<OracleConnection>(delegate
             {
                 return new OracleConnection(new OracleConnectionStringBuilder()
@@ -85,7 +88,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
         /// </returns>
         private Dictionary<string, string> GetFields(int claimID)
         {
-            SqlResource resource = SqlResource.GetSqlResource(QueriesSource);
+            SqlResource resource = SqlResource.GetSqlResource(QueriesSource, _logger);
             Dictionary<string, string> result = new Dictionary<string, string>();
             string attributesQuery = string.Format(resource.GetStringByName("Q_HRDAttributeIdsValues_ByRequest"), claimID);
             string viewQuery = string.Format(resource.GetStringByName("Q_HRDAddressAction_ByRequest"), claimID);

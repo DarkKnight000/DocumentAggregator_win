@@ -1,4 +1,5 @@
 using DocAggregator.API.Core;
+using DocAggregator.API.Presentation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -16,9 +17,12 @@ namespace DocAggregator.API
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        private readonly ILoggerFactory _loggerFactory;
+
+        public Startup(IConfiguration configuration, ILoggerFactory loggerFactory)
         {
             Configuration = configuration;
+            _loggerFactory = loggerFactory;
         }
 
         public IConfiguration Configuration { get; }
@@ -26,7 +30,7 @@ namespace DocAggregator.API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            var editorService = new Infrastructure.OpenXMLProcessing.EditorService()
+            var editorService = new Infrastructure.OpenXMLProcessing.EditorService(_loggerFactory.CreateLogger<IEditorService>().Adapt())
             {
                 TemplatesDirectory = Configuration["Editor:TemplatesDir"],
                 TemporaryOutputDirectory = Configuration["Editor:OutputDir"],
@@ -36,7 +40,7 @@ namespace DocAggregator.API
             editorService.Initialize();
             services.AddSingleton<IEditorService>(editorService);
             services.AddSingleton<IClaimRepository>(new Infrastructure.OracleManaged.ClaimRepository());
-            var fieldRepository = new Infrastructure.OracleManaged.MixedFieldRepository()
+            var fieldRepository = new Infrastructure.OracleManaged.MixedFieldRepository(_loggerFactory.CreateLogger<IMixedFieldRepository>().Adapt())
             {
                 QueriesSource = Configuration["DB:QueriesFile"],
                 Server = Configuration["DB:DataSource"],

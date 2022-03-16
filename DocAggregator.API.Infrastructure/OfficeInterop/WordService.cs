@@ -11,6 +11,7 @@ namespace DocAggregator.API.Infrastructure.OfficeInterop
 {
     public class WordService : IEditorService, IDisposable
     {
+        ILogger _logger;
         Word.Application app;
 
         public string TemplatesDirectory
@@ -35,8 +36,9 @@ namespace DocAggregator.API.Infrastructure.OfficeInterop
 
         private bool disposedValue;
 
-        public WordService()
+        public WordService(ILogger logger)
         {
+            _logger = logger;
             // Очистка кучи для предупреждения COM+ ошибки HRESULT: 0x80080005 (не работает)
             GC.Collect();
             app = new Word.Application();
@@ -48,7 +50,7 @@ namespace DocAggregator.API.Infrastructure.OfficeInterop
             string file = Path.Combine(TemplatesDirectory, path);
             if (!File.Exists(file))
             {
-                // TODO: log this
+                _logger.Error("Template hasn't found. Template: {0}", file);
                 throw new FileNotFoundException("Шаблон не найден.", file);
             }
             object template = file;
@@ -66,17 +68,16 @@ namespace DocAggregator.API.Infrastructure.OfficeInterop
             var wordDocument = (WordDocument)document;
             if (wordDocument.Body == null)
             {
-                // TODO: log this
+                _logger.Error("The document has no body.");
                 yield break;
             }
             var range = wordDocument.Body.Range(wordDocument.Body.Content.Start, wordDocument.Body.Content.End);
             foreach (Word.ContentControl control in range.ContentControls)
             {
-                Console.WriteLine($"Register content control {control.Type} with a Title \"{control.Title}\".");
+                _logger.Debug($"Register content control {control.Type} with a Title \"{control.Title}\".");
                 if (control.Title == null)
                 {
-                    // TODO: log this
-                    Console.WriteLine("The Title is null! Skipped.");
+                    _logger.Warning("The Title is null! Skipped.");
                     continue;
                 }
                 InsertKind kind = InsertKind.Unknown;
@@ -89,8 +90,7 @@ namespace DocAggregator.API.Infrastructure.OfficeInterop
                         kind = InsertKind.PlainText;
                         break;
                     default:
-                        // TODO: log this
-                        Console.WriteLine("Unknown control type!");
+                        _logger.Warning("Unknown control type!");
                         break;
                 }
                 yield return new Insert(control.Title, kind) { AssociatedChunk = control };
@@ -101,11 +101,11 @@ namespace DocAggregator.API.Infrastructure.OfficeInterop
         {
             foreach (Insert insert in inserts)
             {
-                Console.WriteLine($"Putting \"{insert.ReplacedText ?? insert.ReplacedCheckmark.ToString()}\" in the control with tag \"{insert.OriginalMask}\".");
+                _logger.Debug($"Putting \"{insert.ReplacedText ?? insert.ReplacedCheckmark.ToString()}\" in the control with tag \"{insert.OriginalMask}\".");
                 Word.ContentControl control = insert.AssociatedChunk as Word.ContentControl;
                 if (control == null)
                 {
-                    // TODO: log this
+                    _logger.Warning("Can't convert a insert's associated chunk to the Word.ContentControl.");
                     continue;
                 }
                 switch (insert.Kind)

@@ -28,7 +28,9 @@ namespace DocAggregator.API.Core
     /// </summary>
     public class Insert
     {
-        // TODEL: Проблема была с yield return, который возвращал объект с другим значением.
+        // TODO: DELETE logger?
+        ILogger _logger;
+        // TODO: DELETE Проблема была с yield return, который возвращал объект с другим значением.
         private bool? replacedCheckmark;
 
         /// <summary>
@@ -48,14 +50,14 @@ namespace DocAggregator.API.Core
         {
             get
             {
-                // TODEL:
-                Console.WriteLine($"{GetType()}.{nameof(ReplacedCheckmark)} returns \"{replacedCheckmark}\".");
+                // TODO: DELETE
+                _logger.Debug($"{GetType()}.{nameof(ReplacedCheckmark)} returns \"{replacedCheckmark}\".");
                 return replacedCheckmark;
             }
             set
             {
-                // TODEL:
-                Console.WriteLine($"{GetType()}.{nameof(ReplacedCheckmark)} has changed from \"{replacedCheckmark}\" to \"{value}\".");
+                // TODO: DELETE
+                _logger.Debug($"{GetType()}.{nameof(ReplacedCheckmark)} has changed from \"{replacedCheckmark}\" to \"{value}\".");
                 replacedCheckmark = value;
             }
         }
@@ -75,12 +77,13 @@ namespace DocAggregator.API.Core
         /// </summary>
         /// <param name="mask">Строка формата, содержащяя поля заявки.</param>
         /// <param name="kind">Тип элемента документа.</param>
-        public Insert(string mask, InsertKind kind = InsertKind.PlainText)
+        public Insert(string mask, InsertKind kind = InsertKind.PlainText, ILogger logger = null)
         {
+            _logger = logger;
             OriginalMask = mask;
             Kind = kind;
-            // TODEL:
-            Console.WriteLine($"{GetType()} created with arguments (\"{mask}\", {kind}).");
+            // TODO: DELETE
+            _logger.Debug($"{GetType()} created with arguments (\"{mask}\", {kind}).");
         }
 
         // override object.Equals

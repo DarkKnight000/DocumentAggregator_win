@@ -1,4 +1,5 @@
 ﻿using DocAggregator.API.Core;
+using DocAggregator.API.Core.Wml;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -9,6 +10,8 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
 {
     public class EditorService : IEditorService, IDisposable
     {
+        ILogger _logger;
+        WordprocessingMLEditor _wmlEditor;
         Process _serverConverterProc;
 
         public string TemplatesDirectory
@@ -59,7 +62,11 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
 
         private bool disposedValue;
 
-        public EditorService() { }
+        public EditorService(ILogger logger)
+        {
+            _logger = logger;
+            _wmlEditor = new WordprocessingMLEditor(logger);
+        }
 
         public void Initialize()
         {
@@ -94,7 +101,7 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
                 // cmd> python server.py --executable "C:\Program Files\LibreOffice\program\soffice"
                 _serverConverterProc = new Process();
                 _serverConverterProc.StartInfo = processServerInfo;
-                // _serverConverterProc.Exited += (s, a) => Console.WriteLine("[serv] Exited");
+                // _serverConverterProc.Exited += (s, a) => _logger.Debug("[serv] Exited");
                 _serverConverterProc.Start();
             }
         }
@@ -109,13 +116,13 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
         public IEnumerable<Insert> GetInserts(IDocument document)
         {
             // return (document as WordMLDocument).GetInserts();
-            return Core.Wml.WordprocessingMLTools.FindInserts((document as WordMLDocument).MainPart);
+            return _wmlEditor.FindInserts((document as WordMLDocument).MainPart);
         }
 
         public void SetInserts(IDocument document, IEnumerable<Insert> inserts)
         {
             // (document as WordMLDocument).SetInserts(inserts);
-            Core.Wml.WordprocessingMLTools.SetInserts(System.Linq.Enumerable.ToArray(inserts));
+            _wmlEditor.SetInserts(System.Linq.Enumerable.ToArray(inserts));
         }
 
         public string Export(IDocument document)
