@@ -128,12 +128,12 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
         public string Export(IDocument document)
         {
             string outputFile = Path.Combine(TemporaryOutputDirectory, "Output.pdf");
-            //string inputFile = Path.Combine(TemporaryOutputDirectory, "Output.docx");
-            string inputFile = (document as WordMLDocument).ResultPath;
-            var wordDocument = (document as WordMLDocument).Content;
+            WordMLDocument documentContainer = document as WordMLDocument;
+            string inputFile = documentContainer.ResultPath;
+            var wordDocument = documentContainer.Content;
             using (var xw = XmlWriter.Create(wordDocument.MainDocumentPart.GetStream(FileMode.Create, FileAccess.Write)))
             {
-                (document as WordMLDocument).MainPart.Save(xw);
+                documentContainer.MainPart.Save(xw);
             }
             wordDocument.Save();
             wordDocument.Close();

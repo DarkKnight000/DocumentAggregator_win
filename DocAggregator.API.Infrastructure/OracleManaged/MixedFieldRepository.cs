@@ -88,7 +88,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
         /// </returns>
         private Dictionary<string, string> GetFields(int claimID)
         {
-            SqlResource resource = SqlResource.GetSqlResource(QueriesSource, _logger);
+            SqlResource resource = SqlResource.InitializeSqlResource(QueriesSource, _logger);
             Dictionary<string, string> result = new Dictionary<string, string>();
             string attributesQuery = string.Format(resource.GetStringByName("Q_HRDAttributeIdsValues_ByRequest"), claimID);
             string viewQuery = string.Format(resource.GetStringByName("Q_HRDAddressAction_ByRequest"), claimID);

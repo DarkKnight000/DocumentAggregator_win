@@ -9,6 +9,7 @@ using Word = Microsoft.Office.Interop.Word;
 
 namespace DocAggregator.API.Infrastructure.OfficeInterop
 {
+    [Obsolete("Use the OpenXMLProcessing.EditorService class instead.", true)]
     public class WordService : IEditorService, IDisposable
     {
         ILogger _logger;

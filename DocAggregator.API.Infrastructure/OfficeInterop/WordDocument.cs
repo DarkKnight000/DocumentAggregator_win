@@ -6,6 +6,7 @@ using Word = Microsoft.Office.Interop.Word;
 
 namespace DocAggregator.API.Infrastructure.OfficeInterop
 {
+    [Obsolete("Use the OpenXMLProcessing.WordMLDOcument with the OpenXMLProcessing.EditorService class instead.", true)]
     public class WordDocument : IDocument, IDisposable
     {
         private bool disposedValue;

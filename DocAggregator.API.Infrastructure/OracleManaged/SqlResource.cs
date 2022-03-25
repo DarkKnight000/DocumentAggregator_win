@@ -61,15 +61,33 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
         /// <summary>
         /// Получает статически хранимый синглтон ресурса запросов.
         /// </summary>
-        /// <param name="configuration">Путь к файлу с запросами. Разрешён null, если прежде вызван с корректным файлом.</param>
+        /// <returns>Ресурс запроса.</returns>
+        public static SqlResource GetSqlResource()
+        {
+            if (_singletone == null)
+            {
+                throw new InvalidOperationException("Конфигурация не была инициализирована!");
+            }
+            return _singletone;
+        }
+
+        /// <summary>
+        /// Инициализирует статически хранимый синглтон ресурса запросов.
+        /// </summary>
+        /// <param name="configuration">Путь к файлу с запросами.</param>
+        /// <param name="logger">Объект логгирования.</param>
         /// <returns>Ресурс запросов.</returns>
-        public static SqlResource GetSqlResource(string configuration, ILogger logger)
+        public static SqlResource InitializeSqlResource(string configuration, ILogger logger)
         {
             if (_singletone == null)
             {
                 if (configuration == null)
                 {
                     throw new ArgumentNullException(nameof(configuration));
+                }
+                if (logger == null)
+                {
+                    throw new ArgumentNullException(nameof(logger));
                 }
                 _singletone = new SqlResource(configuration, logger);
             }
