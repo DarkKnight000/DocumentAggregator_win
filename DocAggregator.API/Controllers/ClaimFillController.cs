@@ -2,10 +2,6 @@
 using DocAggregator.API.Presentation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace DocAggregator.API.Controllers
 {
@@ -35,13 +31,11 @@ namespace DocAggregator.API.Controllers
             ClaimResponse response = _claimInteractor.Handle(request);
             if (response.Success)
             {
-                Presentation.ClaimResponseStreamPresenter presenter = new();
-                return presenter.Handle(response);
+                return ClaimResponsePresenter.ToFileStreamResult(response);
             }
             else
             {
-                Presentation.InternalErrorResponsePresenter presenter = new();
-                return presenter.Handle(response);
+                return ClaimResponsePresenter.ToErrorReport(response);
             }
         }
     }

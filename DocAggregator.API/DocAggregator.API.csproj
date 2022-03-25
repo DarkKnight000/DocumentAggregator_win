@@ -12,11 +12,5 @@
     <ProjectReference Include="..\DocAggregator.API.Infrastructure\DocAggregator.API.Infrastructure.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Compile Update="Presentation\InternalErrorResponsePresenter.cs">
-      <SubType>Code</SubType>
-    </Compile>
-  </ItemGroup>
-
 
 </Project>
