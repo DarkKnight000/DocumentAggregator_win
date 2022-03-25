@@ -17,12 +17,9 @@ namespace DocAggregator.API
 {
     public class Startup
     {
-        private readonly ILoggerFactory _loggerFactory;
-
-        public Startup(IConfiguration configuration, ILoggerFactory loggerFactory)
+        public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
-            _loggerFactory = loggerFactory;
         }
 
         public IConfiguration Configuration { get; }
@@ -30,24 +27,33 @@ namespace DocAggregator.API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            var editorService = new Infrastructure.OpenXMLProcessing.EditorService(_loggerFactory.CreateLogger<IEditorService>().Adapt())
+            //var loggerFactory = (ILoggerFactory)services.Single((d) => d.ServiceType.Equals(typeof(ILoggerFactory))).ImplementationInstance;
+            services.AddSingleton<IEditorService>((s) =>
             {
-                TemplatesDirectory = Configuration["Editor:TemplatesDir"],
-                TemporaryOutputDirectory = Configuration["Editor:OutputDir"],
-                LibreOfficeFolder = Configuration["Editor:LibreOffice"],
-                Scripts = Configuration["Editor:Scripts"],
-            };
-            editorService.Initialize();
-            services.AddSingleton<IEditorService>(editorService);
+                //var editorService = new Infrastructure.OpenXMLProcessing.EditorService(loggerFactory.CreateLogger<IEditorService>().Adapt())
+                var editorService = new Infrastructure.OpenXMLProcessing.EditorService(s.GetService<ILogger<IEditorService>>().Adapt())
+                {
+                    TemplatesDirectory = Configuration["Editor:TemplatesDir"],
+                    TemporaryOutputDirectory = Configuration["Editor:OutputDir"],
+                    LibreOfficeFolder = Configuration["Editor:LibreOffice"],
+                    Scripts = Configuration["Editor:Scripts"],
+                };
+                editorService.Initialize();
+                return editorService;
+            });
             services.AddSingleton<IClaimRepository>(new Infrastructure.OracleManaged.ClaimRepository());
-            var fieldRepository = new Infrastructure.OracleManaged.MixedFieldRepository(_loggerFactory.CreateLogger<IMixedFieldRepository>().Adapt())
+            services.AddSingleton<IMixedFieldRepository>((s) =>
             {
-                QueriesSource = Configuration["DB:QueriesFile"],
-                Server = Configuration["DB:DataSource"],
-                Username = Configuration["DB:UserID"],
-                Password = Configuration["DB:Password"],
-            };
-            services.AddSingleton<IMixedFieldRepository>(fieldRepository);
+                //var fieldRepository = new Infrastructure.OracleManaged.MixedFieldRepository(loggerFactory.CreateLogger<IMixedFieldRepository>().Adapt())
+                var fieldRepository = new Infrastructure.OracleManaged.MixedFieldRepository(s.GetService<ILogger<IMixedFieldRepository>>().Adapt())
+                {
+                    QueriesSource = Configuration["DB:QueriesFile"],
+                    Server = Configuration["DB:DataSource"],
+                    Username = Configuration["DB:UserID"],
+                    Password = Configuration["DB:Password"],
+                };
+                return fieldRepository;
+            });
 
             services.AddControllers();
         }

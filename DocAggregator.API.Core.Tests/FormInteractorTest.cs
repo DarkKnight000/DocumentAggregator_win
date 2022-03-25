@@ -4,7 +4,7 @@ using Xunit;
 
 namespace DocAggregator.API.Core.Tests
 {
-    public class FormInteractorTest
+    public class FormInteractorTest : TestBase
     {
         [Fact]
         public void FormInteractor_SuccessScenario()
@@ -17,7 +17,7 @@ namespace DocAggregator.API.Core.Tests
             var request = new FormRequest();
             request.Claim = new Claim();
             // 3. Создаём обект интерактора документа
-            var formInteractor = new FormInteractor(Mock.Of<ParseInteractorProxy>(), mockEditor.Object);
+            var formInteractor = new FormInteractor(new Mock<ParseInteractor>(null).Object, mockEditor.Object, Logger);
 
             // 4. Заполняем содержимое документа
             var response = formInteractor.Handle(request);
@@ -35,7 +35,7 @@ namespace DocAggregator.API.Core.Tests
             var request = new FormRequest();
             request.Claim = new Claim();
             // 3. Создаём обект интерактора документа
-            var formInteractor = new FormInteractor(Mock.Of<ParseInteractorProxy>(), mockEditor.Object);
+            var formInteractor = new FormInteractor(new Mock<ParseInteractor>(null).Object, mockEditor.Object, Logger);
 
             // 4. Заполняем содержимое документа
             var response = formInteractor.Handle(request);

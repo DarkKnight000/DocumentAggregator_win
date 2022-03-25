@@ -56,7 +56,7 @@ namespace DocAggregator.API.Core.Wml
                     _logger.Warning("Have found a content control, but not its kind.");
                     continue;
                 }
-                yield return new Insert(alias, detectedKind.Value) { AssociatedChunk = sdt };
+                yield return new Insert(alias, detectedKind.Value, _logger) { AssociatedChunk = sdt };
             }
         }
 

@@ -29,6 +29,9 @@ namespace DocAggregator.API.Core
     public class Insert
     {
         // TODO: DELETE logger?
+        /// <summary>
+        /// Use with ?. op only!
+        /// </summary>
         ILogger _logger;
         // TODO: DELETE Проблема была с yield return, который возвращал объект с другим значением.
         private bool? replacedCheckmark;
@@ -51,13 +54,13 @@ namespace DocAggregator.API.Core
             get
             {
                 // TODO: DELETE
-                _logger.Debug($"{GetType()}.{nameof(ReplacedCheckmark)} returns \"{replacedCheckmark}\".");
+                _logger?.Debug($"{GetType()}.{nameof(ReplacedCheckmark)} returns \"{replacedCheckmark}\".");
                 return replacedCheckmark;
             }
             set
             {
                 // TODO: DELETE
-                _logger.Debug($"{GetType()}.{nameof(ReplacedCheckmark)} has changed from \"{replacedCheckmark}\" to \"{value}\".");
+                _logger?.Debug($"{GetType()}.{nameof(ReplacedCheckmark)} has changed from \"{replacedCheckmark}\" to \"{value}\".");
                 replacedCheckmark = value;
             }
         }
@@ -83,7 +86,7 @@ namespace DocAggregator.API.Core
             OriginalMask = mask;
             Kind = kind;
             // TODO: DELETE
-            _logger.Debug($"{GetType()} created with arguments (\"{mask}\", {kind}).");
+            _logger?.Debug($"{GetType()} created with arguments (\"{mask}\", {kind}).");
         }
 
         // override object.Equals
