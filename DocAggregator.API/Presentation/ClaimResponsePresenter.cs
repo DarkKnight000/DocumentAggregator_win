@@ -10,7 +10,7 @@ namespace DocAggregator.API.Presentation
     public static class ClaimResponsePresenter
     {
         /// <summary>
-        /// Получает ответ обработчика заявки, открывает файл сгенерированный файл
+        /// Получает ответ обработчика заявки, открывает сгенерированный файл
         /// и упаковывает в ответное действие типа файлового потока.
         /// </summary>
         /// <param name="response">Ответ обработчика заявки.</param>
