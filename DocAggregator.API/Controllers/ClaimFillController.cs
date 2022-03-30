@@ -12,16 +12,10 @@ namespace DocAggregator.API.Controllers
         private readonly ILogger<ClaimFillController> _logger;
         private readonly ClaimInteractor _claimInteractor;
 
-        public ClaimFillController(
-            ILogger<ClaimFillController> logger,
-            IEditorService editorService,
-            IClaimRepository claimRepository,
-            IMixedFieldRepository fieldRepository)
+        public ClaimFillController(ILogger<ClaimFillController> logger, ClaimInteractor claimInteractor)
         {
             _logger = logger;
-            ParseInteractor parseInteractor = new ParseInteractor(fieldRepository);
-            FormInteractor formInteractor = new FormInteractor(parseInteractor, editorService, _logger.Adapt());
-            _claimInteractor = new ClaimInteractor(formInteractor, claimRepository);
+            _claimInteractor = claimInteractor;
         }
 
         [HttpPost]
@@ -31,10 +25,12 @@ namespace DocAggregator.API.Controllers
             ClaimResponse response = _claimInteractor.Handle(request);
             if (response.Success)
             {
+                _logger.LogInformation("Claim was successfully processed (id={0})", request.ClaimID);
                 return ClaimResponsePresenter.ToFileStreamResult(response);
             }
             else
             {
+                _logger.LogWarning("Claim wasn't processed (id={0})", request.ClaimID);
                 return ClaimResponsePresenter.ToErrorReport(response);
             }
         }
