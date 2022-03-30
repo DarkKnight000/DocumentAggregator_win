@@ -1,6 +1,5 @@
 ﻿using DocAggregator.API.Core;
 using Oracle.ManagedDataAccess.Client;
-using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -14,9 +13,9 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
         private ILogger _logger;
 
         /// <summary>
-        /// Подключение к БД. Тип <see cref="Lazy{T}"/> использован для поддержки инициализации поля после определения необходимых конструктору свойств.
+        /// Подключение к БД.
         /// </summary>
-        Lazy<OracleConnection> _lazyConnection;
+        OracleConnection _connection;
         Dictionary<int, Dictionary<string, string>> _claimFieldsCache;
 
         /// <summary>
@@ -53,15 +52,6 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
         public MixedFieldRepository(IOptionsFactory optionsFactory, ILoggerFactory logger)
         {
             _logger = logger.GetLoggerFor<IClaimFieldRepository>();
-            _lazyConnection = new Lazy<OracleConnection>(delegate
-            {
-                return new OracleConnection(new OracleConnectionStringBuilder()
-                {
-                    DataSource = Server,
-                    UserID = Username,
-                    Password = Password,
-                }.ToString());
-            });
             _claimFieldsCache = new Dictionary<int, Dictionary<string, string>>();
 
             var db = optionsFactory.GetOptionsOf<RepositoryConfigOptions>();
@@ -69,6 +59,13 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
             Server = db.DataSource;
             Username = db.UserID;
             Password = db.Password;
+
+            _connection = new OracleConnection(new OracleConnectionStringBuilder()
+            {
+                DataSource = Server,
+                UserID = Username,
+                Password = Password,
+            }.ToString());
         }
 
         public string GetFieldByNameOrId(int claimID, string name)
@@ -102,8 +99,8 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
             OracleDataReader reader = null;
             try
             {
-                _lazyConnection.Value.Open();
-                using (command = new OracleCommand(attributesQuery, _lazyConnection.Value))
+                _connection.Open();
+                using (command = new OracleCommand(attributesQuery, _connection))
                 using (reader = command.ExecuteReader())
                 {
                     while (reader.Read())
@@ -117,7 +114,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                         result.Add(attributeId, attributeVal);
                     }
                 }
-                using (command = new OracleCommand(viewQuery, _lazyConnection.Value))
+                using (command = new OracleCommand(viewQuery, _connection))
                 using (reader = command.ExecuteReader())
                 {
                     while (reader.Read())
@@ -134,13 +131,13 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                         }
                     }
                 }
-                _lazyConnection.Value.Close();
+                _connection.Close();
             }
             catch (OracleException ex)
             {
                 if (command != null)
                 {
-                    StaticExtensions.ShowExceptionMessage(_lazyConnection.Value, ex, command.CommandText);
+                    StaticExtensions.ShowExceptionMessage(_connection, ex, command.CommandText);
                 }
             }
             return result;

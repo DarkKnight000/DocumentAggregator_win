@@ -2,6 +2,9 @@
 
 namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
 {
+    /// <summary>
+    /// Класс конфигурации <see cref="EditorService"/>.
+    /// </summary>
     public class EditorConfigOptions : IOptions
     {
         public const string EditorConfig = "Editor";

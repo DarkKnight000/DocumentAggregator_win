@@ -14,12 +14,18 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
     {
         /// <summary>
         /// Выводит сообщение об ошибке и часть запроса, вызвавшую её.
-        /// В данной реализации пытается вызвать точку останова отладчика
-        /// или выбрасывает исключение с отформатированным сообщением об исходном исключении.
         /// </summary>
+        /// <remarks>
+        /// В данной реализации пытается вызвать точку останова отладчика
+        /// и выбрасывает исключение типа <see cref="Exception"/> с отформатированным сообщением об исходном исключении.
+        /// </remarks>
         /// <param name="connection">Открытое подключение к БД.</param>
         /// <param name="exception">Отловленное исключение.</param>
         /// <param name="query">Проблемный запрос.</param>
+        /// <exception cref="ArgumentNullException"/>
+        /// <exception cref="ArgumentException"/>
+        /// <exception cref="IndexOutOfRangeException"/>
+        /// <exception cref="Exception"/>
         internal static void ShowExceptionMessage(OracleConnection connection, OracleException exception, string query)
         {
             if (connection == null || exception == null || query == null)

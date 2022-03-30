@@ -8,6 +8,12 @@ using System.Xml;
 
 namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
 {
+    /// <summary>
+    /// Реализация редактора документа.
+    /// </summary>
+    /// <remarks>
+    /// Использует <see cref="WordprocessingMLEditor"/> для работы на уровне элементов XML.
+    /// </remarks>
     public class EditorService : IEditorService, IDisposable
     {
         ILogger _logger;
@@ -34,6 +40,9 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
         }
         private string _temporaryOutputDirectory;
 
+        /// <summary>
+        /// Получает или задаёт путь к пакету программ LibreOffice.
+        /// </summary>
         public string LibreOfficeFolder
         {
             get => _libreOfficeFolder;
@@ -50,6 +59,9 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
         private string _libreOfficeFolder;// = @"C:\Program Files\LibreOffice\program";
         private string _libreOfficeExecutable;
 
+        /// <summary>
+        /// Получает или задаёт путь к скриптам unoclient и unoserver.
+        /// </summary>
         public string Scripts
         {
             get => _scripts;
@@ -63,9 +75,9 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
         private bool initializedValue;
         private bool disposedValue;
 
-        public EditorService(IOptionsFactory options, ILoggerFactory logger)
+        public EditorService(IOptionsFactory options, ILoggerFactory loggerFactory)
         {
-            _logger = logger.GetLoggerFor<IEditorService>();
+            _logger = loggerFactory.GetLoggerFor<IEditorService>();
             _wmlEditor = new WordprocessingMLEditor(_logger);
 
             var editor = options.GetOptionsOf<EditorConfigOptions>();
@@ -80,6 +92,7 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
             if (!initializedValue)
             {
                 Initialize();
+                initializedValue = true;
             }
         }
 
