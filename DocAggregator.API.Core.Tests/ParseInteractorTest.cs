@@ -11,7 +11,7 @@ namespace DocAggregator.API.Core.Tests
         public void ParseInteractor_ParseField_NumberedClaimField(string insertionFormat, string fieldValue, string expected)
         {
             // 1. Берём все поля заявки
-            var mockMixedFieldRepository = new Mock<IMixedFieldRepository>();
+            var mockMixedFieldRepository = new Mock<IClaimFieldRepository>();
             mockMixedFieldRepository
                 .Setup(r => r.GetFieldByNameOrId(It.IsAny<int>(), It.IsAny<string>()))
                 // Returns correct output only for integers
@@ -32,7 +32,7 @@ namespace DocAggregator.API.Core.Tests
         public void ParseInteractor_ParseField_NumberedClaimFieldNotFound()
         {
             // 1. Берём все поля заявки
-            var mockMixedFieldRepository = new Mock<IMixedFieldRepository>();
+            var mockMixedFieldRepository = new Mock<IClaimFieldRepository>();
             mockMixedFieldRepository
                 .Setup(r => r.GetFieldByNameOrId(It.IsAny<int>(), It.IsAny<string>()))
                 // Returns correct output only for integers
@@ -56,7 +56,7 @@ namespace DocAggregator.API.Core.Tests
         public void ParseInteractor_ParseField_DenominatedField(string insertionFormat, string fieldValue, string expected)
         {
             // 1. Берём все поля заявки
-            var mockMixedFieldRepository = new Mock<IMixedFieldRepository>();
+            var mockMixedFieldRepository = new Mock<IClaimFieldRepository>();
             mockMixedFieldRepository.Setup(r => r.GetFieldByNameOrId(It.IsAny<int>(), It.IsAny<string>())).Returns(fieldValue);
             // 2. Берём заявку
             var request = new ParseRequest() { Insertion = new Insert(insertionFormat) };
@@ -74,7 +74,7 @@ namespace DocAggregator.API.Core.Tests
         public void ParseInteractor_ParseField_DenominatedFieldNotFound()
         {
             // 1. Берём все поля заявки
-            var mockMixedFieldRepository = new Mock<IMixedFieldRepository>();
+            var mockMixedFieldRepository = new Mock<IClaimFieldRepository>();
             mockMixedFieldRepository.Setup(r => r.GetFieldByNameOrId(It.IsAny<int>(), It.IsAny<string>())).Returns((string)null);
             // 2. Берём заявку
             var request = new ParseRequest() { Insertion = new Insert("name") };
@@ -107,7 +107,7 @@ namespace DocAggregator.API.Core.Tests
         public void ParseInteractor_ParseField_MixedField(string insertionFormat, string attrValue, string refValue, string expected)
         {
             // 1. Берём все поля заявки
-            var mockMixedFieldRepository = new Mock<IMixedFieldRepository>();
+            var mockMixedFieldRepository = new Mock<IClaimFieldRepository>();
             mockMixedFieldRepository
                 .Setup(r => r.GetFieldByNameOrId(It.IsAny<int>(), It.IsAny<string>()))
                 .Returns<int, string>((id, arg) => int.TryParse(arg, out _) ? attrValue : refValue);
@@ -131,7 +131,7 @@ namespace DocAggregator.API.Core.Tests
         public void ParseInteractor_ParseField_BooleanField(string insertionFormat, bool expected)
         {
             // 1. Берём все поля заявки
-            var mockMixedFieldRepository = new Mock<IMixedFieldRepository>();
+            var mockMixedFieldRepository = new Mock<IClaimFieldRepository>();
             mockMixedFieldRepository
                 .Setup(r => r.GetFieldByNameOrId(It.IsAny<int>(), It.IsAny<string>()))
                 // Returns only False for integers and True for strings

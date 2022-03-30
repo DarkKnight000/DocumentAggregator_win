@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace DocAggregator.API.Core
+﻿namespace DocAggregator.API.Core
 {
     /// <summary>
     /// Вариант вставки.
@@ -29,9 +27,9 @@ namespace DocAggregator.API.Core
     public class Insert
     {
         // TODO: DELETE logger?
-        /// <summary>
+        /// <remarks>
         /// Use with ?. op only!
-        /// </summary>
+        /// </remarks>
         ILogger _logger;
         // TODO: DELETE Проблема была с yield return, который возвращал объект с другим значением.
         private bool? replacedCheckmark;

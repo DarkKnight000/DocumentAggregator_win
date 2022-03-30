@@ -1,13 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DocAggregator.API.Core
+﻿namespace DocAggregator.API.Core
 {
+    /// <summary>
+    /// Предоставляет соглашения для объектов конфигурации.
+    /// </summary>
     public interface IOptions
     {
+        /// <summary>
+        /// Получает наименование фрагмента конфигурации.
+        /// </summary>
+        /// <returns>Название фрагмента.</returns>
         string GetSection();
     }
 }

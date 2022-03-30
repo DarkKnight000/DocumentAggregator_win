@@ -12,8 +12,14 @@ namespace DocAggregator.API.Core
     /// </summary>
     public interface IEditorService
     {
+        /// <summary>
+        /// Получает или задаёт путь к физическому метоположению заявок.
+        /// </summary>
         public abstract string TemplatesDirectory { get; set; }
 
+        /// <summary>
+        /// Получает или задаёт путь ко временным файлам.
+        /// </summary>
         public abstract string TemporaryOutputDirectory { get; set; }
 
         /// <summary>

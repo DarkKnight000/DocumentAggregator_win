@@ -28,7 +28,7 @@ namespace DocAggregator.API
         {
             serviceCollection.AddSingleton<IEditorService, Infrastructure.OpenXMLProcessing.EditorService>();
             serviceCollection.AddSingleton<IClaimRepository, Infrastructure.OracleManaged.ClaimRepository>();
-            serviceCollection.AddSingleton<IMixedFieldRepository, Infrastructure.OracleManaged.MixedFieldRepository>();
+            serviceCollection.AddSingleton<IClaimFieldRepository, Infrastructure.OracleManaged.MixedFieldRepository>();
             return serviceCollection;
         }
 

@@ -27,13 +27,13 @@
     public class ParseInteractor : InteractorBase<ParseResponse, ParseRequest>
     {
         // TODO: Убрать лишние дополнительные claim_id поля (возможно переместить внутрь Insert)
-        IMixedFieldRepository _fieldRepo;
+        IClaimFieldRepository _fieldRepo;
 
         /// <summary>
         /// Создаёт обработчик на основе репозитория полей заявки.
         /// </summary>
         /// <param name="fieldRepository">Репозиторий полей заявки.</param>
-        public ParseInteractor(IMixedFieldRepository fieldRepository)
+        public ParseInteractor(IClaimFieldRepository fieldRepository)
         {
             _fieldRepo = fieldRepository;
         }

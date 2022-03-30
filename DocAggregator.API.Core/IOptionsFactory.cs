@@ -1,13 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DocAggregator.API.Core
+﻿namespace DocAggregator.API.Core
 {
+    /// <summary>
+    /// Предоставляет соглашения для фабрики конфигураций.
+    /// </summary>
     public interface IOptionsFactory
     {
+        /// <summary>
+        /// Получает объект, представляющий конфигурацию выбранного типа.
+        /// </summary>
+        /// <typeparam name="TOptions"></typeparam>
+        /// <returns></returns>
         public TOptions GetOptionsOf<TOptions>() where TOptions : IOptions, new();
     }
 }

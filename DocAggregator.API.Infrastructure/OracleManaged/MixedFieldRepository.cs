@@ -7,9 +7,9 @@ using System.IO;
 namespace DocAggregator.API.Infrastructure.OracleManaged
 {
     /// <summary>
-    /// Реализует интерфейс <see cref="IMixedFieldRepository"/> используя базу данных Oracle.
+    /// Реализует интерфейс <see cref="IClaimFieldRepository"/> используя базу данных Oracle.
     /// </summary>
-    public class MixedFieldRepository : IMixedFieldRepository
+    public class MixedFieldRepository : IClaimFieldRepository
     {
         private ILogger _logger;
 
@@ -52,7 +52,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
         /// </summary>
         public MixedFieldRepository(IOptionsFactory optionsFactory, ILoggerFactory logger)
         {
-            _logger = logger.GetLoggerFor<IMixedFieldRepository>();
+            _logger = logger.GetLoggerFor<IClaimFieldRepository>();
             _lazyConnection = new Lazy<OracleConnection>(delegate
             {
                 return new OracleConnection(new OracleConnectionStringBuilder()

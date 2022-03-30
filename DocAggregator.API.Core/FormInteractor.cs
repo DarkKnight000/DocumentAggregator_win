@@ -41,9 +41,10 @@ namespace DocAggregator.API.Core
         /// </summary>
         /// <param name="parser">Обработчик вставки.</param>
         /// <param name="editor">Редактор документа.</param>
-        public FormInteractor(ParseInteractor parser, IEditorService editor, ILoggerFactory logger)
+        /// <param name="loggerFactory">Фабрика журналов.</param>
+        public FormInteractor(ParseInteractor parser, IEditorService editor, ILoggerFactory loggerFactory)
         {
-            _logger = logger.GetLoggerFor<FormInteractor>();
+            _logger = loggerFactory.GetLoggerFor<FormInteractor>();
             _parser = parser;
             _editor = editor;
         }

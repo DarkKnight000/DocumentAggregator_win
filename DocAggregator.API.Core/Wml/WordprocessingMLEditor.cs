@@ -5,6 +5,12 @@ using System.Xml.Linq;
 
 namespace DocAggregator.API.Core.Wml
 {
+    /// <summary>
+    /// Предоставляет методы для обработки OOXML-узлов.
+    /// </summary>
+    /// <remarks>
+    /// Содержит <see cref="ILogger"/> для отслеживания хода обработки.
+    /// </remarks>
     public class WordprocessingMLEditor
     {
         ILogger _logger;
@@ -14,16 +20,23 @@ namespace DocAggregator.API.Core.Wml
             _logger = logger;
         }
 
+        /// <summary>
+        /// Проводит поиск вставок по документу.
+        /// </summary>
+        /// <param name="document">OOXML документ.</param>
+        /// <returns>Перечисление найденных вставок.</returns>
         public IEnumerable<Insert> FindInserts(XDocument document)
         {
             if (document == null || document.Root == null)
             {
+                // Возвращает пустое перечисление.
                 yield break;
             }
             foreach (var sdt in document.Root.DescendantsAndSelf(W.sdt))
             {
                 InsertKind? detectedKind = null;
-                void TrySetDetectedInsertKind(InsertKind insertKind)
+                // Локальная функция позволяет проверить значение перед присвоением локальной переменной.
+                void SetDetectedInsertKind(InsertKind insertKind)
                 {
                     if (detectedKind != null)
                     {
@@ -31,6 +44,7 @@ namespace DocAggregator.API.Core.Wml
                     }
                     detectedKind = insertKind;
                 }
+                // Обработка повреждений структуры документа.
                 XElement properties = sdt.Element(W.sdtPr);
                 if (properties == null)
                 {
@@ -43,13 +57,14 @@ namespace DocAggregator.API.Core.Wml
                     _logger.Warning("Have found a content control with empty alias.");
                     continue;
                 }
+                // Определение типа элемента управления содержимым.
                 if (properties.Element(W.text) != null)
                 {
-                    TrySetDetectedInsertKind(InsertKind.PlainText);
+                    SetDetectedInsertKind(InsertKind.PlainText);
                 }
                 if (properties.Element(W14.checkbox) != null)
                 {
-                    TrySetDetectedInsertKind(InsertKind.CheckMark);
+                    SetDetectedInsertKind(InsertKind.CheckMark);
                 }
                 if (!detectedKind.HasValue)
                 {
@@ -60,6 +75,10 @@ namespace DocAggregator.API.Core.Wml
             }
         }
 
+        /// <summary>
+        /// Устанавливает значения вставок в структуру документа.
+        /// </summary>
+        /// <param name="inserts">Массив вставок, ассоциированных с участками документов.</param>
         public void SetInserts(params Insert[] inserts)
         {
             foreach (Insert insert in inserts)
@@ -106,7 +125,7 @@ namespace DocAggregator.API.Core.Wml
                 case InsertKind.CheckMark:
                     innerTextContainer.Descendants(W.t).Single().Value = insert.ReplacedCheckmark.Value ? "☒" : "☐";
                     break;
-                default:
+                default: // InsertKind.PlainText
                     innerTextContainer.Descendants(W.rStyle).SingleOrDefault()?.Remove();
                     XElement tagRunPr = sdt.Element(W.sdtPr)?.Element(W.rPr);
                     XElement run = innerTextContainer.DescendantsAndSelf(W.r).Single();

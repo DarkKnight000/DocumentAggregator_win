@@ -3,7 +3,7 @@
     /// <summary>
     /// Представляет репозиторий числовых и именованных полей заявки.
     /// </summary>
-    public interface IMixedFieldRepository
+    public interface IClaimFieldRepository
     {
         /// <summary>
         /// Получает значение числового или именованного поля по идентификатору заявки.
