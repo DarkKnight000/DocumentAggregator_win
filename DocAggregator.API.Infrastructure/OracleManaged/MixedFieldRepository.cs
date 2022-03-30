@@ -50,9 +50,9 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
         /// <summary>
         /// Инициализирует объект <see cref="MixedFieldRepository"/>.
         /// </summary>
-        public MixedFieldRepository(ILogger logger)
+        public MixedFieldRepository(IOptionsFactory optionsFactory, ILoggerFactory logger)
         {
-            _logger = logger;
+            _logger = logger.GetLoggerFor<IMixedFieldRepository>();
             _lazyConnection = new Lazy<OracleConnection>(delegate
             {
                 return new OracleConnection(new OracleConnectionStringBuilder()
@@ -63,6 +63,12 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                 }.ToString());
             });
             _claimFieldsCache = new Dictionary<int, Dictionary<string, string>>();
+
+            var db = optionsFactory.GetOptionsOf<RepositoryConfigOptions>();
+            QueriesSource = db.QueriesFile;
+            Server = db.DataSource;
+            Username = db.UserID;
+            Password = db.Password;
         }
 
         public string GetFieldByNameOrId(int claimID, string name)

@@ -1,7 +1,11 @@
 using Microsoft.Extensions.Logging;
 using System;
 using IExternalLogger = Microsoft.Extensions.Logging.ILogger;
+using IExternalFactory = Microsoft.Extensions.Logging.ILoggerFactory;
 using IInternalLogger = DocAggregator.API.Core.ILogger;
+using IInternalFactory = DocAggregator.API.Core.ILoggerFactory;
+using Microsoft.Extensions.Configuration;
+using DocAggregator.API.Core;
 
 namespace DocAggregator.API.Presentation
 {
@@ -52,6 +56,36 @@ namespace DocAggregator.API.Presentation
 
             public void Critical(Exception exception, string message, params string[] args)
                 => _logger.LogCritical(exception, message, args);
+        }
+    }
+
+    public class LoggerFactoryAdapter : IInternalFactory
+    {
+        private IExternalFactory _factory;
+
+        public LoggerFactoryAdapter(IExternalFactory factory)
+        {
+            _factory = factory;
+        }
+
+        public IInternalLogger GetLoggerFor<TCaller>()
+        {
+            return _factory.CreateLogger<TCaller>().Adapt();
+        }
+    }
+
+    public class OptionsFactoryAdapter : IOptionsFactory
+    {
+        IConfiguration _configuration;
+
+        public OptionsFactoryAdapter(IConfiguration configuration)
+        {
+            _configuration = configuration;
+        }
+
+        public TOptions GetOptionsOf<TOptions>() where TOptions : IOptions, new()
+        {
+            return _configuration.GetSection(new TOptions().GetSection()).Get<TOptions>();
         }
     }
 }

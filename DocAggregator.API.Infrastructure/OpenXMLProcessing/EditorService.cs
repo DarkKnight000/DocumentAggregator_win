@@ -60,15 +60,30 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
         }
         private string _scripts;// = @"D:\Users\akkostin\source\repos\DocumentAggregator\unoserver\src\unoserver";
 
+        private bool initializedValue;
         private bool disposedValue;
 
-        public EditorService(ILogger logger)
+        public EditorService(IOptionsFactory options, ILoggerFactory logger)
         {
-            _logger = logger;
-            _wmlEditor = new WordprocessingMLEditor(logger);
+            _logger = logger.GetLoggerFor<IEditorService>();
+            _wmlEditor = new WordprocessingMLEditor(_logger);
+
+            var editor = options.GetOptionsOf<EditorConfigOptions>();
+            TemplatesDirectory = editor.TemplatesDir;
+            TemporaryOutputDirectory = editor.OutputDir;
+            LibreOfficeFolder = editor.LibreOffice;
+            Scripts = editor.Scripts;
         }
 
-        public void Initialize()
+        public void EnsureInitialize()
+        {
+            if (!initializedValue)
+            {
+                Initialize();
+            }
+        }
+
+        private void Initialize()
         {
             // Check Python
             if (!File.Exists(Path.Combine(LibreOfficeFolder, "python.exe")))
@@ -108,6 +123,7 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
 
         public IDocument OpenTemplate(string path)
         {
+            EnsureInitialize();
             string tempFile = Path.Combine(TemporaryOutputDirectory, "TempCopy.docx");
             File.Copy(Path.Combine(TemplatesDirectory, path), tempFile, true);
             return new WordMLDocument(tempFile);
@@ -115,18 +131,21 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
 
         public IEnumerable<Insert> GetInserts(IDocument document)
         {
+            EnsureInitialize();
             // return (document as WordMLDocument).GetInserts();
             return _wmlEditor.FindInserts((document as WordMLDocument).MainPart);
         }
 
         public void SetInserts(IDocument document, IEnumerable<Insert> inserts)
         {
+            EnsureInitialize();
             // (document as WordMLDocument).SetInserts(inserts);
             _wmlEditor.SetInserts(System.Linq.Enumerable.ToArray(inserts));
         }
 
         public string Export(IDocument document)
         {
+            EnsureInitialize();
             string outputFile = Path.Combine(TemporaryOutputDirectory, "Output.pdf");
             WordMLDocument documentContainer = document as WordMLDocument;
             string inputFile = documentContainer.ResultPath;
