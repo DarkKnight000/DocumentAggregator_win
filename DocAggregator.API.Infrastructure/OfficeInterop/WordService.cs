@@ -123,12 +123,14 @@ namespace DocAggregator.API.Infrastructure.OfficeInterop
             }
         }
 
-        public string Export(IDocument document)
+        public Stream Export(IDocument document)
+        //public string Export(IDocument document)
         {
-            var wordDocument = (WordDocument)document;
+            throw new NotImplementedException("OfficeInterop doesn't support exporting into a stream.");
+            /*var wordDocument = (WordDocument)document;
             var output = Path.Combine(TemporaryOutputDirectory, "Output.pdf");
             wordDocument.Body.ExportAsFixedFormat(output, Word.WdExportFormat.wdExportFormatPDF);
-            return output;
+            return output;*/
         }
 
         #region IDisposable impl

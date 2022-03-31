@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 
 namespace DocAggregator.API.Core
 {
@@ -20,14 +21,16 @@ namespace DocAggregator.API.Core
         /// <summary>
         /// Получает или задаёт путь ко временным файлам.
         /// </summary>
+        [System.Obsolete("Осуществляется отказ от временных файлов.")]
         public abstract string TemporaryOutputDirectory { get; set; }
 
         /// <summary>
         /// Открывает документ на основе заданного шаблона.
         /// </summary>
-        /// <param name="path">Путь к шаблону.</param>
+        /// <param name="resultFile">Путь к шаблону.</param>
         /// <returns>Документ, представляющий открытый шаблон.</returns>
-        IDocument OpenTemplate(string path);
+        //IDocument OpenTemplate(Stream resultFile);
+        IDocument OpenTemplate(string resultFile);
 
         /// <summary>
         /// Получает список вставок из документа.
@@ -48,6 +51,7 @@ namespace DocAggregator.API.Core
         /// </summary>
         /// <param name="document">Экземпляр документа.</param>
         /// <returns>Путь к сконвертированному файлу.</returns>
-        string Export(IDocument document);
+        Stream Export(IDocument document);
+        //string Export(IDocument document);
     }
 }

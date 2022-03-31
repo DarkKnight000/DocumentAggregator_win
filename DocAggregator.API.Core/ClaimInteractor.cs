@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 
 namespace DocAggregator.API.Core
@@ -23,6 +24,10 @@ namespace DocAggregator.API.Core
         /// Имя результирующего PDF файла.
         /// </summary>
         public string File { get; set; }
+        /// <summary>
+        /// PDF результата обработки заявки.
+        /// </summary>
+        public MemoryStream ResultStream { get; set; }
     }
 
     /// <summary>
@@ -38,7 +43,8 @@ namespace DocAggregator.API.Core
         /// </summary>
         /// <param name="former">Обработчик документов.</param>
         /// <param name="repository">Репозиторий заявок.</param>
-        public ClaimInteractor(FormInteractor former, IClaimRepository repository)
+        public ClaimInteractor(FormInteractor former, IClaimRepository repository, ILoggerFactory loggerFactory)
+            : base(loggerFactory.GetLoggerFor<ClaimInteractor>())
         {
             _former = former;
             _repo = repository;
@@ -57,6 +63,7 @@ namespace DocAggregator.API.Core
             if (formResponse.Success)
             {
                 Response.File = formResponse.Output;
+                Response.ResultStream = formResponse.ResultStream;
             }
             else
             {

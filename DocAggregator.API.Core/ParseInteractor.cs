@@ -33,7 +33,8 @@
         /// Создаёт обработчик на основе репозитория полей заявки.
         /// </summary>
         /// <param name="fieldRepository">Репозиторий полей заявки.</param>
-        public ParseInteractor(IClaimFieldRepository fieldRepository)
+        public ParseInteractor(IClaimFieldRepository fieldRepository, ILoggerFactory loggerFactory)
+            : base(loggerFactory.GetLoggerFor<ParseInteractor>())
         {
             _fieldRepo = fieldRepository;
         }

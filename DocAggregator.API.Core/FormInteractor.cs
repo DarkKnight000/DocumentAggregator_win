@@ -25,6 +25,10 @@ namespace DocAggregator.API.Core
         /// Путь к PDF файлу заявки.
         /// </summary>
         public string Output { get; set; }
+        /// <summary>
+        /// PDF результата обработки, хранимый в памяти.
+        /// </summary>
+        public MemoryStream ResultStream { get; set; }
     }
 
     /// <summary>
@@ -32,7 +36,6 @@ namespace DocAggregator.API.Core
     /// </summary>
     public class FormInteractor : InteractorBase<FormResponse, FormRequest>
     {
-        ILogger _logger;
         ParseInteractor _parser;
         IEditorService _editor;
 
@@ -43,8 +46,8 @@ namespace DocAggregator.API.Core
         /// <param name="editor">Редактор документа.</param>
         /// <param name="loggerFactory">Фабрика журналов.</param>
         public FormInteractor(ParseInteractor parser, IEditorService editor, ILoggerFactory loggerFactory)
+            : base(loggerFactory.GetLoggerFor<FormInteractor>())
         {
-            _logger = loggerFactory.GetLoggerFor<FormInteractor>();
             _parser = parser;
             _editor = editor;
         }
@@ -65,7 +68,7 @@ namespace DocAggregator.API.Core
             // Приложению Word не удалось прочитать документ. Возможно, он поврежден.
             catch (Exception ex)
             {
-                _logger.Error(ex, "Непридвиденная ошибка обнаружена при попытке открыть и прочитать шаблон.");
+                Logger.Error(ex, "Непридвиденная ошибка обнаружена при попытке открыть и прочитать шаблон.");
                 Response.Errors.Add(ex);
             }
             if (document == null)
@@ -85,7 +88,8 @@ namespace DocAggregator.API.Core
                 }
             }
             _editor.SetInserts(document, inserts);
-            Response.Output = _editor.Export(document);
+            Response.Output = null; //_editor.Export(document);
+            Response.ResultStream = _editor.Export(document) as MemoryStream;
         }
     }
 }

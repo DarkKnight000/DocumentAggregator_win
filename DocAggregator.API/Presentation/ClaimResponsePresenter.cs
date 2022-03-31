@@ -1,5 +1,6 @@
 ﻿using DocAggregator.API.Core;
 using Microsoft.AspNetCore.Mvc;
+using System.IO;
 using System.Text;
 
 namespace DocAggregator.API.Presentation
@@ -17,7 +18,15 @@ namespace DocAggregator.API.Presentation
         /// <returns>Результат действия в виде файлового потока.</returns>
         public static FileStreamResult ToFileStreamResult(ClaimResponse response)
         {
-            var stream = System.IO.File.OpenRead(response.File);
+            Stream stream;
+            if (response.ResultStream != null)
+            {
+                stream = response.ResultStream;
+            }
+            else
+            {
+                stream = File.OpenRead(response.File);
+            }
             return new FileStreamResult(stream, "application/pdf");
         }
 

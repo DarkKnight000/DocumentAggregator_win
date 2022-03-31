@@ -20,6 +20,16 @@ namespace DocAggregator.API.Core
         protected TResponse Response { get; private set; }
 
         /// <summary>
+        /// Служба ведения журнала.
+        /// </summary>
+        protected ILogger Logger { get; set; }
+
+        public InteractorBase(ILogger logger)
+        {
+            Logger = logger;
+        }
+
+        /// <summary>
         /// Метод для внешнего вызова. Производит обработку запроса с отловом исключений.
         /// </summary>
         /// <param name="request">Объект запроса.</param>
@@ -34,6 +44,7 @@ namespace DocAggregator.API.Core
             }
             catch (Exception ex)
             {
+                Logger?.Error(ex, "An error occured in {0} while handling a request.", GetType().Name);
                 Response.Errors.Add(ex);
             }
             return Response;

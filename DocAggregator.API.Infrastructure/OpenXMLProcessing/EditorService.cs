@@ -30,6 +30,7 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
         }
         private string _templatesDirectory;
 
+        [Obsolete]
         public string TemporaryOutputDirectory
         {
             get => _temporaryOutputDirectory;
@@ -82,7 +83,7 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
 
             var editor = options.GetOptionsOf<EditorConfigOptions>();
             TemplatesDirectory = editor.TemplatesDir;
-            TemporaryOutputDirectory = editor.OutputDir;
+            //TemporaryOutputDirectory = editor.OutputDir;
             LibreOfficeFolder = editor.LibreOffice;
             Scripts = editor.Scripts;
         }
@@ -137,9 +138,12 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
         public IDocument OpenTemplate(string path)
         {
             EnsureInitialize();
-            string tempFile = Path.Combine(TemporaryOutputDirectory, "TempCopy.docx");
-            File.Copy(Path.Combine(TemplatesDirectory, path), tempFile, true);
-            return new WordMLDocument(tempFile);
+            //string tempFile = Path.Combine(TemporaryOutputDirectory, "TempCopy.docx");
+            // TODO: Copy into memory
+            //File.Copy(Path.Combine(TemplatesDirectory, path), tempFile, true);
+            MemoryStream tempStream = new MemoryStream();
+            File.OpenRead(Path.Combine(TemplatesDirectory, path)).CopyTo(tempStream);
+            return new WordMLDocument(tempStream);
         }
 
         public IEnumerable<Insert> GetInserts(IDocument document)
@@ -156,19 +160,21 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
             _wmlEditor.SetInserts(System.Linq.Enumerable.ToArray(inserts));
         }
 
-        public string Export(IDocument document)
+        public Stream Export(IDocument document)
+        //public string Export(IDocument document)
         {
             EnsureInitialize();
-            string outputFile = Path.Combine(TemporaryOutputDirectory, "Output.pdf");
+            //string outputFile = Path.Combine(TemporaryOutputDirectory, "Output.pdf");
             WordMLDocument documentContainer = document as WordMLDocument;
-            string inputFile = documentContainer.ResultPath;
+            //string inputFile = documentContainer.ResultPath;
             var wordDocument = documentContainer.Content;
+            _logger.Trace("Save an edited part back into a stream.");
             using (var xw = XmlWriter.Create(wordDocument.MainDocumentPart.GetStream(FileMode.Create, FileAccess.Write)))
             {
                 documentContainer.MainPart.Save(xw);
             }
             wordDocument.Save();
-            wordDocument.Close();
+            //wordDocument.Close();
             // cmd> set PATH=%PATH%;C:\Program Files\LibreOffice\program
             string envPATH = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.Process) ?? string.Empty;
             if (!string.IsNullOrEmpty(envPATH) && !envPATH.EndsWith(";"))
@@ -180,16 +186,43 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
                 // cmd> cd "D:\Users\akkostin\source\repos\DocumentAggregator\unoserver\src\unoserver"
                 WorkingDirectory = Scripts,
                 FileName = "python",
-                // TODO: use stdin & stdout (with --convert-to pdf)
-                Arguments = $"converter.py \"{inputFile}\" \"{outputFile}\"",
+                // TODO: Read and Write using stdin & stdout (with --convert-to pdf)
+                //Arguments = $"converter.py \"{inputFile}\" \"{outputFile}\"",
+                //Arguments = $"converter.py --convert-to pdf \"{inputFile}\" -",
+                Arguments = $"converter.py --convert-to pdf - -",
+                UseShellExecute = false,
+                RedirectStandardInput = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
             };
-            Process convertingProcess = Process.Start(processStartInfo);
+            Process convertingProcess = new Process() { StartInfo = processStartInfo };
+            convertingProcess.ErrorDataReceived += (sender, args) =>
+            {
+                _logger.Trace("Converter standard error output:\r\n{0}", args.Data);
+            };
+            _logger.Trace("Start a converter.");
+            convertingProcess.Start();
+            convertingProcess.BeginErrorReadLine();
+            documentContainer.ResultStream.Seek(0, SeekOrigin.Begin);
+            _logger.Debug("Copying a result stream to the standard input of the converter.");
+            documentContainer.ResultStream.CopyTo(convertingProcess.StandardInput.BaseStream);
+            _logger.Debug("Flushing all data in input stream and closing it.");
+            convertingProcess.StandardInput.Flush();
+            convertingProcess.StandardInput.Close();
+            //_logger.Debug("Instead writing to {0}, use a memory stream.", outputFile);
+            _logger.Debug("Reading converter output.");
+            var outputStream = new MemoryStream();
+            convertingProcess.StandardOutput.BaseStream.CopyTo(outputStream);
+            outputStream.Seek(0, SeekOrigin.Begin);
             convertingProcess.WaitForExit();
             if (convertingProcess.ExitCode != 0)
             {
+                _logger.Error("Converter exited with an exit code {0}.", convertingProcess.ExitCode);
                 Debugger.Break();
             }
-            return outputFile;
+            wordDocument.Close();
+            return outputStream;
+            //return outputFile;
         }
 
         #region IDisposable impl
