@@ -21,10 +21,6 @@ namespace DocAggregator.API.Core
     public class ClaimResponse : InteractorResponseBase
     {
         /// <summary>
-        /// Имя результирующего PDF файла.
-        /// </summary>
-        public string File { get; set; }
-        /// <summary>
         /// PDF результата обработки заявки.
         /// </summary>
         public MemoryStream ResultStream { get; set; }
@@ -62,7 +58,6 @@ namespace DocAggregator.API.Core
             FormResponse formResponse = _former.Handle(formRequest);
             if (formResponse.Success)
             {
-                Response.File = formResponse.Output;
                 Response.ResultStream = formResponse.ResultStream;
             }
             else

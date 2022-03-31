@@ -57,7 +57,7 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
         {
             get => _libreOfficeExecutable;
         }
-        private string _libreOfficeFolder;// = @"C:\Program Files\LibreOffice\program";
+        private string _libreOfficeFolder;
         private string _libreOfficeExecutable;
 
         /// <summary>
@@ -71,7 +71,7 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
                 _scripts = Path.GetFullPath(value);
             }
         }
-        private string _scripts;// = @"D:\Users\akkostin\source\repos\DocumentAggregator\unoserver\src\unoserver";
+        private string _scripts;
 
         private bool initializedValue;
         private bool disposedValue;
@@ -83,7 +83,6 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
 
             var editor = options.GetOptionsOf<EditorConfigOptions>();
             TemplatesDirectory = editor.TemplatesDir;
-            //TemporaryOutputDirectory = editor.OutputDir;
             LibreOfficeFolder = editor.LibreOffice;
             Scripts = editor.Scripts;
         }
@@ -99,27 +98,30 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
 
         private void Initialize()
         {
-            // Check Python
+            _logger.Trace("Check Python.");
             if (!File.Exists(Path.Combine(LibreOfficeFolder, "python.exe")))
             {
                 Debugger.Break();
             }
-            // Check scripts
+            _logger.Trace("Check scripts.");
             if (!Directory.Exists(Scripts))
             {
                 Debugger.Break();
             }
             // cmd> set PATH=%PATH%;C:\Program Files\LibreOffice\program
             string envPATH = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.Process) ?? string.Empty;
-            if (!string.IsNullOrEmpty(envPATH) && !envPATH.EndsWith(";"))
-                envPATH = envPATH + ';';
-            envPATH = envPATH + LibreOfficeFolder;
-            Environment.SetEnvironmentVariable("PATH", envPATH, EnvironmentVariableTarget.Process);
-            // If server is not launched yet.
+            if (!envPATH.Contains(LibreOfficeFolder))
+            {
+                if (!string.IsNullOrEmpty(envPATH) && !envPATH.EndsWith(";"))
+                    envPATH = envPATH + ';';
+                envPATH = envPATH + LibreOfficeFolder;
+                _logger.Debug("Setting LibreOffice folder in PATH variable.");
+                Environment.SetEnvironmentVariable("PATH", envPATH, EnvironmentVariableTarget.Process);
+            }
+            _logger.Trace("Check if server is not launched yet.");
             if (Process.GetProcessesByName("soffice").Length == 0)
             {
-                // Did not found a LibreOffice process.
-                // Starting a server.
+                _logger.Information("Did not found a LibreOffice process. Starting a server.");
                 ProcessStartInfo processServerInfo = new ProcessStartInfo()
                 {
                     // cmd> cd "D:\Users\akkostin\source\repos\DocumentAggregator\unoserver\src\unoserver"
@@ -130,7 +132,6 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
                 // cmd> python server.py --executable "C:\Program Files\LibreOffice\program\soffice"
                 _serverConverterProc = new Process();
                 _serverConverterProc.StartInfo = processServerInfo;
-                // _serverConverterProc.Exited += (s, a) => _logger.Debug("[serv] Exited");
                 _serverConverterProc.Start();
             }
         }
@@ -138,9 +139,6 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
         public IDocument OpenTemplate(string path)
         {
             EnsureInitialize();
-            //string tempFile = Path.Combine(TemporaryOutputDirectory, "TempCopy.docx");
-            // TODO: Copy into memory
-            //File.Copy(Path.Combine(TemplatesDirectory, path), tempFile, true);
             MemoryStream tempStream = new MemoryStream();
             File.OpenRead(Path.Combine(TemplatesDirectory, path)).CopyTo(tempStream);
             return new WordMLDocument(tempStream);
@@ -149,24 +147,19 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
         public IEnumerable<Insert> GetInserts(IDocument document)
         {
             EnsureInitialize();
-            // return (document as WordMLDocument).GetInserts();
             return _wmlEditor.FindInserts((document as WordMLDocument).MainPart);
         }
 
         public void SetInserts(IDocument document, IEnumerable<Insert> inserts)
         {
             EnsureInitialize();
-            // (document as WordMLDocument).SetInserts(inserts);
             _wmlEditor.SetInserts(System.Linq.Enumerable.ToArray(inserts));
         }
 
         public Stream Export(IDocument document)
-        //public string Export(IDocument document)
         {
             EnsureInitialize();
-            //string outputFile = Path.Combine(TemporaryOutputDirectory, "Output.pdf");
             WordMLDocument documentContainer = document as WordMLDocument;
-            //string inputFile = documentContainer.ResultPath;
             var wordDocument = documentContainer.Content;
             _logger.Trace("Save an edited part back into a stream.");
             using (var xw = XmlWriter.Create(wordDocument.MainDocumentPart.GetStream(FileMode.Create, FileAccess.Write)))
@@ -174,21 +167,21 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
                 documentContainer.MainPart.Save(xw);
             }
             wordDocument.Save();
-            //wordDocument.Close();
             // cmd> set PATH=%PATH%;C:\Program Files\LibreOffice\program
             string envPATH = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.Process) ?? string.Empty;
-            if (!string.IsNullOrEmpty(envPATH) && !envPATH.EndsWith(";"))
-                envPATH = envPATH + ';';
-            envPATH = envPATH + LibreOfficeFolder;
-            Environment.SetEnvironmentVariable("PATH", envPATH, EnvironmentVariableTarget.Process);
+            if (!envPATH.Contains(LibreOfficeFolder))
+            {
+                if (!string.IsNullOrEmpty(envPATH) && !envPATH.EndsWith(";"))
+                    envPATH = envPATH + ';';
+                envPATH = envPATH + LibreOfficeFolder;
+                _logger.Debug("Setting LibreOffice folder in PATH variable.");
+                Environment.SetEnvironmentVariable("PATH", envPATH, EnvironmentVariableTarget.Process);
+            }
             ProcessStartInfo processStartInfo = new ProcessStartInfo()
             {
                 // cmd> cd "D:\Users\akkostin\source\repos\DocumentAggregator\unoserver\src\unoserver"
                 WorkingDirectory = Scripts,
                 FileName = "python",
-                // TODO: Read and Write using stdin & stdout (with --convert-to pdf)
-                //Arguments = $"converter.py \"{inputFile}\" \"{outputFile}\"",
-                //Arguments = $"converter.py --convert-to pdf \"{inputFile}\" -",
                 Arguments = $"converter.py --convert-to pdf - -",
                 UseShellExecute = false,
                 RedirectStandardInput = true,
@@ -209,7 +202,6 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
             _logger.Debug("Flushing all data in input stream and closing it.");
             convertingProcess.StandardInput.Flush();
             convertingProcess.StandardInput.Close();
-            //_logger.Debug("Instead writing to {0}, use a memory stream.", outputFile);
             _logger.Debug("Reading converter output.");
             var outputStream = new MemoryStream();
             convertingProcess.StandardOutput.BaseStream.CopyTo(outputStream);
@@ -222,7 +214,6 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
             }
             wordDocument.Close();
             return outputStream;
-            //return outputFile;
         }
 
         #region IDisposable impl

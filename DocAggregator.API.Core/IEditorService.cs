@@ -19,17 +19,10 @@ namespace DocAggregator.API.Core
         public abstract string TemplatesDirectory { get; set; }
 
         /// <summary>
-        /// Получает или задаёт путь ко временным файлам.
-        /// </summary>
-        [System.Obsolete("Осуществляется отказ от временных файлов.")]
-        public abstract string TemporaryOutputDirectory { get; set; }
-
-        /// <summary>
         /// Открывает документ на основе заданного шаблона.
         /// </summary>
         /// <param name="resultFile">Путь к шаблону.</param>
         /// <returns>Документ, представляющий открытый шаблон.</returns>
-        //IDocument OpenTemplate(Stream resultFile);
         IDocument OpenTemplate(string resultFile);
 
         /// <summary>
@@ -50,8 +43,7 @@ namespace DocAggregator.API.Core
         /// Производит сохранение документа в формате PDF.
         /// </summary>
         /// <param name="document">Экземпляр документа.</param>
-        /// <returns>Путь к сконвертированному файлу.</returns>
+        /// <returns>Поток со сконвертированным файлом.</returns>
         Stream Export(IDocument document);
-        //string Export(IDocument document);
     }
 }

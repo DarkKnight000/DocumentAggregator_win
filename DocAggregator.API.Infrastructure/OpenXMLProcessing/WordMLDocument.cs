@@ -12,10 +12,9 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
     public class WordMLDocument : IDocument
     {
         /// <summary>
-        /// Временный путь к документу.
+        /// Поток, содержащий документ.
         /// </summary>
-        public string ResultPath { get; set; }
-        public Stream ResultStream { get; set; }
+        public MemoryStream ResultStream { get; set; }
         /// <summary>
         /// OpenXML представление документа.
         /// </summary>
@@ -28,14 +27,11 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
         /// <summary>
         /// Инициализирует исходный документ по заданному пути.
         /// </summary>
-        /// <param name="path">Путь к исходному файлу.</param>
-        public WordMLDocument(Stream path)
-        //public WordMLDocument(string path)
+        /// <param name="stream">Путь к исходному файлу.</param>
+        public WordMLDocument(MemoryStream stream)
         {
-            ResultPath = null; // path;
-            ResultStream = path;
-            // TODO: Read from stream
-            Content = WordprocessingDocument.Open(path, true);
+            ResultStream = stream;
+            Content = WordprocessingDocument.Open(stream, true);
 
             MainPart = LoadPart(Content.MainDocumentPart);
         }

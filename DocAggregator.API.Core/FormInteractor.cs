@@ -22,10 +22,6 @@ namespace DocAggregator.API.Core
     public class FormResponse : InteractorResponseBase
     {
         /// <summary>
-        /// Путь к PDF файлу заявки.
-        /// </summary>
-        public string Output { get; set; }
-        /// <summary>
         /// PDF результата обработки, хранимый в памяти.
         /// </summary>
         public MemoryStream ResultStream { get; set; }
@@ -88,7 +84,6 @@ namespace DocAggregator.API.Core
                 }
             }
             _editor.SetInserts(document, inserts);
-            Response.Output = null; //_editor.Export(document);
             Response.ResultStream = _editor.Export(document) as MemoryStream;
         }
     }

@@ -10,7 +10,6 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
         public const string EditorConfig = "Editor";
 
         public string TemplatesDir { get; set; }
-        public string OutputDir { get; set; }
         public string LibreOffice { get; set; }
         public string Scripts { get; set; }
 
