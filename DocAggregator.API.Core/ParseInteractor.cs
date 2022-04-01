@@ -39,16 +39,16 @@
             _fieldRepo = fieldRepository;
         }
 
-        protected override void Handle()
+        protected override void Handle(ParseResponse response, ParseRequest request)
         {
-            var insert = Request.Insertion;
+            var insert = request.Insertion;
             switch (insert.Kind)
             {
                 case InsertKind.CheckMark:
-                    insert.ReplacedCheckmark = ParseBoolField(Request.ClaimID, insert.OriginalMask);
+                    insert.ReplacedCheckmark = ParseBoolField(request.ClaimID, insert.OriginalMask);
                     break;
                 default: // InsertKind.PlainText
-                    insert.ReplacedText = ParseField(Request.ClaimID, insert.OriginalMask);
+                    insert.ReplacedText = ParseField(request.ClaimID, insert.OriginalMask);
                     break;
             }
         }

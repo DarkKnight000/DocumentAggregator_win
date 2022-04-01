@@ -46,23 +46,23 @@ namespace DocAggregator.API.Core
             _repo = repository;
         }
 
-        protected override void Handle()
+        protected override void Handle(ClaimResponse response, ClaimRequest request)
         {
-            Claim claim = _repo.GetClaim(Request.ClaimID);
+            Claim claim = _repo.GetClaim(request.ClaimID);
             if (claim == null)
             {
-                throw new ArgumentException("Заявка не найдена.", nameof(Request.ClaimID));
+                throw new ArgumentException("Заявка не найдена.", nameof(request.ClaimID));
             }
             FormRequest formRequest = new FormRequest();
             formRequest.Claim = claim;
             FormResponse formResponse = _former.Handle(formRequest);
             if (formResponse.Success)
             {
-                Response.ResultStream = formResponse.ResultStream;
+                response.ResultStream = formResponse.ResultStream;
             }
             else
             {
-                Response.AddErrors(formResponse.Errors.ToArray());
+                response.AddErrors(formResponse.Errors.ToArray());
             }
         }
     }

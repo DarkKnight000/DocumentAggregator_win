@@ -10,16 +10,6 @@ namespace DocAggregator.API.Core
     public abstract class InteractorBase<TResponse, TRequest> where TResponse : InteractorResponseBase, new()
     {
         /// <summary>
-        /// Объект запроса.
-        /// </summary>
-        protected TRequest Request { get; private set; }
-
-        /// <summary>
-        /// Объект ответа.
-        /// </summary>
-        protected TResponse Response { get; private set; }
-
-        /// <summary>
         /// Служба ведения журнала.
         /// </summary>
         protected ILogger Logger { get; set; }
@@ -36,24 +26,25 @@ namespace DocAggregator.API.Core
         /// <returns>Объект ответа.</returns>
         public TResponse Handle(TRequest request)
         {
-            Request = request;
-            Response = new TResponse();
+            TResponse response = new TResponse();
             try
             {
-                Handle();
+                Handle(response, request);
             }
             catch (Exception ex)
             {
                 Logger?.Error(ex, "An error occured in {0} while handling a request.", GetType().Name);
-                Response.Errors.Add(ex);
+                response.Errors.Add(ex);
             }
-            return Response;
+            return response;
         }
 
         /// <summary>
         /// Метод для внутреннего вызова. Производит обработку без отлова исключений,
         /// используя локальные поля запроса и ответа.
         /// </summary>
-        protected abstract void Handle();
+        /// <param name="response">Объект ответа.</param>
+        /// <param name="request">Объект запроса.</param>
+        protected abstract void Handle(TResponse response, TRequest request);
     }
 }

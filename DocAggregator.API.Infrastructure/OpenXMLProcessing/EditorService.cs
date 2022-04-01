@@ -30,17 +30,6 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
         }
         private string _templatesDirectory;
 
-        [Obsolete]
-        public string TemporaryOutputDirectory
-        {
-            get => _temporaryOutputDirectory;
-            set
-            {
-                _temporaryOutputDirectory = Path.GetFullPath(value);
-            }
-        }
-        private string _temporaryOutputDirectory;
-
         /// <summary>
         /// Получает или задаёт путь к пакету программ LibreOffice.
         /// </summary>
