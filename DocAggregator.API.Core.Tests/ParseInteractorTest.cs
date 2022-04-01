@@ -3,7 +3,7 @@ using Xunit;
 
 namespace DocAggregator.API.Core.Tests
 {
-    public class ParseInteractorTest
+    public class ParseInteractorTest : TestBase
     {
         [Theory]
         [InlineData("10", "val", "val")]
@@ -19,7 +19,7 @@ namespace DocAggregator.API.Core.Tests
             // 2. Берём заявку
             var request = new ParseRequest() { Insertion = new Insert(insertionFormat) };
             // 3. Получаем интерактор
-            var parseInteractor = new ParseInteractor(mockMixedFieldRepository.Object);
+            var parseInteractor = new ParseInteractor(mockMixedFieldRepository.Object, LoggerFactory);
 
             // 4. Разбираем поле с числовым идентификатором заявки в значение поля
             var response = parseInteractor.Handle(request);
@@ -40,7 +40,7 @@ namespace DocAggregator.API.Core.Tests
             // 2. Берём заявку
             var request = new ParseRequest() { Insertion = new Insert("10") };
             // 3. Получаем интерактор
-            var parseInteractor = new ParseInteractor(mockMixedFieldRepository.Object);
+            var parseInteractor = new ParseInteractor(mockMixedFieldRepository.Object, LoggerFactory);
             var expected = "";
 
             // 4. Разбираем поле с числовым идентификатором заявки в значение поля
@@ -61,7 +61,7 @@ namespace DocAggregator.API.Core.Tests
             // 2. Берём заявку
             var request = new ParseRequest() { Insertion = new Insert(insertionFormat) };
             // 3. Получаем интерактор
-            var parseInteractor = new ParseInteractor(mockMixedFieldRepository.Object);
+            var parseInteractor = new ParseInteractor(mockMixedFieldRepository.Object, LoggerFactory);
 
             // 4. Разбираем поле с буквенным идентификатором заявки в значение поля
             var response = parseInteractor.Handle(request);
@@ -79,7 +79,7 @@ namespace DocAggregator.API.Core.Tests
             // 2. Берём заявку
             var request = new ParseRequest() { Insertion = new Insert("name") };
             // 3. Получаем интерактор
-            var parseInteractor = new ParseInteractor(mockMixedFieldRepository.Object);
+            var parseInteractor = new ParseInteractor(mockMixedFieldRepository.Object, LoggerFactory);
             var expected = "";
 
             // 4. Разбираем поле с буквенным идентификатором заявки в значение поля
@@ -114,7 +114,7 @@ namespace DocAggregator.API.Core.Tests
             // 2. Берём заявку
             var request = new ParseRequest() { Insertion = new Insert(insertionFormat) };
             // 3. Получаем интерактор
-            var parseInteractor = new ParseInteractor(mockMixedFieldRepository.Object);
+            var parseInteractor = new ParseInteractor(mockMixedFieldRepository.Object, LoggerFactory);
 
             // 4. Разбираем поле со смешанным идентификатором заявки в значение поля
             var response = parseInteractor.Handle(request);
@@ -139,7 +139,7 @@ namespace DocAggregator.API.Core.Tests
             // 2. Берём заявку
             var request = new ParseRequest() { Insertion = new Insert(insertionFormat, InsertKind.CheckMark) };
             // 3. Получаем интерактор
-            var parseInteractor = new ParseInteractor(mockMixedFieldRepository.Object);
+            var parseInteractor = new ParseInteractor(mockMixedFieldRepository.Object, LoggerFactory);
 
             // 4. Разбираем поле с идентификатором поля заявки в значение логического поля
             var response = parseInteractor.Handle(request);

@@ -4,7 +4,7 @@ using Xunit;
 
 namespace DocAggregator.API.Core.Tests
 {
-    public class ClaimInteractorTest
+    public class ClaimInteractorTest : TestBase
     {
         [Fact]
         public void ClaimInteractor_SuccessScenario()
@@ -21,7 +21,7 @@ namespace DocAggregator.API.Core.Tests
             //var mockFieldRepository = new Mock<IMixedFieldRepository>();
             //mockFieldRepository.Setup(r => r.GetFieldByNameOrId(It.IsAny<string>())).Returns("text");
             // 4. Потом отработать заполнение
-            var claimInteractor = new ClaimInteractor(Mock.Of<DocumentInteractorProxy>(), mockClaimRepository.Object);
+            var claimInteractor = new ClaimInteractor(new Mock<FormInteractor>(null, null, LoggerFactory).Object, mockClaimRepository.Object, LoggerFactory);
             // 5. Получить запрос
             var request = new ClaimRequest() { ClaimID = 18012 };
 
@@ -45,7 +45,7 @@ namespace DocAggregator.API.Core.Tests
             // 3. Для заполнения нужен репозиторий полей
             //var mockFieldRepository = new Mock<IMixedFieldRepository>();
             // 4. Потом отработать заполнение
-            var claimInteractor = new ClaimInteractor(null, mockClaimRepository.Object);
+            var claimInteractor = new ClaimInteractor(null, mockClaimRepository.Object, LoggerFactory);
             // 5. Получить запрос
             var request = new ClaimRequest() { ClaimID = 18011 };
 

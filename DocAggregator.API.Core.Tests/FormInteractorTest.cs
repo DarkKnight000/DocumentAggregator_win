@@ -17,7 +17,7 @@ namespace DocAggregator.API.Core.Tests
             var request = new FormRequest();
             request.Claim = new Claim();
             // 3. Создаём обект интерактора документа
-            var formInteractor = new FormInteractor(new Mock<ParseInteractor>(null).Object, mockEditor.Object, Logger);
+            var formInteractor = new FormInteractor(new Mock<ParseInteractor>(null, LoggerFactory).Object, mockEditor.Object, LoggerFactory);
 
             // 4. Заполняем содержимое документа
             var response = formInteractor.Handle(request);
@@ -35,7 +35,7 @@ namespace DocAggregator.API.Core.Tests
             var request = new FormRequest();
             request.Claim = new Claim();
             // 3. Создаём обект интерактора документа
-            var formInteractor = new FormInteractor(new Mock<ParseInteractor>(null).Object, mockEditor.Object, Logger);
+            var formInteractor = new FormInteractor(new Mock<ParseInteractor>(null, LoggerFactory).Object, mockEditor.Object, LoggerFactory);
 
             // 4. Заполняем содержимое документа
             var response = formInteractor.Handle(request);
