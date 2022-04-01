@@ -16,20 +16,8 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
         /// Подключение к БД.
         /// </summary>
         OracleConnection _connection;
+        SqlResource _sqlResource;
         Dictionary<int, Dictionary<string, string>> _claimFieldsCache;
-
-        /// <summary>
-        /// Получает или задаёт путь к файлу запросов.
-        /// </summary>
-        public string QueriesSource
-        {
-            get => _queriesSource;
-            set
-            {
-                _queriesSource = Path.GetFullPath(value);
-            }
-        }
-        private string _queriesSource;
 
         /// <summary>
         /// DataSource подключения к БД.
@@ -49,13 +37,13 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
         /// <summary>
         /// Инициализирует объект <see cref="MixedFieldRepository"/>.
         /// </summary>
-        public MixedFieldRepository(IOptionsFactory optionsFactory, ILoggerFactory logger)
+        public MixedFieldRepository(SqlResource sqlResource, IOptionsFactory optionsFactory, ILoggerFactory logger)
         {
             _logger = logger.GetLoggerFor<IClaimFieldRepository>();
+            _sqlResource = sqlResource;
             _claimFieldsCache = new Dictionary<int, Dictionary<string, string>>();
 
             var db = optionsFactory.GetOptionsOf<RepositoryConfigOptions>();
-            QueriesSource = db.QueriesFile;
             Server = db.DataSource;
             Username = db.UserID;
             Password = db.Password;
@@ -91,10 +79,9 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
         /// </returns>
         private Dictionary<string, string> GetFields(int claimID)
         {
-            SqlResource resource = SqlResource.InitializeSqlResource(QueriesSource, _logger);
             Dictionary<string, string> result = new Dictionary<string, string>();
-            string attributesQuery = string.Format(resource.GetStringByName("Q_HRDAttributeIdsValues_ByRequest"), claimID);
-            string viewQuery = string.Format(resource.GetStringByName("Q_HRDAddressAction_ByRequest"), claimID);
+            string attributesQuery = string.Format(_sqlResource.GetStringByName("Q_HRDAttributeIdsValues_ByRequest"), claimID);
+            string viewQuery = string.Format(_sqlResource.GetStringByName("Q_HRDAddressAction_ByRequest"), claimID);
             OracleCommand command = null;
             OracleDataReader reader = null;
             try
@@ -137,7 +124,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
             {
                 if (command != null)
                 {
-                    StaticExtensions.ShowExceptionMessage(_connection, ex, command.CommandText);
+                    StaticExtensions.ShowExceptionMessage(_connection, ex, command.CommandText, _sqlResource);
                 }
             }
             return result;

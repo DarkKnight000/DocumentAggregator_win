@@ -22,11 +22,12 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
         /// <param name="connection">Открытое подключение к БД.</param>
         /// <param name="exception">Отловленное исключение.</param>
         /// <param name="query">Проблемный запрос.</param>
+        /// <param name="sqlResource">Ресурс запросов.</param>
         /// <exception cref="ArgumentNullException"/>
         /// <exception cref="ArgumentException"/>
         /// <exception cref="IndexOutOfRangeException"/>
         /// <exception cref="Exception"/>
-        internal static void ShowExceptionMessage(OracleConnection connection, OracleException exception, string query)
+        internal static void ShowExceptionMessage(OracleConnection connection, OracleException exception, string query, SqlResource sqlResource)
         {
             if (connection == null || exception == null || query == null)
             {
@@ -43,7 +44,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                 case 911: // ORA-00911: invalid character
                 case 942: // ORA-00942: table or view does not exist
                 case 12170: // ORA-12170: TNS:Connect timeout occurred
-                    OracleCommand command = new OracleCommand(SqlResource.GetSqlResource().GetStringByName("P_SQLErrorIndexRetrieve"), connection);
+                    OracleCommand command = new OracleCommand(sqlResource.GetStringByName("P_SQLErrorIndexRetrieve"), connection);
                     command.Parameters.Add("sqltext", query);
                     command.Parameters.Add("errorpos", OracleDbType.Decimal, ParameterDirection.Output);
                     command.ExecuteNonQuery();

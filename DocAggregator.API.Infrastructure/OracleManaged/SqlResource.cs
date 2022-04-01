@@ -35,18 +35,16 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
     public class SqlResource
     {
         private ILogger _logger;
-        private static SqlResource _singletone;
         private Dictionary<string, SqlQuery> _dictionary;
-        private string _configuration;
 
-        SqlResource(string file, ILogger logger)
+        public SqlResource(IOptionsFactory optionsFactory, ILoggerFactory loggerFactory)
         {
-            _logger = logger;
-            _configuration = file;
+            _logger = loggerFactory.GetLoggerFor<SqlResource>();
+            var db = optionsFactory.GetOptionsOf<RepositoryConfigOptions>();
             List<SqlQuery> list;
 
             // deserialize the xml file
-            using (StreamReader streamReader = new StreamReader(file))
+            using (StreamReader streamReader = new StreamReader(Path.GetFullPath(db.QueriesFile)))
             {
                 XmlSerializer deserializer = new XmlSerializer(typeof(List<SqlQuery>));
                 list = (List<SqlQuery>)deserializer.Deserialize(streamReader);
@@ -56,46 +54,6 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
             {
                 _dictionary.Add(item.Name, item);
             }
-        }
-
-        /// <summary>
-        /// Получает статически хранимый синглтон ресурса запросов.
-        /// </summary>
-        /// <returns>Ресурс запроса.</returns>
-        public static SqlResource GetSqlResource()
-        {
-            if (_singletone == null)
-            {
-                throw new InvalidOperationException("Конфигурация не была инициализирована!");
-            }
-            return _singletone;
-        }
-
-        /// <summary>
-        /// Инициализирует статически хранимый синглтон ресурса запросов.
-        /// </summary>
-        /// <param name="configuration">Путь к файлу с запросами.</param>
-        /// <param name="logger">Объект логгирования.</param>
-        /// <returns>Ресурс запросов.</returns>
-        public static SqlResource InitializeSqlResource(string configuration, ILogger logger)
-        {
-            if (_singletone == null)
-            {
-                if (configuration == null)
-                {
-                    throw new ArgumentNullException(nameof(configuration));
-                }
-                if (logger == null)
-                {
-                    throw new ArgumentNullException(nameof(logger));
-                }
-                _singletone = new SqlResource(configuration, logger);
-            }
-            else if (configuration != null && _singletone._configuration != configuration)
-            {
-                throw new ArgumentException("Попытка получить ресурс другой конфигурации.", nameof(configuration));
-            }
-            return _singletone;
         }
 
         /// <summary>

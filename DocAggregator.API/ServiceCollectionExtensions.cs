@@ -26,6 +26,8 @@ namespace DocAggregator.API
         /// <returns>Та же коллекция сервисов, переданная в метод расширения.</returns>
         public static IServiceCollection AddInfrastructure(this IServiceCollection serviceCollection)
         {
+            serviceCollection.AddSingleton<Infrastructure.OracleManaged.SqlResource>();
+
             serviceCollection.AddSingleton<IEditorService, Infrastructure.OpenXMLProcessing.EditorService>();
             serviceCollection.AddSingleton<IClaimRepository, Infrastructure.OracleManaged.ClaimRepository>();
             serviceCollection.AddSingleton<IClaimFieldRepository, Infrastructure.OracleManaged.MixedFieldRepository>();
