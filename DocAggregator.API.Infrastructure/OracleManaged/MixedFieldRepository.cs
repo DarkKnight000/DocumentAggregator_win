@@ -122,6 +122,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
             }
             catch (OracleException ex)
             {
+                _logger.Error(ex, "An error occured when retrieving claim filds. ClaimID: {0}.", claimID);
                 if (command != null)
                 {
                     StaticExtensions.ShowExceptionMessage(_connection, ex, command.CommandText, _sqlResource);

@@ -35,7 +35,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
     public class SqlResource
     {
         private ILogger _logger;
-        private Dictionary<string, SqlQuery> _dictionary;
+        private Dictionary<string, SqlQuery> _queriesContainer;
 
         public SqlResource(IOptionsFactory optionsFactory, ILoggerFactory loggerFactory)
         {
@@ -49,10 +49,10 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                 XmlSerializer deserializer = new XmlSerializer(typeof(List<SqlQuery>));
                 list = (List<SqlQuery>)deserializer.Deserialize(streamReader);
             }
-            _dictionary = new Dictionary<string, SqlQuery>();
+            _queriesContainer = new Dictionary<string, SqlQuery>();
             foreach (var item in list)
             {
-                _dictionary.Add(item.Name, item);
+                _queriesContainer.Add(item.Name, item);
             }
         }
 
@@ -70,11 +70,11 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
         /// <returns>Объект запроса.</returns>
         public SqlQuery GetQueryByName(string name)
         {
-            SqlQuery query = _dictionary[name];
-
-            if (query == null)
+            if (!_queriesContainer.ContainsKey(name))
+            {
                 throw new ArgumentException("The query '" + name + "' is not valid.");
-
+            }
+            SqlQuery query = _queriesContainer[name];
             if (query.IsObsolete)
             {
                 _logger.Warning("Trying to get an obsolete query.");
