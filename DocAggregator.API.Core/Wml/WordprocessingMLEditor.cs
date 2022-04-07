@@ -29,13 +29,17 @@ namespace DocAggregator.API.Core.Wml
         {
             if (document == null || document.Root == null)
             {
-                // Возвращает пустое перечисление.
+                _logger.Trace("Будет возвращена пустая коллекция вставок.");
                 yield break;
             }
-            foreach (var sdt in document.Root.DescendantsAndSelf(W.sdt))
+            _logger.Debug("Получаем все не вложенные элементы управления.");
+            var topLevelControls = from control in document.Root.DescendantsAndSelf(W.sdt)
+                                   where !control.Ancestors(W.sdt).Any()
+                                   select control;
+            foreach (var sdt in topLevelControls)
             {
                 InsertKind? detectedKind = null;
-                // Локальная функция позволяет проверить значение перед присвоением локальной переменной.
+                /// Локальная функция позволяет проверить значение перед присвоением локальной переменной.
                 void SetDetectedInsertKind(InsertKind insertKind)
                 {
                     if (detectedKind != null)
@@ -44,7 +48,7 @@ namespace DocAggregator.API.Core.Wml
                     }
                     detectedKind = insertKind;
                 }
-                // Обработка повреждений структуры документа.
+                _logger.Trace("Обработка повреждений структуры документа.");
                 XElement properties = sdt.Element(W.sdtPr);
                 if (properties == null)
                 {
@@ -57,7 +61,7 @@ namespace DocAggregator.API.Core.Wml
                     _logger.Warning("Have found a content control with empty alias.");
                     continue;
                 }
-                // Определение типа элемента управления содержимым.
+                _logger.Trace("Определение типа элемента управления содержимым.");
                 if (properties.Element(W.text) != null)
                 {
                     SetDetectedInsertKind(InsertKind.PlainText);
@@ -68,7 +72,16 @@ namespace DocAggregator.API.Core.Wml
                 }
                 if (!detectedKind.HasValue)
                 {
-                    _logger.Warning("Have found a content control, but not its kind.");
+                    _logger.Trace("Проверка на таблицу.");
+                    var table = sdt.Element(W.sdtContent).Element(W.tbl);
+                    if (table != null)
+                    {
+                        yield return new FormInsert(_logger) { AssociatedChunk = sdt };
+                    }
+                    else
+                    {
+                        _logger.Warning("Have found a content control, but not its kind.");
+                    }
                     continue;
                 }
                 yield return new Insert(alias, detectedKind.Value, _logger) { AssociatedChunk = sdt };
@@ -87,19 +100,22 @@ namespace DocAggregator.API.Core.Wml
                 XElement innerContent = sdt.Element(W.sdtContent);
                 XElement cell = innerContent.Element(W.tc);
                 if (cell != null)
-                {   // We are inside a table cell.
+                {
+                    _logger.Debug("Processing a table cell.");
                     ReplaceContentControl(sdt, cell, insert);
                     continue;
                 }
                 XElement par = innerContent.Element(W.p);
                 if (par != null)
-                {   // We are in a paragraph.
+                {
+                    _logger.Debug("Processing a paragraph.");
                     ReplaceContentControl(sdt, par, insert);
                     continue;
                 }
                 XElement run = innerContent.Element(W.r);
                 if (run != null)
                 {
+                    _logger.Debug("Processing a text range.");
                     ReplaceContentControl(sdt, run, insert);
                     continue;
                 }

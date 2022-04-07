@@ -70,6 +70,31 @@ namespace DocAggregator.API.Core.Tests
         }
 
         [Theory]
+        [XmlData("..\\..\\..\\XmlData\\TableEmptyField.xml")]
+        public void WMLTools(string input)
+        {
+            var WMLDocument = XDocument.Parse(input);
+            var WMLEditor = new Wml.WordprocessingMLEditor(Logger);
+
+            var controls = WMLEditor.FindInserts(WMLDocument);
+
+            var expectedCount = 1;
+            var actualCount = controls.Count();
+            Assert.Equal(expectedCount, actualCount);
+
+            var insert = controls.First();
+
+            var expectedKind = InsertKind.MultiField;
+            var actualKind = insert.Kind;
+            Assert.Equal(expectedKind, actualKind);
+
+            var sdtText = insert.AssociatedChunk as XElement;
+            Assert.NotNull(sdtText);
+            Assert.Equal(Wml.W.sdt, sdtText.Name);
+            Assert.Contains(sdtText.Descendants(), e => e.Name == Wml.W.tbl);
+        }
+
+        [Theory]
         [XmlData("..\\..\\..\\XmlData\\SingleEmptyTextField.xml")]
         public void WMLTools_SetInserts_SetPlainTextField(string input)
         {

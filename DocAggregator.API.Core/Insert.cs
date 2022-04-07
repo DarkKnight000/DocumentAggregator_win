@@ -9,16 +9,18 @@
         /// Неизвестный тип.
         /// </summary>
         Unknown,
-
         /// <summary>
         /// Обыкновенный текст.
         /// </summary>
         PlainText,
-
         /// <summary>
         /// Флажок.
         /// </summary>
         CheckMark,
+        /// <summary>
+        /// Таблица или иная встроеная форма.
+        /// </summary>
+        MultiField,
     }
 
     /// <summary>
