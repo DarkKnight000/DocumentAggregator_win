@@ -5,6 +5,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Resources\ClaimTemplateMap.xml" />
+    <None Remove="Resources\SqlResource.xml" />
+  </ItemGroup>
+
+  <ItemGroup>
     <COMReference Include="Microsoft.Office.Interop.Word">
       <WrapperTool>tlbimp</WrapperTool>
       <VersionMinor>6</VersionMinor>
@@ -14,6 +19,11 @@
       <Isolated>false</Isolated>
       <EmbedInteropTypes>true</EmbedInteropTypes>
     </COMReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Resources\ClaimTemplateMap.xml" />
+    <Content Include="Resources\SqlResource.xml" />
   </ItemGroup>
 
   <ItemGroup>

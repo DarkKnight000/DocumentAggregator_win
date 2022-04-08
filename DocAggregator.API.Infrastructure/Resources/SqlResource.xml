@@ -1,0 +1,72 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<!--
+P - procedures, end with ';'
+Q - queries, end without ';'
+-->
+<ArrayOfSqlQuery xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<SqlQuery name="P_SQLErrorIndexRetrieve">
+DECLARE
+	c        INTEGER := DBMS_SQL.open_cursor();
+	errorpos integer := -1;
+BEGIN
+	BEGIN
+		DBMS_SQL.parse(c, :sqltext, DBMS_SQL.native);
+	EXCEPTION
+		WHEN OTHERS THEN
+			errorpos := DBMS_SQL.LAST_ERROR_POSITION();
+	END;
+	:errorpos := errorpos;
+	DBMS_SQL.close_cursor(c);
+END;
+	</SqlQuery>
+	<SqlQuery name="Q_HRDCategoryAttributeNames_ByRequest">
+select
+	cat.request_attr_name as category,
+	attr.request_attr_name as attribute
+from hrd.request_attr_hdr attr
+	join hrd.request_attr_hdr cat
+		on (attr.p_request_attr_hdr_id = cat.request_attr_hdr_id)
+	join hrd.request_attr_types typ
+		on (attr.request_attr_hdr_id = typ.request_attr_hdr_id)
+	join hrd.request_hdr req
+		on (req.request_type_id = typ.request_type_id)
+where req.request_hdr_id = {0}
+order by typ.order_number
+	</SqlQuery>
+	<SqlQuery name="Q_HRDAttributeIdsValues_ByRequest">
+select
+	attr.request_attr_hdr_id AS attr_id,
+    pty.value_number
+		|| pty.value_varchar2
+        || pty.value_date
+        || decode(pty.value_boolean, 0, 'Нет', 1, 'Да', null)
+        || pty.value_clob
+		AS attr_value
+from hrd.request_attr_hdr attr
+    join hrd.request_attr_hdr cat
+        on (attr.p_request_attr_hdr_id = cat.request_attr_hdr_id)
+    join hrd.request_attr_types typ
+        on (attr.request_attr_hdr_id = typ.request_attr_hdr_id)
+    join hrd.request_hdr req
+        on (req.request_type_id = typ.request_type_id)
+    -- Позволяет выбирать атрибуты заявки из hrd.request_attr_hdr
+    -- без какого-либо значения из hrd.request_attr_pty
+    left outer join hrd.request_attr_pty pty
+        on (pty.request_attr_hdr_id = attr.request_attr_hdr_id
+            AND pty.request_hdr_id = req.request_hdr_id)
+where req.request_hdr_id = {0}
+order by typ.order_number
+	</SqlQuery>
+	<SqlQuery name="Q_HRDAddressAction_ByRequest">
+SELECT
+    build.description AS address,
+    DECODE(acc.action, 1, 'True', 'False') AS allow,
+    DECODE(acc.action, 0, 'True', 'False') AS deny
+FROM hrd.request_hdr req
+    JOIN obd_sys.user_location loc ON (loc.user_id = req.applicant_id)
+    JOIN hrd.dict_room room ON (room.room_id = loc.room_id)
+    JOIN hrd.building build ON (build.building_id = room.building_id)
+    JOIN hrd.it_access_right_request acc ON (acc.request_hdr_id = req.request_hdr_id)
+WHERE req.request_hdr_id = {0}
+	</SqlQuery>
+</ArrayOfSqlQuery>
