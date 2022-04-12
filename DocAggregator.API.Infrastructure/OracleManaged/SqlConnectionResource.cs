@@ -1,4 +1,5 @@
 ﻿using DocAggregator.API.Core;
+using Oracle.ManagedDataAccess.Client;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -30,16 +31,36 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
     }
 
     /// <summary>
-    /// Класс, предоставляющий ресурс именнованных запросов.
+    /// Класс, предоставляющий ресурс именнованных запросов и единое подключение к БД.
     /// </summary>
-    public class SqlResource
+    public class SqlConnectionResource
     {
         private ILogger _logger;
         private Dictionary<string, SqlQuery> _queriesContainer;
 
-        public SqlResource(IOptionsFactory optionsFactory, ILoggerFactory loggerFactory)
+        /// <summary>
+        /// Подключение к БД.
+        /// </summary>
+        public OracleConnection Connection { get; set; }
+
+        /// <summary>
+        /// DataSource подключения к БД.
+        /// </summary>
+        public string Server { get; set; }
+
+        /// <summary>
+        /// UserID подключения к БД.
+        /// </summary>
+        public string Username { get; set; }
+
+        /// <summary>
+        /// Password подключения к БД.
+        /// </summary>
+        public string Password { get; set; }
+
+        public SqlConnectionResource(IOptionsFactory optionsFactory, ILoggerFactory loggerFactory)
         {
-            _logger = loggerFactory.GetLoggerFor<SqlResource>();
+            _logger = loggerFactory.GetLoggerFor<SqlConnectionResource>();
             var db = optionsFactory.GetOptionsOf<RepositoryConfigOptions>();
             List<SqlQuery> list;
 
@@ -54,6 +75,17 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
             {
                 _queriesContainer.Add(item.Name, item);
             }
+
+            Server = db.DataSource;
+            Username = db.UserID;
+            Password = db.Password;
+
+            Connection = new OracleConnection(new OracleConnectionStringBuilder()
+            {
+                DataSource = Server,
+                UserID = Username,
+                Password = Password,
+            }.ToString());
         }
 
         /// <summary>

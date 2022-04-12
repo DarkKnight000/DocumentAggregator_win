@@ -27,7 +27,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
         /// <exception cref="ArgumentException"/>
         /// <exception cref="IndexOutOfRangeException"/>
         /// <exception cref="Exception"/>
-        internal static void ShowExceptionMessage(OracleConnection connection, OracleException exception, string query, SqlResource sqlResource)
+        internal static void ShowExceptionMessage(OracleConnection connection, OracleException exception, string query, SqlConnectionResource sqlResource)
         {
             if (connection == null || exception == null || query == null)
             {

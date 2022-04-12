@@ -3,5 +3,8 @@
 Root: D:\Users\akkostin\Documents\Templates\Edited\
 -->
 <ArrayOfTemplateBind xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-	<TemplateBind typeID="10">Заявка для сотрудников НТЦ (версия 2.0.5).docx</TemplateBind>
+	<TemplateBind typeID="10" systemID="420">Заявка для сотрудников НТЦ (версия 2.0.5).docx</TemplateBind>
+	<TemplateBind typeID="10" systemID="86984">Заявка для сотрудников НТЦ ИС ЛУ ЦГИС.DOCX</TemplateBind>
+	<TemplateBind typeID="10" systemID="380">Заявка для сотрудников НТЦ ИС КП.DOCX</TemplateBind>
+	<TemplateBind typeID="10" systemID="85908">Заявка для удаленных сотрудников НТЦ ИС Вектор.docx</TemplateBind>
 </ArrayOfTemplateBind>

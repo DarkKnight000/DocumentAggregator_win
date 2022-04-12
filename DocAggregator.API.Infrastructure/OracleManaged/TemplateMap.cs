@@ -19,6 +19,11 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
         [XmlAttribute("typeID")]
         public int TypeID { get; set; }
         /// <summary>
+        /// Идентификатор информационной системы.
+        /// </summary>
+        [XmlAttribute("systemID")]
+        public int SystemID { get; set; }
+        /// <summary>
         /// Имя файла.
         /// </summary>
         [XmlText]
@@ -47,8 +52,9 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
             _bindsContainer = config;
         }
 
-        public string GetPathByType(int typeID) => GetBindByType(typeID)?.FileName;
+        public string GetPathByTypeAndSystem(int typeID, int systemID) => GetBindByTypeAndSystem(typeID, systemID)?.FileName;
 
-        public TemplateBind GetBindByType(int typeID) => _bindsContainer.Single(bind => bind.TypeID == typeID);
+        public TemplateBind GetBindByTypeAndSystem(int typeID, int systemID) =>
+            _bindsContainer.Single(bind => bind.TypeID == typeID && bind.SystemID == systemID);
     }
 }

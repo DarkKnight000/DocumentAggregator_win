@@ -1,0 +1,55 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<DataSource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	documentKind="14">
+	<ArrayOfRequest>
+		<Request id="0" keyColumn="attr_id" valColumn="attr_value">
+select
+	attr.request_attr_hdr_id AS attr_id,
+    pty.value_number
+		|| pty.value_varchar2
+        || pty.value_date
+        || decode(pty.value_boolean, 0, 'Нет', 1, 'Да', null)
+        || pty.value_clob
+		AS attr_value
+from hrd.request_attr_hdr attr
+    join hrd.request_attr_hdr cat
+        on (attr.p_request_attr_hdr_id = cat.request_attr_hdr_id)
+    join hrd.request_attr_types typ
+        on (attr.request_attr_hdr_id = typ.request_attr_hdr_id)
+    join hrd.request_hdr req
+        on (req.request_type_id = typ.request_type_id)
+    -- Позволяет выбирать атрибуты заявки из hrd.request_attr_hdr
+    -- без какого-либо значения из hrd.request_attr_pty
+    left outer join hrd.request_attr_pty pty
+        on (pty.request_attr_hdr_id = attr.request_attr_hdr_id
+            AND pty.request_hdr_id = req.request_hdr_id)
+where req.request_hdr_id = {0}
+order by typ.order_number
+		</Request>
+		<Request id="1">
+SELECT
+    build.description AS address,
+    DECODE(acc.action, 1, 'True', 'False') AS allow,
+    DECODE(acc.action, 0, 'True', 'False') AS deny
+FROM hrd.request_hdr req
+    JOIN obd_sys.user_location loc ON (loc.user_id = req.applicant_id)
+    JOIN hrd.dict_room room ON (room.room_id = loc.room_id)
+    JOIN hrd.building build ON (build.building_id = room.building_id)
+    JOIN hrd.it_access_right_request acc ON (acc.request_hdr_id = req.request_hdr_id)
+WHERE req.request_hdr_id = {0}
+		</Request>
+	</ArrayOfRequest>
+	<ArrayOfBinding>
+		<Binding req="1" fld="allow" sdt="allow"/>
+		<Binding req="1" fld="deny" sdt="deny"/>
+		<Binding req="0" fld="125" sdt="125"/>
+		<Binding req="0" fld="220" sdt="220"/>
+		<Binding req="0" fld="230" sdt="230"/>
+		<Binding req="0" fld="13812" sdt="13812"/>
+		<Binding req="1" fld="address" sdt="address"/>
+		<Binding req="0" fld="170" sdt="170"/>
+		<Binding req="0" fld="145" sdt="145"/>
+		<Binding req="0" fld="140" sdt="140"/>
+		<Binding req="0" fld="180" sdt="180"/>
+	</ArrayOfBinding>
+</DataSource>

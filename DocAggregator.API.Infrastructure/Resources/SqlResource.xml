@@ -69,4 +69,13 @@ FROM hrd.request_hdr req
     JOIN hrd.it_access_right_request acc ON (acc.request_hdr_id = req.request_hdr_id)
 WHERE req.request_hdr_id = {0}
 	</SqlQuery>
+	<SqlQuery name="Q_HRDClaimSystemType_ByRequest">
+select MIN(req.request_type_id) req_type, res.information_system_id inf_sys
+from hrd.request_hdr req
+    JOIN hrd.it_access_right_request acc ON (acc.request_hdr_id = req.request_hdr_id)
+    JOIN hrd.it_access_right_hdr rit ON (rit.access_right_hdr_id = acc.access_right_hdr_id)
+    JOIN hrd.it_dict_information_resource res ON (res.information_resource_id = rit.object_id)
+where req.request_hdr_id = {0}
+group by res.information_system_id
+	</SqlQuery>
 </ArrayOfSqlQuery>

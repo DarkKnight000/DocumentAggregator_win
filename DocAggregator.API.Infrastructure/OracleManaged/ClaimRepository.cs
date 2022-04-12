@@ -1,4 +1,5 @@
 ﻿using DocAggregator.API.Core;
+using Oracle.ManagedDataAccess.Client;
 
 namespace DocAggregator.API.Infrastructure.OracleManaged
 {
@@ -9,27 +10,57 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
     {
         private ILogger _logger;
         private TemplateMap _templates;
+        private OracleConnection _connection;
+        private SqlConnectionResource _sqlResource;
 
-        public ClaimRepository(TemplateMap templateMap, ILoggerFactory loggerFactory)
+        public ClaimRepository(SqlConnectionResource sqlResource, TemplateMap templateMap, ILoggerFactory loggerFactory)
         {
             _logger = loggerFactory.GetLoggerFor<ClaimRepository>();
             _templates = templateMap;
+            _connection = sqlResource.Connection;
+            _sqlResource = sqlResource;
         }
 
         public Claim GetClaim(int id)
         {
-            // TODO: Get id from the db
-            /*
-             * select req.request_type_id
-             * from hrd.request_hdr req
-             * where req.request_hrd_id = {0}
-             */
-            int typeID = 10;
-            _logger.Trace("Getting a template for type [{0}].", typeID);
-            string template = _templates.GetPathByType(typeID);
+            int typeID = -1, systemID = -1;
+            string claimInfoQuery = string.Format(_sqlResource.GetStringByName("Q_HRDClaimSystemType_ByRequest"), id);
+            OracleCommand command = null;
+            OracleDataReader reader = null;
+            try
+            {
+                _connection.Open();
+                using (command = new OracleCommand(claimInfoQuery, _connection))
+                using (reader = command.ExecuteReader())
+                {
+                    reader.Read();
+                    typeID = reader.GetInt32(0);
+                    systemID = reader.GetInt32(1);
+                    if (reader.Read())
+                    {
+                        _logger.Error("When processing a claim with id {0} two or more system bindings were found. The first two: [{1}, {2}] and [{3}, {4}].",
+                            id, typeID, systemID, reader.GetInt32(0), reader.GetInt32(1));
+                        throw new System.Exception("One claim had two or more related informational systems. See the log for more info.");
+                    }
+                }
+            }
+            catch (OracleException ex)
+            {
+                _logger.Error(ex, "An error occured when retrieving claim information. ClaimID: {0}", id);
+                if (command != null)
+                {
+                    StaticExtensions.ShowExceptionMessage(_connection, ex, command.CommandText, _sqlResource);
+                }
+            }
+            finally
+            {
+                _connection.Close();
+            }
+            _logger.Trace("Getting a template for type [{0}, {1}].", typeID, systemID);
+            string template = _templates.GetPathByTypeAndSystem(typeID, systemID);
             if (template == null)
             {
-                _logger.Error("Template has not found for claim type [{0}].", typeID);
+                _logger.Error("Template has not found for claim type [{0}, {1}].", typeID, systemID);
             }
             Claim result = new Claim()
             {

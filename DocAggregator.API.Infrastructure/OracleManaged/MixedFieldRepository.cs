@@ -11,49 +11,20 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
     public class MixedFieldRepository : IClaimFieldRepository
     {
         private ILogger _logger;
-
-        /// <summary>
-        /// Подключение к БД.
-        /// </summary>
         OracleConnection _connection;
-        SqlResource _sqlResource;
+        SqlConnectionResource _sqlResource;
         Dictionary<int, Dictionary<string, string>> _claimFieldsCache;
-
-        /// <summary>
-        /// DataSource подключения к БД.
-        /// </summary>
-        public string Server { get; set; }
-
-        /// <summary>
-        /// UserID подключения к БД.
-        /// </summary>
-        public string Username { get; set; }
-
-        /// <summary>
-        /// Password подключения к БД.
-        /// </summary>
-        public string Password { get; set; }
 
         /// <summary>
         /// Инициализирует объект <see cref="MixedFieldRepository"/>.
         /// </summary>
-        public MixedFieldRepository(SqlResource sqlResource, IOptionsFactory optionsFactory, ILoggerFactory logger)
+        public MixedFieldRepository(SqlConnectionResource sqlResource, ILoggerFactory logger)
         {
             _logger = logger.GetLoggerFor<IClaimFieldRepository>();
+            _connection = sqlResource.Connection;
             _sqlResource = sqlResource;
             _claimFieldsCache = new Dictionary<int, Dictionary<string, string>>();
 
-            var db = optionsFactory.GetOptionsOf<RepositoryConfigOptions>();
-            Server = db.DataSource;
-            Username = db.UserID;
-            Password = db.Password;
-
-            _connection = new OracleConnection(new OracleConnectionStringBuilder()
-            {
-                DataSource = Server,
-                UserID = Username,
-                Password = Password,
-            }.ToString());
         }
 
         public string GetFieldByNameOrId(int claimID, string name)
@@ -118,7 +89,6 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                         }
                     }
                 }
-                _connection.Close();
             }
             catch (OracleException ex)
             {
@@ -127,6 +97,10 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                 {
                     StaticExtensions.ShowExceptionMessage(_connection, ex, command.CommandText, _sqlResource);
                 }
+            }
+            finally
+            {
+                _connection.Close();
             }
             return result;
         }
