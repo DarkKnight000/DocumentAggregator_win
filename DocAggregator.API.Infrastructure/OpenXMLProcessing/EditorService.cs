@@ -17,6 +17,7 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
     public class EditorService : IEditorService, IDisposable
     {
         ILogger _logger;
+        UnoConverterLogger _converterLogger;
         WordprocessingMLEditor _wmlEditor;
         Process _serverConverterProc;
 
@@ -68,6 +69,7 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
         public EditorService(IOptionsFactory options, ILoggerFactory loggerFactory)
         {
             _logger = loggerFactory.GetLoggerFor<IEditorService>();
+            _converterLogger = new UnoConverterLogger(loggerFactory.GetLoggerFor<UnoConverterLogger>());
             _wmlEditor = new WordprocessingMLEditor(_logger);
 
             var editor = options.GetOptionsOf<EditorConfigOptions>();
@@ -128,9 +130,7 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
         public IDocument OpenTemplate(string path)
         {
             EnsureInitialize();
-            MemoryStream tempStream = new MemoryStream();
-            File.OpenRead(Path.Combine(TemplatesDirectory, path)).CopyTo(tempStream);
-            return new WordMLDocument(tempStream);
+            return new WordMLDocument(Path.Combine(TemplatesDirectory, path));
         }
 
         public IEnumerable<Insert> GetInserts(IDocument document)
@@ -149,13 +149,19 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
         {
             EnsureInitialize();
             WordMLDocument documentContainer = document as WordMLDocument;
+            string inputFile = documentContainer.TemporaryDocumentPath;
             var wordDocument = documentContainer.Content;
             _logger.Trace("Save an edited part back into a stream.");
-            using (var xw = XmlWriter.Create(wordDocument.MainDocumentPart.GetStream(FileMode.Create, FileAccess.Write)))
+            using (var ds = wordDocument.MainDocumentPart.GetStream(FileMode.Create, FileAccess.Write))
+            using (var xw = XmlWriter.Create(ds))
             {
                 documentContainer.MainPart.Save(xw);
             }
-            wordDocument.Save();
+            if (DocumentFormat.OpenXml.Packaging.OpenXmlPackage.CanSave)
+            {
+                wordDocument.Save();
+            }
+            wordDocument.Close();
             // cmd> set PATH=%PATH%;C:\Program Files\LibreOffice\program
             string envPATH = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.Process) ?? string.Empty;
             if (!envPATH.Contains(LibreOfficeFolder))
@@ -171,26 +177,29 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
                 // cmd> cd "D:\Users\akkostin\source\repos\DocumentAggregator\unoserver\src\unoserver"
                 WorkingDirectory = Scripts,
                 FileName = "python",
-                Arguments = $"converter.py --convert-to pdf - -",
+                Arguments = $"converter.py --convert-to pdf \"{inputFile}\" -",
                 UseShellExecute = false,
-                RedirectStandardInput = true,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
             };
             Process convertingProcess = new Process() { StartInfo = processStartInfo };
             convertingProcess.ErrorDataReceived += (sender, args) =>
             {
-                _logger.Trace("Converter standard error output:\r\n{0}", args.Data);
+                _converterLogger.Log(args.Data);
             };
             _logger.Trace("Start a converter.");
             convertingProcess.Start();
             convertingProcess.BeginErrorReadLine();
-            documentContainer.ResultStream.Seek(0, SeekOrigin.Begin);
-            _logger.Debug("Copying a result stream to the standard input of the converter.");
-            documentContainer.ResultStream.CopyTo(convertingProcess.StandardInput.BaseStream);
-            _logger.Debug("Flushing all data in input stream and closing it.");
+            //documentContainer.ResultStream.Seek(0, SeekOrigin.Begin);
+            //_logger.Debug("Copying a result stream to the standard input of the converter.");
+            //documentContainer.ResultStream.CopyTo(convertingProcess.StandardInput.BaseStream);
+            /*using (Stream file = File.OpenRead(tempFile.LocalPath))
+            {
+                file.CopyTo(convertingProcess.StandardInput.BaseStream);
+            }*/
+            /*_logger.Debug("Flushing all data in input stream and closing it.");
             convertingProcess.StandardInput.Flush();
-            convertingProcess.StandardInput.Close();
+            convertingProcess.StandardInput.Close();*/
             _logger.Debug("Reading converter output.");
             var outputStream = new MemoryStream();
             convertingProcess.StandardOutput.BaseStream.CopyTo(outputStream);
@@ -201,7 +210,7 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
                 _logger.Error("Converter exited with an exit code {0}.", convertingProcess.ExitCode);
                 Debugger.Break();
             }
-            wordDocument.Close();
+            File.Delete(documentContainer.TemporaryDocumentPath);
             return outputStream;
         }
 
@@ -213,11 +222,13 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
             {
                 if (disposing)
                 {
-                    _serverConverterProc.Close();
-                    _serverConverterProc.WaitForExit();
-                    if (_serverConverterProc.ExitCode != 0)
+                    if (_serverConverterProc != null)
                     {
-                        Debugger.Break();
+                        _serverConverterProc.Close();
+                        if (_serverConverterProc.ExitCode != 0)
+                        {
+                            Debugger.Break();
+                        }
                     }
                 }
 

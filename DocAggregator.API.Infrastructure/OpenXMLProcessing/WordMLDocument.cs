@@ -11,6 +11,7 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
     /// </summary>
     public class WordMLDocument : IDocument
     {
+        public string TemporaryDocumentPath { get; private set; }
         /// <summary>
         /// Поток, содержащий документ.
         /// </summary>
@@ -28,10 +29,15 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
         /// Инициализирует исходный документ по заданному пути.
         /// </summary>
         /// <param name="stream">Путь к исходному файлу.</param>
-        public WordMLDocument(MemoryStream stream)
+        public WordMLDocument(string path)
         {
-            ResultStream = stream;
-            Content = WordprocessingDocument.Open(stream, true);
+            MemoryStream tempStream = new MemoryStream();
+            //File.OpenRead(path).CopyTo(tempStream);
+            TemporaryDocumentPath = Path.Combine(Path.GetTempPath(), System.Guid.NewGuid().ToString() + ".docx");
+            File.Copy(path, TemporaryDocumentPath);
+
+            ResultStream = tempStream;
+            Content = WordprocessingDocument.Open(TemporaryDocumentPath, true);
 
             MainPart = LoadPart(Content.MainDocumentPart);
         }

@@ -30,7 +30,18 @@ namespace DocAggregator.API.Controllers
                     _logger.Debug("Has found a memory stream.");
                 }
                 _logger.Information("Claim was successfully processed (id={0})", request.ClaimID);
+#if DEBUG
+                var outputFile = System.IO.Path.Combine(System.IO.Path.GetTempPath(), string.Concat(System.Guid.NewGuid().ToString(), ".pdf"));
+                var closableStream = System.IO.File.OpenWrite(outputFile);
+                response.ResultStream.CopyTo(closableStream);
+                closableStream.Close();
+                new System.Diagnostics.Process() {
+                    StartInfo = new System.Diagnostics.ProcessStartInfo(outputFile) { UseShellExecute = true }
+                }.Start();
+                return new CreatedResult(new System.Uri(outputFile), null);
+#else
                 return ClaimResponsePresenter.ToFileStreamResult(response);
+#endif
             }
             else
             {
