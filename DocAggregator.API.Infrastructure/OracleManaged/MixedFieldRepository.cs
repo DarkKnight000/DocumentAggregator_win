@@ -1,5 +1,6 @@
 ﻿using DocAggregator.API.Core;
 using Oracle.ManagedDataAccess.Client;
+using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -93,6 +94,115 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
             catch (OracleException ex)
             {
                 _logger.Error(ex, "An error occured when retrieving claim filds. ClaimID: {0}.", claimID);
+                if (command != null)
+                {
+                    StaticExtensions.ShowExceptionMessage(_connection, ex, command.CommandText, _sqlResource);
+                }
+            }
+            finally
+            {
+                _connection.Close();
+            }
+            return result;
+        }
+
+        public IEnumerable<Tuple<string, string, string>> GetFiledListByClaimId(int claimID)
+        {
+            var result = new List<Tuple<string, string, string>>();
+            string attributesQuery = string.Format(_sqlResource.GetStringByName("Q_HRDClaimFieldsList_ByRequest"), claimID);
+            string viewQuery = string.Format(_sqlResource.GetStringByName("Q_HRDAddressAction_ByRequest"), claimID);
+            OracleCommand command = null;
+            OracleDataReader reader = null;
+            try
+            {
+                _connection.Open();
+                using (command = new OracleCommand(attributesQuery, _connection))
+                using (reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        string attributeName = reader.GetString(0);
+                        string attributeId = reader.GetString(1);
+                        string attributeVal = string.Empty;
+                        if (!reader.IsDBNull(2))
+                        {
+                            attributeVal = reader.GetString(2);
+                        }
+                        result.Add(Tuple.Create(attributeName, attributeId, attributeVal));
+                    }
+                }
+                using (command = new OracleCommand(viewQuery, _connection))
+                using (reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        for (int i = 0; i < reader.FieldCount; i++)
+                        {
+                            string attributeName = reader.GetName(i);
+                            string attributeVal = string.Empty;
+                            if (!reader.IsDBNull(i))
+                            {
+                                attributeVal = reader.GetString(i);
+                            }
+                            result.Add(Tuple.Create(attributeName, attributeName, attributeVal));
+                        }
+                    }
+                }
+            }
+            catch (OracleException ex)
+            {
+                _logger.Error(ex, "An error occured when retrieving claim filds. ClaimID: {0}.", claimID);
+                if (command != null)
+                {
+                    StaticExtensions.ShowExceptionMessage(_connection, ex, command.CommandText, _sqlResource);
+                }
+            }
+            finally
+            {
+                _connection.Close();
+            }
+            return result;
+        }
+
+        public IEnumerable<Tuple<string, string, string>> GetFilledAccessListByClaimId(int claimId)
+        {
+            var result = new List<Tuple<string, string, string>>();
+            string accessListQuery = string.Format(_sqlResource.GetStringByName("Q_HRDClaimAccessList_ByRequest"), claimId);
+            OracleCommand command = null;
+            OracleDataReader reader = null;
+            try
+            {
+                _connection.Open();
+                using (command = new OracleCommand(accessListQuery, _connection))
+                using (reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        string name = reader.GetString(0);
+                        string code = reader.GetString(1);
+                        string cont = string.Empty;
+                        if (!reader.IsDBNull(2))
+                        {
+                            switch (reader.GetString(2))
+                            {
+                                case "0":
+                                    cont = "-";
+                                    break;
+                                case "1":
+                                    cont = "+";
+                                    break;
+                                default:
+                                    cont = "???";
+                                    break;
+                            }
+                        }
+                        result.Add(Tuple.Create(name, code, cont));
+                    }
+                }
+            }
+            catch (OracleException ex)
+            {
+                _logger.Error(ex, "An error occured when retrieving claim filds. ClaimID: {0}.", claimId);
                 if (command != null)
                 {
                     StaticExtensions.ShowExceptionMessage(_connection, ex, command.CommandText, _sqlResource);

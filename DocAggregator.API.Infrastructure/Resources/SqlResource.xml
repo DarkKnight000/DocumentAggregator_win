@@ -60,22 +60,86 @@ order by typ.order_number
 	<SqlQuery name="Q_HRDAddressAction_ByRequest">
 SELECT
     build.description AS address,
-    DECODE(acc.action, 1, 'True', 'False') AS allow,
-    DECODE(acc.action, 0, 'True', 'False') AS deny
+    CASE MAX(acc.action)
+        WHEN 0 THEN 'False'
+        ELSE 'True'
+    END AS allow,
+    CASE MIN(acc.action)
+        WHEN 0 THEN 'True'
+        ELSE 'False'
+    END AS deny
 FROM hrd.request_hdr req
     JOIN obd_sys.user_location loc ON (loc.user_id = req.applicant_id)
     JOIN hrd.dict_room room ON (room.room_id = loc.room_id)
     JOIN hrd.building build ON (build.building_id = room.building_id)
     JOIN hrd.it_access_right_request acc ON (acc.request_hdr_id = req.request_hdr_id)
 WHERE req.request_hdr_id = {0}
+GROUP BY build.description
 	</SqlQuery>
 	<SqlQuery name="Q_HRDClaimSystemType_ByRequest">
-select MIN(req.request_type_id) req_type, res.information_system_id inf_sys
+select distinct req.request_type_id req_type, res.information_system_id inf_sys
 from hrd.request_hdr req
     JOIN hrd.it_access_right_request acc ON (acc.request_hdr_id = req.request_hdr_id)
     JOIN hrd.it_access_right_hdr rit ON (rit.access_right_hdr_id = acc.access_right_hdr_id)
     JOIN hrd.it_dict_information_resource res ON (res.information_resource_id = rit.object_id)
 where req.request_hdr_id = {0}
-group by res.information_system_id
+	</SqlQuery>
+	<SqlQuery name="Q_HRDClaimFieldsList_ByRequest">
+select
+    cat.request_attr_name || CHR(13) || CHR(10) || attr.request_attr_name as attribute,
+    attr.request_attr_hdr_id AS attr_id,
+    pty.value_number
+        || pty.value_varchar2
+        || pty.value_date
+        || decode(pty.value_boolean, 0, 'Нет', 1, 'Да', null)
+        || pty.value_clob
+        AS attr_value
+from hrd.request_attr_hdr attr
+    join hrd.request_attr_hdr cat
+        on (attr.p_request_attr_hdr_id = cat.request_attr_hdr_id)
+    join hrd.request_attr_types typ
+        on (attr.request_attr_hdr_id = typ.request_attr_hdr_id)
+    join hrd.request_hdr req
+        on (req.request_type_id = typ.request_type_id)
+    -- Позволяет выбирать атрибуты заявки из hrd.request_attr_hdr
+    -- без какого-либо значения из hrd.request_attr_pty
+    left outer join hrd.request_attr_pty pty
+        on (pty.request_attr_hdr_id = attr.request_attr_hdr_id
+            AND pty.request_hdr_id = req.request_hdr_id)
+where req.request_hdr_id = 878028
+order by typ.order_number
+    </SqlQuery>
+	<SqlQuery name="Q_HRDClaimAccessList_ByRequest">
+select
+    rit.name,
+    rit.access_right_hdr_id as code,
+    acc.action
+from (
+    select
+       rit.name,
+       rit.access_right_hdr_id
+    from hrd.it_access_right_hdr rit
+    where rit.object_id = (
+        select distinct
+           res.information_resource_id
+        from hrd.it_dict_information_resource res
+            JOIN hrd.it_access_right_hdr rit ON (rit.object_id = res.information_resource_id)
+            JOIN hrd.it_access_right_request acc ON (acc.access_right_hdr_id = rit.access_right_hdr_id)
+            JOIN hrd.request_hdr req ON (req.request_hdr_id = acc.request_hdr_id)
+        where 
+            req.request_hdr_id = {0}
+    ) and rit.request_available = 1
+) rit full outer join (
+    select
+       acc.action,
+       acc.access_right_hdr_id
+    from hrd.it_access_right_hdr rit
+        JOIN hrd.it_dict_information_resource res ON (res.information_resource_id = rit.object_id)
+        JOIN hrd.it_access_right_request acc ON (acc.access_right_hdr_id = rit.access_right_hdr_id)
+        JOIN hrd.request_hdr req ON (req.request_hdr_id = acc.request_hdr_id)
+    where 
+        req.request_hdr_id = {0}
+) acc on (rit.access_right_hdr_id = acc.access_right_hdr_id)
+order by rit.access_right_hdr_id
 	</SqlQuery>
 </ArrayOfSqlQuery>
