@@ -90,15 +90,31 @@ namespace DocAggregator.API.Controllers
             output.Append("</tr>");
             foreach (var a in _fieldRepository.GetFilledAccessListByClaimId(request.ClaimID))
             {
+                string allowAccess = string.Empty;
+                string denyAccess = string.Empty;
+                if (a.Item3.HasValue)
+                {
+                    allowAccess = a.Item3.ToString();
+                    denyAccess = (!a.Item3).ToString();
+                }
                 output.Append("<tr>");
-                output.Append("<td>");
+                output.Append("<td rowspan=\"2\">");
                 output.Append(a.Item1);
                 output.Append("</td>");
                 output.Append("<td>");
-                output.Append(a.Item2);
+                output.Append($"*{a.Item2}a");
                 output.Append("</td>");
                 output.Append("<td align=\"center\">");
-                output.Append(a.Item3);
+                output.Append(allowAccess);
+                output.Append("</td>");
+                output.Append("</tr>");
+                output.Append("<tr>");
+                output.Append("</td>");
+                output.Append("<td>");
+                output.Append($"*{a.Item2}d");
+                output.Append("</td>");
+                output.Append("<td align=\"center\">");
+                output.Append(denyAccess);
                 output.Append("</td>");
                 output.Append("</tr>");
             }

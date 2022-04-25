@@ -58,7 +58,7 @@
             if (insertionFormat.StartsWith('*'))
             {
                 string state = insertionFormat.Substring(insertionFormat.Length - 1);
-                insertionFormat = insertionFormat.Substring(1, insertionFormat.Length - 1);
+                insertionFormat = insertionFormat.Substring(1, insertionFormat.Length - 2);
                 AccessRightStatus accessRight = AccessRightStatus.NotMentioned;
                 switch (state)
                 {
@@ -77,9 +77,6 @@
             string fieldVal;
             if (insertionFormat.StartsWith('!'))
             {
-                //insertionFormat = insertionFormat.Substring(1);
-                //fieldVal = _fieldRepo.GetFieldByNameOrId(claimID, insertionFormat);
-                //return fieldVal != null ? !bool.Parse(fieldVal) : false;
                 return !ParseBoolField(claimID, insertionFormat.Substring(1));
             }
             else

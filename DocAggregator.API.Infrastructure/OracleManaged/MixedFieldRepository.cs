@@ -213,9 +213,9 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
             return result;
         }
 
-        public IEnumerable<Tuple<string, string, string>> GetFilledAccessListByClaimId(int claimId)
+        public IEnumerable<Tuple<string, string, bool?>> GetFilledAccessListByClaimId(int claimId)
         {
-            var result = new List<Tuple<string, string, string>>();
+            var result = new List<Tuple<string, string, bool?>>();
             string accessListQuery = string.Format(_sqlResource.GetStringByName("Q_HRDClaimAccessList_ByRequest"), claimId);
             OracleCommand command = null;
             OracleDataReader reader = null;
@@ -229,19 +229,18 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                     {
                         string name = reader.GetString(0);
                         string code = reader.GetString(1);
-                        string cont = string.Empty;
+                        bool? cont = null;
                         if (!reader.IsDBNull(2))
                         {
                             switch (reader.GetString(2))
                             {
                                 case "0":
-                                    cont = "-";
+                                    cont = false;
                                     break;
                                 case "1":
-                                    cont = "+";
+                                    cont = true;
                                     break;
                                 default:
-                                    cont = "???";
                                     break;
                             }
                         }

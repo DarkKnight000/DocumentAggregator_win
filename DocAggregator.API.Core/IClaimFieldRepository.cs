@@ -32,6 +32,6 @@ namespace DocAggregator.API.Core
         /// <returns>Кортеж, содержащий имя, идентификатор и значение поля.</returns>
         public IEnumerable<Tuple<string, string, string>> GetFiledListByClaimId(int claimID);
 
-        public IEnumerable<Tuple<string, string, string>> GetFilledAccessListByClaimId(int claimID);
+        public IEnumerable<Tuple<string, string, bool?>> GetFilledAccessListByClaimId(int claimID);
     }
 }
