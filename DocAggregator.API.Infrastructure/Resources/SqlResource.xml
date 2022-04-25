@@ -64,6 +64,10 @@ SELECT
         WHEN 0 THEN 'False'
         ELSE 'True'
     END AS allow,
+    CASE
+        WHEN MAX(acc.action) = MIN(acc.action) THEN 'False'
+        ELSE 'True'
+    END AS change,
     CASE MIN(acc.action)
         WHEN 0 THEN 'True'
         ELSE 'False'

@@ -55,12 +55,32 @@
 
         bool ParseBoolField(int claimID, string insertionFormat)
         {
+            if (insertionFormat.StartsWith('*'))
+            {
+                string state = insertionFormat.Substring(insertionFormat.Length - 1);
+                insertionFormat = insertionFormat.Substring(1, insertionFormat.Length - 1);
+                AccessRightStatus accessRight = AccessRightStatus.NotMentioned;
+                switch (state)
+                {
+                    case "a":
+                        accessRight = AccessRightStatus.Allowed;
+                        break;
+                    case "c":
+                        accessRight = AccessRightStatus.Changed;
+                        break;
+                    case "d":
+                        accessRight = AccessRightStatus.Denied;
+                        break;
+                }
+                return _fieldRepo.GetAccessRightByIdAndStatus(claimID, insertionFormat, accessRight);
+            }
             string fieldVal;
             if (insertionFormat.StartsWith('!'))
             {
-                insertionFormat = insertionFormat.Substring(1);
-                fieldVal = _fieldRepo.GetFieldByNameOrId(claimID, insertionFormat);
-                return fieldVal != null ? !bool.Parse(fieldVal) : false;
+                //insertionFormat = insertionFormat.Substring(1);
+                //fieldVal = _fieldRepo.GetFieldByNameOrId(claimID, insertionFormat);
+                //return fieldVal != null ? !bool.Parse(fieldVal) : false;
+                return !ParseBoolField(claimID, insertionFormat.Substring(1));
             }
             else
             {

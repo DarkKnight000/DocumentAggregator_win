@@ -41,6 +41,55 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
             return null;
         }
 
+        public bool GetAccessRightByIdAndStatus(int claimID, string roleID, AccessRightStatus status)
+        {
+            string attributesQuery = string.Format(_sqlResource.GetStringByName("Q_HRDClaimAccessList_ByRequest"), claimID);
+            OracleCommand command = null;
+            OracleDataReader reader = null;
+            try
+            {
+                _connection.Open();
+                using (command = new OracleCommand(attributesQuery, _connection))
+                using (reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        string roleId = reader.GetString(1);
+                        if (roleId != roleID)
+                        {
+                            continue;
+                        }
+                        int? roleAction = null;
+                        if (!reader.IsDBNull(2))
+                        {
+                            roleAction = reader.GetInt32(2);
+                        }
+                        if (status.HasFlag(AccessRightStatus.Allowed))
+                        {
+                            return roleAction.HasValue && roleAction.Value == 1;
+                        }
+                        else
+                        {
+                            return roleAction.HasValue && roleAction.Value == 0;
+                        }
+                    }
+                }
+            }
+            catch (OracleException ex)
+            {
+                _logger.Error(ex, "An error occured when retrieving claim filds. ClaimID: {0}.", claimID);
+                if (command != null)
+                {
+                    StaticExtensions.ShowExceptionMessage(_connection, ex, command.CommandText, _sqlResource);
+                }
+            }
+            finally
+            {
+                _connection.Close();
+            }
+            return false;
+        }
+
         /// <summary>
         /// Получает все поля из общей таблицы атрибутов и представления дополнительных атрибутов.
         /// </summary>

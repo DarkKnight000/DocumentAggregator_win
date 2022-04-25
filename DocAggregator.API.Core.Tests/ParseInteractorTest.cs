@@ -148,5 +148,47 @@ namespace DocAggregator.API.Core.Tests
             Assert.True(actual.HasValue);
             Assert.Equal(expected, actual.Value);
         }
+
+        [Theory]
+        [InlineData("*a", true, false, true)]
+        [InlineData("*c", true, false, false)]
+        [InlineData("*d", true, false, false)]
+        [InlineData("*27a", true, false, true)]
+        [InlineData("*27d", true, false, false)]
+        [InlineData("!*27a", true, false, false)]
+        [InlineData("*a", false, true, false)]
+        [InlineData("*c", false, true, false)]
+        [InlineData("*d", false, true, true)]
+        [InlineData("*27a", false, true, false)]
+        [InlineData("*27d", false, true, true)]
+        [InlineData("!*27a", false, true, true)]
+        [InlineData("*c", true, true, true)]
+        public void ParseInteractor_ParseRightAccessField_AllStatuses(string insertionFormat, bool anyAllow, bool anyDeny, bool expected)
+        {
+            // 1. Берём все поля заявки
+            var mockMixedFieldRepository = new Mock<IClaimFieldRepository>();
+            mockMixedFieldRepository
+                .Setup(r => r.GetAccessRightByIdAndStatus(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<AccessRightStatus>()))
+                .Returns<int, string, AccessRightStatus>((id, arg, da) => {
+                    switch (da)
+                    {
+                        case AccessRightStatus.Allowed: return anyAllow;
+                        case AccessRightStatus.Changed: return anyAllow & anyDeny;
+                        case AccessRightStatus.Denied: return anyDeny;
+                        default: return false;
+                    }
+                });
+            // 2. Берём заявку
+            var request = new ParseRequest() { Insertion = new Insert(insertionFormat, InsertKind.CheckMark) };
+            // 3. Получаем интерактор
+            var parseInteractor = new ParseInteractor(mockMixedFieldRepository.Object, LoggerFactory);
+
+            // 4. Разбираем поле с идентификатором поля заявки в значение логического поля
+            var response = parseInteractor.Handle(request);
+            var actual = request.Insertion.ReplacedCheckmark;
+
+            Assert.True(actual.HasValue);
+            Assert.Equal(expected, actual.Value);
+        }
     }
 }
