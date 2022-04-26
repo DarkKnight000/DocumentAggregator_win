@@ -1,4 +1,6 @@
-﻿namespace DocAggregator.API.Core
+﻿using DocAggregator.API.Core.Models;
+
+namespace DocAggregator.API.Core
 {
     /// <summary>
     /// Запрос на разбор вставки.
@@ -8,7 +10,7 @@
         /// <summary>
         /// Идентификатор заявки.
         /// </summary>
-        public int ClaimID { get; set; }
+        public Claim Claim { get; set; }
 
         /// <summary>
         /// Вставка, изменяемая в процессе обработки.
@@ -45,15 +47,15 @@
             switch (insert.Kind)
             {
                 case InsertKind.CheckMark:
-                    insert.ReplacedCheckmark = ParseBoolField(request.ClaimID, insert.OriginalMask);
+                    insert.ReplacedCheckmark = ParseBoolField(request.Claim, insert.OriginalMask);
                     break;
                 default: // InsertKind.PlainText
-                    insert.ReplacedText = ParseField(request.ClaimID, insert.OriginalMask);
+                    insert.ReplacedText = ParseField(request.Claim, insert.OriginalMask);
                     break;
             }
         }
 
-        bool ParseBoolField(int claimID, string insertionFormat)
+        bool ParseBoolField(Claim claim, string insertionFormat)
         {
             if (insertionFormat.StartsWith('*'))
             {
@@ -64,50 +66,49 @@
                 {
                     case "a":
                         accessRight = AccessRightStatus.Allowed;
-                        break;
+                        return _fieldRepo.GetAccessRightByIdAndStatus(claim, insertionFormat, accessRight).IsAllowed;
                     case "c":
                         accessRight = AccessRightStatus.Changed;
-                        break;
+                        return _fieldRepo.GetAccessRightByIdAndStatus(claim, insertionFormat, accessRight).Status == AccessRightStatus.Changed;
                     case "d":
                         accessRight = AccessRightStatus.Denied;
-                        break;
+                        return _fieldRepo.GetAccessRightByIdAndStatus(claim, insertionFormat, accessRight).IsDenied;
                 }
-                return _fieldRepo.GetAccessRightByIdAndStatus(claimID, insertionFormat, accessRight);
             }
             string fieldVal;
             if (insertionFormat.StartsWith('!'))
             {
-                return !ParseBoolField(claimID, insertionFormat.Substring(1));
+                return !ParseBoolField(claim, insertionFormat.Substring(1));
             }
             else
             {
-                fieldVal = _fieldRepo.GetFieldByNameOrId(claimID, insertionFormat);
+                fieldVal = _fieldRepo.GetFieldByNameOrId(claim, insertionFormat).Value;
                 return fieldVal != null ? bool.Parse(fieldVal) : false;
             }
         }
 
-        string ParseField(int claimID, string insertionFormat)
+        string ParseField(Claim claim, string insertionFormat)
         {
             string recursiveResult;
-            if (TryParseDelimetedFields(claimID, insertionFormat, ',', ", ", out recursiveResult))
+            if (TryParseDelimetedFields(claim, insertionFormat, ',', ", ", out recursiveResult))
             {
                 return recursiveResult;
             }
-            if (TryParseDelimetedFields(claimID, insertionFormat, '/', " / ", out recursiveResult))
+            if (TryParseDelimetedFields(claim, insertionFormat, '/', " / ", out recursiveResult))
             {
                 return recursiveResult;
             }
-            return _fieldRepo.GetFieldByNameOrId(claimID, insertionFormat) ?? "";
+            return _fieldRepo.GetFieldByNameOrId(claim, insertionFormat)?.Value ?? "";
         }
 
-        bool TryParseDelimetedFields(int claimID, string insertionFormat, char delimiter, string connector, out string result)
+        bool TryParseDelimetedFields(Claim claim, string insertionFormat, char delimiter, string connector, out string result)
         {
             if (insertionFormat.Contains(delimiter))
             {
                 string[] parts = insertionFormat.Split(delimiter, 2);
                 string left, right;
-                left = ParseField(claimID, parts[0]);
-                right = ParseField(claimID, parts[1]);
+                left = ParseField(claim, parts[0]);
+                right = ParseField(claim, parts[1]);
                 if (left == string.Empty || right == string.Empty)
                 {
                     result = left + right;

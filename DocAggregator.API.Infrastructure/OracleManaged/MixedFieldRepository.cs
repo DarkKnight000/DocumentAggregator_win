@@ -1,4 +1,5 @@
 ﻿using DocAggregator.API.Core;
+using DocAggregator.API.Core.Models;
 using Oracle.ManagedDataAccess.Client;
 using System;
 using System.Collections.Generic;
@@ -28,22 +29,22 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
 
         }
 
-        public string GetFieldByNameOrId(int claimID, string name)
+        public ClaimField GetFieldByNameOrId(Claim claim, string name)
         {
-            if (!_claimFieldsCache.ContainsKey(claimID))
+            if (!_claimFieldsCache.ContainsKey(claim.ID))
             {
-                _claimFieldsCache[claimID] = GetFields(claimID);
+                _claimFieldsCache[claim.ID] = GetFields(claim);
             }
-            if (_claimFieldsCache[claimID].TryGetValue(name.ToUpper(), out string field))
+            if (_claimFieldsCache[claim.ID].TryGetValue(name.ToUpper(), out string field))
             {
-                return field;
+                return new ClaimField() { Value = field };
             }
             return null;
         }
 
-        public bool GetAccessRightByIdAndStatus(int claimID, string roleID, AccessRightStatus status)
+        public AccessRightField GetAccessRightByIdAndStatus(Claim claim, string roleID, AccessRightStatus status)
         {
-            string attributesQuery = string.Format(_sqlResource.GetStringByName("Q_HRDClaimAccessList_ByRequest"), claimID);
+            string attributesQuery = string.Format(_sqlResource.GetStringByName("Q_HRDClaimAccessList_ByRequest"), claim);
             OracleCommand command = null;
             OracleDataReader reader = null;
             try
@@ -66,18 +67,24 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                         }
                         if (status.HasFlag(AccessRightStatus.Allowed))
                         {
-                            return roleAction.HasValue && roleAction.Value == 1;
+                            return new AccessRightField()
+                            {
+                                Status = roleAction.HasValue && roleAction.Value == 1 ? AccessRightStatus.Allowed : AccessRightStatus.Denied
+                            };
                         }
                         else
                         {
-                            return roleAction.HasValue && roleAction.Value == 0;
+                            return new AccessRightField()
+                            {
+                                Status = roleAction.HasValue && roleAction.Value == 0 ? AccessRightStatus.Allowed : AccessRightStatus.Denied
+                            };
                         }
                     }
                 }
             }
             catch (OracleException ex)
             {
-                _logger.Error(ex, "An error occured when retrieving claim filds. ClaimID: {0}.", claimID);
+                _logger.Error(ex, "An error occured when retrieving claim filds. ClaimID: {0}.", claim);
                 if (command != null)
                 {
                     StaticExtensions.ShowExceptionMessage(_connection, ex, command.CommandText, _sqlResource);
@@ -87,7 +94,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
             {
                 _connection.Close();
             }
-            return false;
+            return null;
         }
 
         /// <summary>
@@ -98,11 +105,11 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
         /// Полный перечень связанных с данным типом заявки атрибутами
         /// и дополными данными общего представления, основанного на данных выбранной заявки.
         /// </returns>
-        private Dictionary<string, string> GetFields(int claimID)
+        private Dictionary<string, string> GetFields(Claim claim)
         {
             Dictionary<string, string> result = new Dictionary<string, string>();
-            string attributesQuery = string.Format(_sqlResource.GetStringByName("Q_HRDAttributeIdsValues_ByRequest"), claimID);
-            string viewQuery = string.Format(_sqlResource.GetStringByName("Q_HRDAddressAction_ByRequest"), claimID);
+            string attributesQuery = string.Format(_sqlResource.GetStringByName("Q_HRDAttributeIdsValues_ByRequest"), claim.ID);
+            string viewQuery = string.Format(_sqlResource.GetStringByName("Q_HRDAddressAction_ByRequest"), claim.ID);
             OracleCommand command = null;
             OracleDataReader reader = null;
             try
@@ -142,7 +149,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
             }
             catch (OracleException ex)
             {
-                _logger.Error(ex, "An error occured when retrieving claim filds. ClaimID: {0}.", claimID);
+                _logger.Error(ex, "An error occured when retrieving claim filds. ClaimID: {0}.", claim.ID);
                 if (command != null)
                 {
                     StaticExtensions.ShowExceptionMessage(_connection, ex, command.CommandText, _sqlResource);
@@ -155,11 +162,11 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
             return result;
         }
 
-        public IEnumerable<Tuple<string, string, string>> GetFiledListByClaimId(int claimID)
+        public IEnumerable<ClaimField> GetFiledListByClaimId(Claim claim)
         {
-            var result = new List<Tuple<string, string, string>>();
-            string attributesQuery = string.Format(_sqlResource.GetStringByName("Q_HRDClaimFieldsList_ByRequest"), claimID);
-            string viewQuery = string.Format(_sqlResource.GetStringByName("Q_HRDAddressAction_ByRequest"), claimID);
+            var result = new List<ClaimField>();
+            string attributesQuery = string.Format(_sqlResource.GetStringByName("Q_HRDClaimFieldsList_ByRequest"), claim.ID);
+            string viewQuery = string.Format(_sqlResource.GetStringByName("Q_HRDAddressAction_ByRequest"), claim.ID);
             OracleCommand command = null;
             OracleDataReader reader = null;
             try
@@ -170,14 +177,20 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                 {
                     while (reader.Read())
                     {
-                        string attributeName = reader.GetString(0);
-                        string attributeId = reader.GetString(1);
+                        string categoryName = reader.GetString(0);
+                        string attributeName = reader.GetString(1);
+                        string attributeId = reader.GetString(2);
                         string attributeVal = string.Empty;
-                        if (!reader.IsDBNull(2))
+                        if (!reader.IsDBNull(3))
                         {
-                            attributeVal = reader.GetString(2);
+                            attributeVal = reader.GetString(3);
                         }
-                        result.Add(Tuple.Create(attributeName, attributeId, attributeVal));
+                        result.Add(new ClaimField() {
+                            VerbousID = attributeId,
+                            Category = categoryName,
+                            Attribute = attributeName,
+                            Value = attributeVal,
+                        });
                     }
                 }
                 using (command = new OracleCommand(viewQuery, _connection))
@@ -193,14 +206,19 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                             {
                                 attributeVal = reader.GetString(i);
                             }
-                            result.Add(Tuple.Create(attributeName, attributeName, attributeVal));
+                            result.Add(new ClaimField() {
+                                VerbousID = attributeName,
+                                Category = attributeName,
+                                Attribute = string.Empty,
+                                Value = attributeVal,
+                            });
                         }
                     }
                 }
             }
             catch (OracleException ex)
             {
-                _logger.Error(ex, "An error occured when retrieving claim filds. ClaimID: {0}.", claimID);
+                _logger.Error(ex, "An error occured when retrieving claim filds. ClaimID: {0}.", claim.ID);
                 if (command != null)
                 {
                     StaticExtensions.ShowExceptionMessage(_connection, ex, command.CommandText, _sqlResource);
@@ -213,10 +231,10 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
             return result;
         }
 
-        public IEnumerable<Tuple<string, string, bool?>> GetFilledAccessListByClaimId(int claimId)
+        public IEnumerable<AccessRightField> GetFilledAccessListByClaimId(Claim claim)
         {
-            var result = new List<Tuple<string, string, bool?>>();
-            string accessListQuery = string.Format(_sqlResource.GetStringByName("Q_HRDClaimAccessList_ByRequest"), claimId);
+            var result = new List<AccessRightField>();
+            string accessListQuery = string.Format(_sqlResource.GetStringByName("Q_HRDClaimAccessList_ByRequest"), claim.ID);
             OracleCommand command = null;
             OracleDataReader reader = null;
             try
@@ -229,28 +247,32 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                     {
                         string name = reader.GetString(0);
                         string code = reader.GetString(1);
-                        bool? cont = null;
+                        AccessRightStatus stat = AccessRightStatus.NotMentioned;
                         if (!reader.IsDBNull(2))
                         {
                             switch (reader.GetString(2))
                             {
                                 case "0":
-                                    cont = false;
+                                    stat = AccessRightStatus.Denied;
                                     break;
                                 case "1":
-                                    cont = true;
+                                    stat = AccessRightStatus.Allowed;
                                     break;
                                 default:
                                     break;
                             }
                         }
-                        result.Add(Tuple.Create(name, code, cont));
+                        result.Add(new AccessRightField() {
+                            NumeralID = int.Parse(code),
+                            Name = name,
+                            Status = stat,
+                        });
                     }
                 }
             }
             catch (OracleException ex)
             {
-                _logger.Error(ex, "An error occured when retrieving claim filds. ClaimID: {0}.", claimId);
+                _logger.Error(ex, "An error occured when retrieving claim filds. ClaimID: {0}.", claim.ID);
                 if (command != null)
                 {
                     StaticExtensions.ShowExceptionMessage(_connection, ex, command.CommandText, _sqlResource);

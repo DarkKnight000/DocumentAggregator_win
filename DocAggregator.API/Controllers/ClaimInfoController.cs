@@ -1,4 +1,5 @@
 ﻿using DocAggregator.API.Core;
+using DocAggregator.API.Core.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 using System.Text;
@@ -10,11 +11,13 @@ namespace DocAggregator.API.Controllers
     public class ClaimInfoController : ControllerBase
     {
         private readonly ILogger _logger;
+        private readonly IClaimRepository _claimRepository;
         private readonly IClaimFieldRepository _fieldRepository;
 
-        public ClaimInfoController(ILoggerFactory loggerFactory, IClaimFieldRepository fieldRepository)
+        public ClaimInfoController(ILoggerFactory loggerFactory, IClaimRepository claimRepository, IClaimFieldRepository fieldRepository)
         {
             _logger = loggerFactory.GetLoggerFor<ClaimInfoController>();
+            _claimRepository = claimRepository;
             _fieldRepository = fieldRepository;
         }
 
@@ -22,6 +25,7 @@ namespace DocAggregator.API.Controllers
         [Consumes("application/json")]
         public IActionResult Post([FromBody] ClaimRequest request)
         {
+            Claim claim = _claimRepository.GetClaim(request.ClaimID);
             StringBuilder output = new StringBuilder();
             output.Append("<!DOCTYPE html>");
             output.Append("<html>");
@@ -35,7 +39,7 @@ namespace DocAggregator.API.Controllers
             output.Append("<body>");
 
             output.Append("<h1>");
-            output.Append($"Инспектируемая заявка <{request.ClaimID}>.");
+            output.Append($"Инспектируемая заявка <{claim.ID}[{claim.TypeID},{claim.SystemID}]>.");
             output.Append("</h1>");
 
             output.Append("<table cellspacing=\"0\" border=\"1\">");
@@ -55,17 +59,19 @@ namespace DocAggregator.API.Controllers
             output.Append("Значение");
             output.Append("</th>");
             output.Append("</tr>");
-            foreach (var a in _fieldRepository.GetFiledListByClaimId(request.ClaimID))
+            foreach (var field in _fieldRepository.GetFiledListByClaimId(claim))
             {
                 output.Append("<tr>");
                 output.Append("<td>");
-                output.Append(a.Item1.Replace("\r\n", "<br/>"));
+                output.Append(field.Category);
+                output.Append("<br/>");
+                output.Append(field.Attribute);
                 output.Append("</td>");
                 output.Append("<td>");
-                output.Append(a.Item2);
+                output.Append(field.NumeralID?.ToString() ?? field.VerbousID);
                 output.Append("</td>");
                 output.Append("<td>");
-                output.Append(a.Item3);
+                output.Append(field.Value);
                 output.Append("</td>");
                 output.Append("</tr>");
             }
@@ -88,33 +94,26 @@ namespace DocAggregator.API.Controllers
             output.Append("Значение");
             output.Append("</th>");
             output.Append("</tr>");
-            foreach (var a in _fieldRepository.GetFilledAccessListByClaimId(request.ClaimID))
+            foreach (var accessRight in _fieldRepository.GetFilledAccessListByClaimId(claim))
             {
-                string allowAccess = string.Empty;
-                string denyAccess = string.Empty;
-                if (a.Item3.HasValue)
-                {
-                    allowAccess = a.Item3.ToString();
-                    denyAccess = (!a.Item3).ToString();
-                }
                 output.Append("<tr>");
                 output.Append("<td rowspan=\"2\">");
-                output.Append(a.Item1);
+                output.Append(accessRight.Name);
                 output.Append("</td>");
                 output.Append("<td>");
-                output.Append($"*{a.Item2}a");
+                output.Append($"*{accessRight.NumeralID}a");
                 output.Append("</td>");
                 output.Append("<td align=\"center\">");
-                output.Append(allowAccess);
+                output.Append(accessRight.IsAllowed);
                 output.Append("</td>");
                 output.Append("</tr>");
                 output.Append("<tr>");
                 output.Append("</td>");
                 output.Append("<td>");
-                output.Append($"*{a.Item2}d");
+                output.Append($"*{accessRight.NumeralID}d");
                 output.Append("</td>");
                 output.Append("<td align=\"center\">");
-                output.Append(denyAccess);
+                output.Append(accessRight.IsDenied);
                 output.Append("</td>");
                 output.Append("</tr>");
             }

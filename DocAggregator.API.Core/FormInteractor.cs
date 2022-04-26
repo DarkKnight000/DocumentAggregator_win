@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DocAggregator.API.Core.Models;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -69,11 +70,13 @@ namespace DocAggregator.API.Core
             }
             if (document == null)
             {
-                throw new ArgumentException($"Ошибка при открытии шаблона по пути {System.IO.Path.Combine(_editor.TemplatesDirectory, request.Claim.Template)}.", nameof(request.Claim.Template));
+                string errorMessage = string.Format("Ошибка при открытии шаблона по пути {0}.",
+                    Path.Combine(_editor.TemplatesDirectory, request.Claim.Template));
+                throw new ArgumentException(errorMessage, nameof(request.Claim.Template));
             }
             IEnumerable<Insert> inserts = _editor.GetInserts(document).ToList();
             ParseRequest parseReq = new ParseRequest();
-            parseReq.ClaimID = request.Claim.ID;
+            parseReq.Claim = request.Claim;
             foreach (Insert insert in inserts)
             {
                 parseReq.Insertion = insert;

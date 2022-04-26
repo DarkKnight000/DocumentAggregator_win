@@ -1,4 +1,6 @@
-﻿using Moq;
+﻿using DocAggregator.API.Core.Models;
+using Moq;
+using System;
 using Xunit;
 
 namespace DocAggregator.API.Core.Tests
@@ -13,9 +15,9 @@ namespace DocAggregator.API.Core.Tests
             // 1. Берём все поля заявки
             var mockMixedFieldRepository = new Mock<IClaimFieldRepository>();
             mockMixedFieldRepository
-                .Setup(r => r.GetFieldByNameOrId(It.IsAny<int>(), It.IsAny<string>()))
+                .Setup(r => r.GetFieldByNameOrId(It.IsAny<Claim>(), It.IsAny<string>()))
                 // Returns correct output only for integers
-                .Returns<int, string>((id, arg) => int.TryParse(arg, out _) ? fieldValue : "err");
+                .Returns<Claim, string>((id, arg) => int.TryParse(arg, out _) ? new ClaimField() { Value = fieldValue } : throw new Exception());
             // 2. Берём заявку
             var request = new ParseRequest() { Insertion = new Insert(insertionFormat) };
             // 3. Получаем интерактор
@@ -34,9 +36,9 @@ namespace DocAggregator.API.Core.Tests
             // 1. Берём все поля заявки
             var mockMixedFieldRepository = new Mock<IClaimFieldRepository>();
             mockMixedFieldRepository
-                .Setup(r => r.GetFieldByNameOrId(It.IsAny<int>(), It.IsAny<string>()))
+                .Setup(r => r.GetFieldByNameOrId(It.IsAny<Claim>(), It.IsAny<string>()))
                 // Returns correct output only for integers
-                .Returns<int, string>((id, arg) => int.TryParse(arg, out _) ? null : "err");
+                .Returns<Claim, string>((id, arg) => int.TryParse(arg, out _) ? null : throw new Exception());
             // 2. Берём заявку
             var request = new ParseRequest() { Insertion = new Insert("10") };
             // 3. Получаем интерактор
@@ -57,7 +59,8 @@ namespace DocAggregator.API.Core.Tests
         {
             // 1. Берём все поля заявки
             var mockMixedFieldRepository = new Mock<IClaimFieldRepository>();
-            mockMixedFieldRepository.Setup(r => r.GetFieldByNameOrId(It.IsAny<int>(), It.IsAny<string>())).Returns(fieldValue);
+            mockMixedFieldRepository.Setup(r => r.GetFieldByNameOrId(It.IsAny<Claim>(), It.IsAny<string>()))
+                .Returns(new ClaimField() { Value = fieldValue });
             // 2. Берём заявку
             var request = new ParseRequest() { Insertion = new Insert(insertionFormat) };
             // 3. Получаем интерактор
@@ -75,7 +78,7 @@ namespace DocAggregator.API.Core.Tests
         {
             // 1. Берём все поля заявки
             var mockMixedFieldRepository = new Mock<IClaimFieldRepository>();
-            mockMixedFieldRepository.Setup(r => r.GetFieldByNameOrId(It.IsAny<int>(), It.IsAny<string>())).Returns((string)null);
+            mockMixedFieldRepository.Setup(r => r.GetFieldByNameOrId(It.IsAny<Claim>(), It.IsAny<string>())).Returns((ClaimField)null);
             // 2. Берём заявку
             var request = new ParseRequest() { Insertion = new Insert("name") };
             // 3. Получаем интерактор
@@ -109,8 +112,8 @@ namespace DocAggregator.API.Core.Tests
             // 1. Берём все поля заявки
             var mockMixedFieldRepository = new Mock<IClaimFieldRepository>();
             mockMixedFieldRepository
-                .Setup(r => r.GetFieldByNameOrId(It.IsAny<int>(), It.IsAny<string>()))
-                .Returns<int, string>((id, arg) => int.TryParse(arg, out _) ? attrValue : refValue);
+                .Setup(r => r.GetFieldByNameOrId(It.IsAny<Claim>(), It.IsAny<string>()))
+                .Returns<Claim, string>((id, arg) => int.TryParse(arg, out _) ? new ClaimField() { Value = attrValue } : new ClaimField { Value = refValue });
             // 2. Берём заявку
             var request = new ParseRequest() { Insertion = new Insert(insertionFormat) };
             // 3. Получаем интерактор
@@ -133,9 +136,9 @@ namespace DocAggregator.API.Core.Tests
             // 1. Берём все поля заявки
             var mockMixedFieldRepository = new Mock<IClaimFieldRepository>();
             mockMixedFieldRepository
-                .Setup(r => r.GetFieldByNameOrId(It.IsAny<int>(), It.IsAny<string>()))
+                .Setup(r => r.GetFieldByNameOrId(It.IsAny<Claim>(), It.IsAny<string>()))
                 // Returns only False for integers and True for strings
-                .Returns<int, string>((id, arg) => int.TryParse(arg, out _) ? "False" : "True");
+                .Returns<Claim, string>((id, arg) => int.TryParse(arg, out _) ? new ClaimField() { Value = "False" } : new ClaimField() { Value = "True" });
             // 2. Берём заявку
             var request = new ParseRequest() { Insertion = new Insert(insertionFormat, InsertKind.CheckMark) };
             // 3. Получаем интерактор
@@ -168,15 +171,18 @@ namespace DocAggregator.API.Core.Tests
             // 1. Берём все поля заявки
             var mockMixedFieldRepository = new Mock<IClaimFieldRepository>();
             mockMixedFieldRepository
-                .Setup(r => r.GetAccessRightByIdAndStatus(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<AccessRightStatus>()))
-                .Returns<int, string, AccessRightStatus>((id, arg, da) => {
-                    switch (da)
+                .Setup(r => r.GetAccessRightByIdAndStatus(It.IsAny<Claim>(), It.IsAny<string>(), It.IsAny<AccessRightStatus>()))
+                .Returns<Claim, string, AccessRightStatus>((id, arg, stat) => {
+                    var status = new AccessRightStatus();
+                    if (anyAllow)
                     {
-                        case AccessRightStatus.Allowed: return anyAllow;
-                        case AccessRightStatus.Changed: return anyAllow & anyDeny;
-                        case AccessRightStatus.Denied: return anyDeny;
-                        default: return false;
+                        status |= AccessRightStatus.Allowed;
                     }
+                    if (anyDeny)
+                    {
+                        status |= AccessRightStatus.Denied;
+                    }
+                    return new AccessRightField() { Status = status };
                 });
             // 2. Берём заявку
             var request = new ParseRequest() { Insertion = new Insert(insertionFormat, InsertKind.CheckMark) };

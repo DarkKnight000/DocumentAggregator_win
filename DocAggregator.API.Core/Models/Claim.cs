@@ -1,4 +1,4 @@
-﻿namespace DocAggregator.API.Core
+﻿namespace DocAggregator.API.Core.Models
 {
     /// <summary>
     /// Представляет объект заявки.
@@ -9,6 +9,16 @@
         /// Идентификатор заявки, согласно базе данных.
         /// </summary>
         public int ID { get; init; }
+
+        /// <summary>
+        /// Идентификатор типа заявки.
+        /// </summary>
+        public int TypeID { get; init; }
+
+        /// <summary>
+        /// Идентификатор системы, к которой зарашивается доступ.
+        /// </summary>
+        public int SystemID { get; init; }
 
         /// <summary>
         /// Шаблон соответствующий типу заявки.

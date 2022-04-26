@@ -1,4 +1,5 @@
 ﻿using DocAggregator.API.Core;
+using DocAggregator.API.Core.Models;
 using Oracle.ManagedDataAccess.Client;
 
 namespace DocAggregator.API.Infrastructure.OracleManaged
@@ -65,6 +66,8 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
             Claim result = new Claim()
             {
                 ID = id,
+                TypeID = typeID,
+                SystemID = systemID,
                 Template = template,
             };
             return result;

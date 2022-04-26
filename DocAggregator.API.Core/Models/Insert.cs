@@ -1,4 +1,4 @@
-﻿namespace DocAggregator.API.Core
+﻿namespace DocAggregator.API.Core.Models
 {
     /// <summary>
     /// Вариант вставки.
@@ -26,6 +26,9 @@
     /// <summary>
     /// Вставка - элемент документа, заполняемый информацией из базы данных.
     /// </summary>
+    /// <remarks>
+    /// Может ссылаться на несколько полей.
+    /// </remarks>
     public class Insert
     {
         // TODO: DELETE logger?

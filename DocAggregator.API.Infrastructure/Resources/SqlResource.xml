@@ -90,7 +90,8 @@ where req.request_hdr_id = {0}
 	</SqlQuery>
 	<SqlQuery name="Q_HRDClaimFieldsList_ByRequest">
 select
-    cat.request_attr_name || CHR(13) || CHR(10) || attr.request_attr_name as attribute,
+    cat.request_attr_name as category,
+    attr.request_attr_name as attribute,
     attr.request_attr_hdr_id AS attr_id,
     pty.value_number
         || pty.value_varchar2
@@ -110,7 +111,7 @@ from hrd.request_attr_hdr attr
     left outer join hrd.request_attr_pty pty
         on (pty.request_attr_hdr_id = attr.request_attr_hdr_id
             AND pty.request_hdr_id = req.request_hdr_id)
-where req.request_hdr_id = 878028
+where req.request_hdr_id = {0}
 order by typ.order_number
     </SqlQuery>
 	<SqlQuery name="Q_HRDClaimAccessList_ByRequest">

@@ -1,4 +1,5 @@
-﻿using Xunit;
+﻿using DocAggregator.API.Core.Models;
+using Xunit;
 
 namespace DocAggregator.API.Core.Tests
 {

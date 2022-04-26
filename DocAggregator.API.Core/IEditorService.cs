@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using DocAggregator.API.Core.Models;
+using System.Collections.Generic;
 using System.IO;
 
 namespace DocAggregator.API.Core

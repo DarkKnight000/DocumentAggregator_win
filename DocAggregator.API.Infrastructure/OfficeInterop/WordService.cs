@@ -1,4 +1,5 @@
 ﻿using DocAggregator.API.Core;
+using DocAggregator.API.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

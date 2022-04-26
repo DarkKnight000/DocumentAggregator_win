@@ -1,4 +1,4 @@
-﻿using System;
+﻿using DocAggregator.API.Core.Models;
 using System.Collections.Generic;
 
 namespace DocAggregator.API.Core
@@ -11,27 +11,27 @@ namespace DocAggregator.API.Core
         /// <summary>
         /// Получает значение числового или именованного поля по идентификатору заявки.
         /// </summary>
-        /// <param name="claimID">Идентификатор заявки.</param>
+        /// <param name="claim">Заявка.</param>
         /// <param name="fieldName">Идентификатор поля.</param>
         /// <returns>Строковое представление значения поля.</returns>
-        public string GetFieldByNameOrId(int claimID, string fieldName);
+        public ClaimField GetFieldByNameOrId(Claim claim, string fieldName);
 
         /// <summary>
         /// Получает значение права доступа для выбранного действия по идентификатору заявки.
         /// </summary>
-        /// <param name="claimID">Идентификатор заявки.</param>
+        /// <param name="claim">Заявка.</param>
         /// <param name="roleID">Идентификатор роли.</param>
         /// <param name="status">Действие к роли.</param>
         /// <returns>Наличие действия к роли.</returns>
-        public bool GetAccessRightByIdAndStatus(int claimID, string roleID, AccessRightStatus status);
+        public AccessRightField GetAccessRightByIdAndStatus(Claim claim, string roleID, AccessRightStatus status);
 
         /// <summary>
         /// Получает перечисление всех полей используя данные определённой заявки.
         /// </summary>
         /// <param name="claimID">Идентификатор заявки</param>
         /// <returns>Кортеж, содержащий имя, идентификатор и значение поля.</returns>
-        public IEnumerable<Tuple<string, string, string>> GetFiledListByClaimId(int claimID);
+        public IEnumerable<ClaimField> GetFiledListByClaimId(Claim claim);
 
-        public IEnumerable<Tuple<string, string, bool?>> GetFilledAccessListByClaimId(int claimID);
+        public IEnumerable<AccessRightField> GetFilledAccessListByClaimId(Claim claim);
     }
 }

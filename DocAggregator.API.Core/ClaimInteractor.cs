@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DocAggregator.API.Core.Models;
+using System;
 using System.IO;
 using System.Linq;
 

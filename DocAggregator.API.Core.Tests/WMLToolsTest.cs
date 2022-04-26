@@ -1,4 +1,5 @@
-﻿using Moq;
+﻿using DocAggregator.API.Core.Models;
+using Moq;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;

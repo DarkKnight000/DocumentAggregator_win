@@ -1,4 +1,6 @@
-﻿namespace DocAggregator.API.Core
+﻿using DocAggregator.API.Core.Models;
+
+namespace DocAggregator.API.Core
 {
     /// <summary>
     /// Описывает репозиторий заявок.

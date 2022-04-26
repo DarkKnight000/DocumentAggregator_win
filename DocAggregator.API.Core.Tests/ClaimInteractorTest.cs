@@ -1,3 +1,4 @@
+using DocAggregator.API.Core.Models;
 using Moq;
 using System.Collections.Generic;
 using Xunit;

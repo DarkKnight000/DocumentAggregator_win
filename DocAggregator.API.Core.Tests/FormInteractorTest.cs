@@ -1,5 +1,5 @@
-﻿using Moq;
-using System.Collections.Generic;
+﻿using DocAggregator.API.Core.Models;
+using Moq;
 using Xunit;
 
 namespace DocAggregator.API.Core.Tests
