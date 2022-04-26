@@ -28,10 +28,15 @@ namespace DocAggregator.API.Core
         /// <summary>
         /// Получает перечисление всех полей используя данные определённой заявки.
         /// </summary>
-        /// <param name="claimID">Идентификатор заявки</param>
-        /// <returns>Кортеж, содержащий имя, идентификатор и значение поля.</returns>
+        /// <param name="claim">Заявка.</param>
+        /// <returns>Перечисление полей заявки.</returns>
         public IEnumerable<ClaimField> GetFiledListByClaimId(Claim claim);
 
+        /// <summary>
+        /// Получает перечисление всех полей доступа используя данные определённой заявки.
+        /// </summary>
+        /// <param name="claim">Заявка.</param>
+        /// <returns>Перечисление полей прав доступа заявки.</returns>
         public IEnumerable<AccessRightField> GetFilledAccessListByClaimId(Claim claim);
     }
 }

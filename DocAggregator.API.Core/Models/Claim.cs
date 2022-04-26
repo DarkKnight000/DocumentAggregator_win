@@ -1,9 +1,16 @@
-﻿namespace DocAggregator.API.Core.Models
+﻿using System;
+using System.Data;
+using System.Data.Common;
+
+namespace DocAggregator.API.Core.Models
 {
     /// <summary>
     /// Представляет объект заявки.
     /// </summary>
-    public class Claim
+    /// <remarks>
+    /// Реализует паттерн единицы работы, отвечая за жизненный цикл соединения с бд.
+    /// </remarks>
+    public class Claim : IDisposable
     {
         /// <summary>
         /// Идентификатор заявки, согласно базе данных.
@@ -24,5 +31,35 @@
         /// Шаблон соответствующий типу заявки.
         /// </summary>
         public string Template { get; init; }
+
+        /// <summary>
+        /// Подключение к базе данных.
+        /// </summary>
+        public DbConnection DbConnection
+        {
+            get
+            {
+                if (_dbConnection == null)
+                {
+                    return null;
+                }
+                if (!_dbConnection.State.HasFlag(ConnectionState.Open))
+                {
+                    _dbConnection.Open();
+                }
+                return _dbConnection;
+            }
+            init => _dbConnection = value;
+        }
+        private DbConnection _dbConnection;
+
+        public void Dispose()
+        {
+            if (DbConnection.State.HasFlag(ConnectionState.Open))
+            {
+                DbConnection.Close();
+            }
+            ((IDisposable)DbConnection).Dispose();
+        }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using DocAggregator.API.Core;
-using Oracle.ManagedDataAccess.Client;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -39,11 +38,6 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
         private Dictionary<string, SqlQuery> _queriesContainer;
 
         /// <summary>
-        /// Подключение к БД.
-        /// </summary>
-        public OracleConnection Connection { get; set; }
-
-        /// <summary>
         /// DataSource подключения к БД.
         /// </summary>
         public string Server { get; set; }
@@ -79,13 +73,6 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
             Server = db.DataSource;
             Username = db.UserID;
             Password = db.Password;
-
-            Connection = new OracleConnection(new OracleConnectionStringBuilder()
-            {
-                DataSource = Server,
-                UserID = Username,
-                Password = Password,
-            }.ToString());
         }
 
         /// <summary>

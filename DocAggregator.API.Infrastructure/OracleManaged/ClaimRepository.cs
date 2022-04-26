@@ -11,14 +11,12 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
     {
         private ILogger _logger;
         private TemplateMap _templates;
-        private OracleConnection _connection;
         private SqlConnectionResource _sqlResource;
 
         public ClaimRepository(SqlConnectionResource sqlResource, TemplateMap templateMap, ILoggerFactory loggerFactory)
         {
             _logger = loggerFactory.GetLoggerFor<ClaimRepository>();
             _templates = templateMap;
-            _connection = sqlResource.Connection;
             _sqlResource = sqlResource;
         }
 
@@ -26,12 +24,18 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
         {
             int typeID = -1, systemID = -1;
             string claimInfoQuery = string.Format(_sqlResource.GetStringByName("Q_HRDClaimSystemType_ByRequest"), id);
+            OracleConnection connection = new OracleConnection(new OracleConnectionStringBuilder()
+            {
+                DataSource = _sqlResource.Server,
+                UserID = _sqlResource.Username,
+                Password = _sqlResource.Password,
+            }.ToString());
             OracleCommand command = null;
             OracleDataReader reader = null;
             try
             {
-                _connection.Open();
-                using (command = new OracleCommand(claimInfoQuery, _connection))
+                connection.Open();
+                using (command = new OracleCommand(claimInfoQuery, connection))
                 using (reader = command.ExecuteReader())
                 {
                     reader.Read();
@@ -50,12 +54,9 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                 _logger.Error(ex, "An error occured when retrieving claim information. ClaimID: {0}", id);
                 if (command != null)
                 {
-                    StaticExtensions.ShowExceptionMessage(_connection, ex, command.CommandText, _sqlResource);
+                    StaticExtensions.ShowExceptionMessage(connection, ex, command.CommandText, _sqlResource);
                 }
-            }
-            finally
-            {
-                _connection.Close();
+                connection.Close();
             }
             _logger.Trace("Getting a template for type [{0}, {1}].", typeID, systemID);
             string template = _templates.GetPathByTypeAndSystem(typeID, systemID);
@@ -69,6 +70,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                 TypeID = typeID,
                 SystemID = systemID,
                 Template = template,
+                DbConnection = connection,
             };
             return result;
         }

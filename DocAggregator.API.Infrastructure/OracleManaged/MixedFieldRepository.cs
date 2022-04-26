@@ -13,7 +13,6 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
     public class MixedFieldRepository : IClaimFieldRepository
     {
         private ILogger _logger;
-        OracleConnection _connection;
         SqlConnectionResource _sqlResource;
         Dictionary<int, Dictionary<string, string>> _claimFieldsCache;
 
@@ -23,7 +22,6 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
         public MixedFieldRepository(SqlConnectionResource sqlResource, ILoggerFactory logger)
         {
             _logger = logger.GetLoggerFor<IClaimFieldRepository>();
-            _connection = sqlResource.Connection;
             _sqlResource = sqlResource;
             _claimFieldsCache = new Dictionary<int, Dictionary<string, string>>();
 
@@ -49,8 +47,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
             OracleDataReader reader = null;
             try
             {
-                _connection.Open();
-                using (command = new OracleCommand(attributesQuery, _connection))
+                using (command = new OracleCommand(attributesQuery, claim.DbConnection as OracleConnection))
                 using (reader = command.ExecuteReader())
                 {
                     while (reader.Read())
@@ -87,12 +84,9 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                 _logger.Error(ex, "An error occured when retrieving claim filds. ClaimID: {0}.", claim);
                 if (command != null)
                 {
-                    StaticExtensions.ShowExceptionMessage(_connection, ex, command.CommandText, _sqlResource);
+                    StaticExtensions.ShowExceptionMessage(claim.DbConnection as OracleConnection, ex, command.CommandText, _sqlResource);
                 }
-            }
-            finally
-            {
-                _connection.Close();
+                claim.DbConnection.Close();
             }
             return null;
         }
@@ -114,8 +108,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
             OracleDataReader reader = null;
             try
             {
-                _connection.Open();
-                using (command = new OracleCommand(attributesQuery, _connection))
+                using (command = new OracleCommand(attributesQuery, claim.DbConnection as OracleConnection))
                 using (reader = command.ExecuteReader())
                 {
                     while (reader.Read())
@@ -129,7 +122,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                         result.Add(attributeId, attributeVal);
                     }
                 }
-                using (command = new OracleCommand(viewQuery, _connection))
+                using (command = new OracleCommand(viewQuery, claim.DbConnection as OracleConnection))
                 using (reader = command.ExecuteReader())
                 {
                     while (reader.Read())
@@ -152,12 +145,9 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                 _logger.Error(ex, "An error occured when retrieving claim filds. ClaimID: {0}.", claim.ID);
                 if (command != null)
                 {
-                    StaticExtensions.ShowExceptionMessage(_connection, ex, command.CommandText, _sqlResource);
+                    StaticExtensions.ShowExceptionMessage(claim.DbConnection as OracleConnection, ex, command.CommandText, _sqlResource);
                 }
-            }
-            finally
-            {
-                _connection.Close();
+                claim.DbConnection.Close();
             }
             return result;
         }
@@ -171,8 +161,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
             OracleDataReader reader = null;
             try
             {
-                _connection.Open();
-                using (command = new OracleCommand(attributesQuery, _connection))
+                using (command = new OracleCommand(attributesQuery, claim.DbConnection as OracleConnection))
                 using (reader = command.ExecuteReader())
                 {
                     while (reader.Read())
@@ -193,7 +182,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                         });
                     }
                 }
-                using (command = new OracleCommand(viewQuery, _connection))
+                using (command = new OracleCommand(viewQuery, claim.DbConnection as OracleConnection))
                 using (reader = command.ExecuteReader())
                 {
                     while (reader.Read())
@@ -221,12 +210,9 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                 _logger.Error(ex, "An error occured when retrieving claim filds. ClaimID: {0}.", claim.ID);
                 if (command != null)
                 {
-                    StaticExtensions.ShowExceptionMessage(_connection, ex, command.CommandText, _sqlResource);
+                    StaticExtensions.ShowExceptionMessage(claim.DbConnection as OracleConnection, ex, command.CommandText, _sqlResource);
                 }
-            }
-            finally
-            {
-                _connection.Close();
+                claim.DbConnection.Close();
             }
             return result;
         }
@@ -239,8 +225,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
             OracleDataReader reader = null;
             try
             {
-                _connection.Open();
-                using (command = new OracleCommand(accessListQuery, _connection))
+                using (command = new OracleCommand(accessListQuery, claim.DbConnection as OracleConnection))
                 using (reader = command.ExecuteReader())
                 {
                     while (reader.Read())
@@ -275,12 +260,9 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                 _logger.Error(ex, "An error occured when retrieving claim filds. ClaimID: {0}.", claim.ID);
                 if (command != null)
                 {
-                    StaticExtensions.ShowExceptionMessage(_connection, ex, command.CommandText, _sqlResource);
+                    StaticExtensions.ShowExceptionMessage(claim.DbConnection as OracleConnection, ex, command.CommandText, _sqlResource);
                 }
-            }
-            finally
-            {
-                _connection.Close();
+                claim.DbConnection.Close();
             }
             return result;
         }
