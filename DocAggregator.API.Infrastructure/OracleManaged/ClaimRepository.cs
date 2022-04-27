@@ -12,12 +12,14 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
         private ILogger _logger;
         private TemplateMap _templates;
         private SqlConnectionResource _sqlResource;
+        private MixedFieldRepository _fieldRepository;
 
-        public ClaimRepository(SqlConnectionResource sqlResource, TemplateMap templateMap, ILoggerFactory loggerFactory)
+        public ClaimRepository(SqlConnectionResource sqlResource, TemplateMap templateMap, IClaimFieldRepository fieldRepository, ILoggerFactory loggerFactory)
         {
             _logger = loggerFactory.GetLoggerFor<ClaimRepository>();
             _templates = templateMap;
             _sqlResource = sqlResource;
+            _fieldRepository = fieldRepository as MixedFieldRepository;
         }
 
         public Claim GetClaim(int id)
@@ -72,6 +74,8 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                 Template = template,
                 DbConnection = connection,
             };
+            result.ClaimFields = _fieldRepository.GetFiledListByClaimId(result);
+            result.AccessRightFields = _fieldRepository.GetFilledAccessListByClaimId(result);
             return result;
         }
     }

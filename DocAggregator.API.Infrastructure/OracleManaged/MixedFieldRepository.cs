@@ -1,9 +1,7 @@
 ﻿using DocAggregator.API.Core;
 using DocAggregator.API.Core.Models;
 using Oracle.ManagedDataAccess.Client;
-using System;
 using System.Collections.Generic;
-using System.IO;
 
 namespace DocAggregator.API.Infrastructure.OracleManaged
 {
@@ -14,7 +12,6 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
     {
         private ILogger _logger;
         SqlConnectionResource _sqlResource;
-        Dictionary<int, Dictionary<string, string>> _claimFieldsCache;
 
         /// <summary>
         /// Инициализирует объект <see cref="MixedFieldRepository"/>.
@@ -23,19 +20,13 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
         {
             _logger = logger.GetLoggerFor<IClaimFieldRepository>();
             _sqlResource = sqlResource;
-            _claimFieldsCache = new Dictionary<int, Dictionary<string, string>>();
-
         }
 
         public ClaimField GetFieldByNameOrId(Claim claim, string name)
         {
-            if (!_claimFieldsCache.ContainsKey(claim.ID))
+            if (GetFields(claim).TryGetValue(name.ToUpper(), out ClaimField field))
             {
-                _claimFieldsCache[claim.ID] = GetFields(claim);
-            }
-            if (_claimFieldsCache[claim.ID].TryGetValue(name.ToUpper(), out string field))
-            {
-                return new ClaimField() { Value = field };
+                return field;
             }
             return null;
         }
@@ -99,9 +90,9 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
         /// Полный перечень связанных с данным типом заявки атрибутами
         /// и дополными данными общего представления, основанного на данных выбранной заявки.
         /// </returns>
-        private Dictionary<string, string> GetFields(Claim claim)
+        private Dictionary<string, ClaimField> GetFields(Claim claim)
         {
-            Dictionary<string, string> result = new Dictionary<string, string>();
+            Dictionary<string, ClaimField> result = new Dictionary<string, ClaimField>();
             string attributesQuery = string.Format(_sqlResource.GetStringByName("Q_HRDAttributeIdsValues_ByRequest"), claim.ID);
             string viewQuery = string.Format(_sqlResource.GetStringByName("Q_HRDAddressAction_ByRequest"), claim.ID);
             OracleCommand command = null;
@@ -119,7 +110,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                         {
                             attributeVal = reader.GetString(1);
                         }
-                        result.Add(attributeId, attributeVal);
+                        result.Add(attributeId, new ClaimField() { Value = attributeVal });
                     }
                 }
                 using (command = new OracleCommand(viewQuery, claim.DbConnection as OracleConnection))
@@ -135,7 +126,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                             {
                                 attributeVal = reader.GetString(i);
                             }
-                            result.Add(attributeName, attributeVal);
+                            result.Add(attributeName, new ClaimField() { Value = attributeVal });
                         }
                     }
                 }

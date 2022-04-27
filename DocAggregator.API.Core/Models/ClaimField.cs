@@ -16,6 +16,7 @@ namespace DocAggregator.API.Core.Models
         public string Category { get; init; }
         public string Attribute { get; init; }
         public string Value { get; init; }
+        public bool ToBoolean() => bool.TryParse(Value, out bool result) & result;
     }
 
     public class AccessRightField

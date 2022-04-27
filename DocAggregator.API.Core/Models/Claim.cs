@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 
@@ -31,6 +32,10 @@ namespace DocAggregator.API.Core.Models
         /// Шаблон соответствующий типу заявки.
         /// </summary>
         public string Template { get; init; }
+
+        public IEnumerable<ClaimField> ClaimFields { get; set; }
+
+        public IEnumerable<AccessRightField> AccessRightFields { get; set; }
 
         /// <summary>
         /// Подключение к базе данных.
