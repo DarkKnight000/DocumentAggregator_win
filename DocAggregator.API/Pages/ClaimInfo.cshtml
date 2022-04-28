@@ -3,104 +3,94 @@
 
 @if (Model.IsCorrect)
 {
-    <!DOCTYPE html>
-        <html>
-            <head>
-                <title>
-                    Claim info page.
-                </title>
-            </head>
-            <body>
-                <h1>
-                    Инспектируемая заявка &lt;@(Model.Claim.ID)[@Model.Claim.TypeID,@Model.Claim.SystemID]&gt;.
-                </h1>
-                <table cellspacing="0" border="1">
-                    <caption>
-                        Перечень всех доступных полей для шаблона.
-                    </caption>
-                    <tr>
-                        <th>Имя</th>
-                        <th>Код</th>
-                        <th>Значение</th>
-                    </tr>
-                    @foreach (var field in Model.ClaimFields)
-                    {
-                    <tr>
-                        <td>
-                            @field.Category
-                            <br />
-                            @field.Attribute
-                        </td>
-                        <td>
-                            @(field.NumeralID?.ToString() ?? field.VerbousID)
-                        </td>
-                        <td>
-                            @field.Value
-                        </td>
-                    </tr>
-                    }
-                </table>
-                <table cellspacing="0" border="1">
-                    <caption>
-                        Перечень всех доступных полей полномочий для шаблона.
-                    </caption>
-                    <tr>
-                        <th>Имя</th>
-                        <th>Код</th>
-                        <th>Значение</th>
-                    </tr>
-                    <tr>
-                        <td rowspan="3">
-                            Общее по заявке состояние
-                        </td>
-                        <td>
-                            *a
-                        </td>
-                        <td align="center">
-                            ?
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            *с
-                        </td>
-                        <td align="center">
-                            ?
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            *d
-                        </td>
-                        <td align="center">
-                            ?
-                        </td>
-                    </tr>
-                    @foreach (var accessRight in Model.AccessFields)
-                    {
-                    <tr>
-                        <td rowspan="2">
-                            @accessRight.Name
-                        </td>
-                        <td>
-                            *@(accessRight.NumeralID)a
-                        </td>
-                        <td align="center">
-                            @accessRight.IsAllowed
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            *@(accessRight.NumeralID)d
-                        </td>
-                        <td align="center">
-                            @accessRight.IsDenied
-                        </td>
-                    </tr>
-                    }
-                </table>
-            </body>
-    </html>
+    <h1>
+        Инспектируемая заявка &lt;@(Model.Claim.ID)[@Model.Claim.TypeID,@Model.Claim.SystemID]&gt;.
+    </h1>
+    <table cellspacing="0" border="1">
+        <caption>
+            Перечень всех доступных полей для шаблона.
+        </caption>
+        <tr>
+            <th>Имя</th>
+            <th>Код</th>
+            <th>Значение</th>
+        </tr>
+        @foreach (var field in Model.ClaimFields)
+        {
+            <tr>
+                <td>
+                    @field.Category
+                    <br />
+                    @field.Attribute
+                </td>
+                <td>
+                    @(field.NumeralID?.ToString() ?? field.VerbousID)
+                </td>
+                <td>
+                    @field.Value
+                </td>
+            </tr>
+        }
+    </table>
+    <table cellspacing="0" border="1">
+        <caption>
+            Перечень всех доступных полей полномочий для шаблона.
+        </caption>
+        <tr>
+            <th>Имя</th>
+            <th>Код</th>
+            <th>Значение</th>
+        </tr>
+        <tr>
+            <td rowspan="3">
+                Общее по заявке состояние
+            </td>
+            <td>
+                *a
+            </td>
+            <td align="center">
+                ?
+            </td>
+        </tr>
+        <tr>
+            <td>
+                *с
+            </td>
+            <td align="center">
+                ?
+            </td>
+        </tr>
+        <tr>
+            <td>
+                *d
+            </td>
+            <td align="center">
+                ?
+            </td>
+        </tr>
+        @foreach (var accessRight in Model.AccessFields)
+        {
+            <tr>
+                <td rowspan="2">
+                    @accessRight.Name
+                </td>
+                <td>
+                    *@(accessRight.NumeralID)a
+                </td>
+                <td align="center">
+                    @accessRight.IsAllowed
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    *@(accessRight.NumeralID)d
+                </td>
+                <td align="center">
+                    @accessRight.IsDenied
+                </td>
+            </tr>
+        }
+    </table>
 }
 else
 {
