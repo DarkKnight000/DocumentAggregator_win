@@ -20,6 +20,7 @@ namespace DocAggregator.API
         {
             services.AddAdapters().AddInfrastructure().AddInteractors();
 
+            services.AddRazorPages();
             services.AddControllers();
         }
 
@@ -40,6 +41,7 @@ namespace DocAggregator.API
 
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapRazorPages();
                 endpoints.MapControllers();
             });
         }

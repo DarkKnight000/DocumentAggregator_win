@@ -82,9 +82,18 @@ namespace DocAggregator.API.Core
                     accessRight = AccessRightStatus.Denied;
                     break;
             }
-            return claim.AccessRightFields.Where(
-                    arf => arf.NumeralID.ToString() == insertionFormat
-                ).SingleOrDefault()?.Status.Equals(accessRight) ?? false;
+            if (insertionFormat == string.Empty)
+            {
+                return claim.AccessRightFields.Aggregate(AccessRightStatus.NotMentioned,
+                        (ars, arf) => ars | arf.Status
+                    ).Equals(accessRight);
+            }
+            else
+            {
+                return claim.AccessRightFields.Where(
+                        arf => arf.NumeralID.ToString() == insertionFormat
+                    ).SingleOrDefault()?.Status.Equals(accessRight) ?? false;
+            }
         }
 
         string ParseTextField(Claim claim, string insertionFormat)
