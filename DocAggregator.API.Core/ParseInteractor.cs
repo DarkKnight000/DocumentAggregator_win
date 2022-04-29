@@ -50,6 +50,15 @@ namespace DocAggregator.API.Core
             }
         }
 
+        /// <summary>
+        /// Вызывается, когда в шаблоне ожидается логическое значение поля.
+        /// </summary>
+        /// <param name="claim">Заявка.</param>
+        /// <param name="insertionFormat">Код поля.</param>
+        /// <remarks>
+        /// Значение может быть инвертировано ведущим символом '!' в коде поля.
+        /// </remarks>
+        /// <returns>true, если значение найденного поля равно <see cref="bool.TrueString"/>, иначе false.</returns>
         bool ParseBoolField(Claim claim, string insertionFormat)
         {
             if (insertionFormat.StartsWith('*'))
@@ -65,6 +74,12 @@ namespace DocAggregator.API.Core
                 ).SingleOrDefault()?.ToBoolean() ?? false;
         }
 
+        /// <summary>
+        /// Вызывается, когда в логическом поле ожидаются данные права доступа.
+        /// </summary>
+        /// <param name="claim">Заявка.</param>
+        /// <param name="insertionFormat">Код поля.</param>
+        /// <returns>true, если значение найденного поля равно <see cref="bool.TrueString"/>, иначе false.</returns>
         bool ParseAccessBoolField(Claim claim, string insertionFormat)
         {
             string state = insertionFormat.Substring(insertionFormat.Length - 1);
@@ -96,6 +111,12 @@ namespace DocAggregator.API.Core
             }
         }
 
+        /// <summary>
+        /// Вызывается, когда в шаблоне ожидеатся текст.
+        /// </summary>
+        /// <param name="claim">Заявка.</param>
+        /// <param name="insertionFormat">Код поля.</param>
+        /// <returns>Текстовое значение поля или пустая строка.</returns>
         string ParseTextField(Claim claim, string insertionFormat)
         {
             string recursiveResult;
@@ -112,6 +133,15 @@ namespace DocAggregator.API.Core
                 ).SingleOrDefault()?.Value ?? "";
         }
 
+        /// <summary>
+        /// Позволяет форматировать неколько полей заявки в одном поле.
+        /// </summary>
+        /// <param name="claim">Заявка.</param>
+        /// <param name="insertionFormat">Код поля.</param>
+        /// <param name="delimiter">Искомый разделитель полей.</param>
+        /// <param name="connector">Соединитель значений полей.</param>
+        /// <param name="result">Результат рекурсивного разрешения кода.</param>
+        /// <returns>Значение, указывающее на успешность операции.</returns>
         bool TryParseDelimetedFields(Claim claim, string insertionFormat, char delimiter, string connector, out string result)
         {
             if (insertionFormat.Contains(delimiter))

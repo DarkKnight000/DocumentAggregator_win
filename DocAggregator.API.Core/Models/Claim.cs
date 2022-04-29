@@ -33,8 +33,14 @@ namespace DocAggregator.API.Core.Models
         /// </summary>
         public string Template { get; init; }
 
+        /// <summary>
+        /// Поля заявки.
+        /// </summary>
         public IEnumerable<ClaimField> ClaimFields { get; set; }
 
+        /// <summary>
+        /// Поля прав доступа заявки.
+        /// </summary>
         public IEnumerable<AccessRightField> AccessRightFields { get; set; }
 
         /// <summary>

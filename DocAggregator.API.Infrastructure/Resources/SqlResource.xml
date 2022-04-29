@@ -147,4 +147,17 @@ from (
 ) acc on (rit.access_right_hdr_id = acc.access_right_hdr_id)
 order by rit.access_right_hdr_id
 	</SqlQuery>
+	<SqlQuery name="Q_HRDClaimFieldNameList_ByRequestType">
+select
+    cat.request_attr_name as category,
+    attr.request_attr_name as attribute,
+    attr.request_attr_hdr_id AS attr_id
+from hrd.request_attr_hdr attr
+    join hrd.request_attr_hdr cat
+        on (attr.p_request_attr_hdr_id = cat.request_attr_hdr_id)
+    join hrd.request_attr_types typ
+        on (attr.request_attr_hdr_id = typ.request_attr_hdr_id)
+where typ.request_type_id = {0}
+order by typ.order_number
+    </SqlQuery>
 </ArrayOfSqlQuery>

@@ -1,30 +1,44 @@
-﻿using System;
-
-namespace DocAggregator.API.Core.Models
+﻿namespace DocAggregator.API.Core.Models
 {
-    public enum ClaimFieldSource
-    {
-        Claim,
-        Additional,
-        AccessRight,
-    }
-
+    /// <summary>
+    /// Поле заявки.
+    /// </summary>
     public class ClaimField
     {
+        /// <summary>
+        /// Числовой идентификатор заявки.
+        /// </summary>
         public int? NumeralID { get; init; }
-        public string VerbousID { get; init; }
-        public string Category { get; init; }
-        public string Attribute { get; init; }
-        public string Value { get; init; }
-        public bool ToBoolean() => bool.TryParse(Value, out bool result) & result;
-    }
+        
+        /// <summary>
+        /// Именной идентификатор, если имеется, иначе равен вызову <see cref="NumeralID"/>.ToString() .
+        /// </summary>
+        public string VerbousID
+        {
+            get => _verbousID ?? NumeralID?.ToString();
+            init => _verbousID = value;
+        }
+        private readonly string _verbousID;
 
-    public class AccessRightField
-    {
-        public int NumeralID { get; init; }
-        public string Name { get; init; }
-        public AccessRightStatus Status { get; init; }
-        public bool IsAllowed => Status.HasFlag(AccessRightStatus.Allowed);
-        public bool IsDenied => Status.HasFlag(AccessRightStatus.Denied);
+        /// <summary>
+        /// Категория поля заявки.
+        /// </summary>
+        public string Category { get; init; }
+
+        /// <summary>
+        /// Имя атрибута (поля) заявки.
+        /// </summary>
+        public string Attribute { get; init; }
+
+        /// <summary>
+        /// Значение поля.
+        /// </summary>
+        public string Value { get; init; }
+
+        /// <summary>
+        /// Конвертирует значение поля в логическое значение.
+        /// </summary>
+        /// <returns>true, если установлено значение равное <see cref="bool.TrueString"/>, иначе false.</returns>
+        public bool ToBoolean() => bool.TryParse(Value, out bool result) & result;
     }
 }

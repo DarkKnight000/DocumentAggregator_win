@@ -26,9 +26,10 @@ namespace DocAggregator.API
         /// <returns>Та же коллекция сервисов, переданная в метод расширения.</returns>
         public static IServiceCollection AddInfrastructure(this IServiceCollection serviceCollection)
         {
+            // Классы внешних зависимостей, не используемыых ядром.
             serviceCollection.AddSingleton<Infrastructure.OracleManaged.SqlConnectionResource>();
             serviceCollection.AddSingleton<Infrastructure.OracleManaged.TemplateMap>();
-
+            // Классы, определённые и используемые ядром.
             serviceCollection.AddSingleton<IEditorService, Infrastructure.OpenXMLProcessing.EditorService>();
             serviceCollection.AddSingleton<IClaimRepository, Infrastructure.OracleManaged.ClaimRepository>();
             serviceCollection.AddSingleton<IClaimFieldRepository, Infrastructure.OracleManaged.MixedFieldRepository>();

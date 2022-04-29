@@ -28,6 +28,7 @@ namespace DocAggregator.API.Pages
         {
             if (!claimID.HasValue)
             {
+                _logger.Warning("Claim information page was called without passing an argument.");
                 IsCorrect = false;
                 return;
             }
