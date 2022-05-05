@@ -12,7 +12,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
     {
         private ILogger _logger;
         SqlConnectionResource _sqlResource;
-        Dictionary<int, System.Tuple<string, string>> _da;
+        Dictionary<int, System.Tuple<string, string>> _fieldNamesCache;
 
         /// <summary>
         /// Инициализирует объект <see cref="MixedFieldRepository"/>.
@@ -21,7 +21,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
         {
             _logger = logger.GetLoggerFor<IClaimFieldRepository>();
             _sqlResource = sqlResource;
-            _da = new Dictionary<int, System.Tuple<string, string>>();
+            _fieldNamesCache = new Dictionary<int, System.Tuple<string, string>>();
         }
 
         public IEnumerable<ClaimField> GetFiledListByClaimId(Claim claim, bool loadNames)
@@ -35,9 +35,8 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
             var result = new List<ClaimField>();
             if (loadNames)
             {
-                if (_da.Count == 0)
+                if (_fieldNamesCache.Count == 0)
                 {
-                    List<System.Tuple<string, string>> da = new List<System.Tuple<string, string>>();
                     executerWork.Query = string.Format(_sqlResource.GetStringByName("Q_HRDClaimFieldNameList_ByRequestType"), claim.TypeID);
                     using (QueryExecuter executer = new QueryExecuter(executerWork))
                         while (executer.Reader.Read())
@@ -45,7 +44,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                             string categoryName = executer.Reader.GetString(0);
                             string attributeName = executer.Reader.GetString(1);
                             int attributeId = executer.Reader.GetInt32(2);
-                            _da.Add(attributeId, System.Tuple.Create(categoryName, attributeName));
+                            _fieldNamesCache.Add(attributeId, System.Tuple.Create(categoryName, attributeName));
                         }
                 }
             }
@@ -56,8 +55,8 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                     result.Add(new ClaimField()
                     {
                         VerbousID = executer.Reader.GetString(0),
-                        Category = loadNames ? _da[executer.Reader.GetInt32(0)].Item1 : string.Empty,
-                        Attribute = loadNames ? _da[executer.Reader.GetInt32(0)].Item2 : string.Empty,
+                        Category = loadNames ? _fieldNamesCache[executer.Reader.GetInt32(0)].Item1 : string.Empty,
+                        Attribute = loadNames ? _fieldNamesCache[executer.Reader.GetInt32(0)].Item2 : string.Empty,
                         Value = executer.Reader.IsDBNull(1) ? string.Empty : executer.Reader.GetString(1),
                     });
                 }

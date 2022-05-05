@@ -5,6 +5,9 @@ using System;
 
 namespace DocAggregator.API.Infrastructure.OracleManaged
 {
+    /// <summary>
+    /// Содержит набор параметров для работы исполнительного блока.
+    /// </summary>
     struct QueryExecuterWorkspace
     {
         public string Query { get; set; }
@@ -13,6 +16,12 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
         public SqlConnectionResource SqlReqource { get; set; }
     }
 
+    /// <summary>
+    /// Объект исполнителя запроса.
+    /// </summary>
+    /// <remarks>
+    /// Рекомендуется использовать в блоке using.
+    /// </remarks>
     class QueryExecuter : IDisposable
     {
         OracleCommand _command = null;
