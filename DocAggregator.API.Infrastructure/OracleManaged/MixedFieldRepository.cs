@@ -12,6 +12,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
     {
         private ILogger _logger;
         SqlConnectionResource _sqlResource;
+        Dictionary<int, System.Tuple<string, string>> _da;
 
         /// <summary>
         /// Инициализирует объект <see cref="MixedFieldRepository"/>.
@@ -20,241 +21,99 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
         {
             _logger = logger.GetLoggerFor<IClaimFieldRepository>();
             _sqlResource = sqlResource;
+            _da = new Dictionary<int, System.Tuple<string, string>>();
         }
 
-        public ClaimField GetFieldByNameOrId(Claim claim, string name)
+        public IEnumerable<ClaimField> GetFiledListByClaimId(Claim claim, bool loadNames)
         {
-            if (GetFields(claim).TryGetValue(name.ToUpper(), out ClaimField field))
+            QueryExecuterWorkspace executerWork = new QueryExecuterWorkspace()
             {
-                return field;
-            }
-            return null;
-        }
-
-        public AccessRightField GetAccessRightByIdAndStatus(Claim claim, string roleID, AccessRightStatus status)
-        {
-            string attributesQuery = string.Format(_sqlResource.GetStringByName("Q_HRDClaimAccessList_ByRequest"), claim);
-            OracleCommand command = null;
-            OracleDataReader reader = null;
-            try
-            {
-                using (command = new OracleCommand(attributesQuery, claim.DbConnection as OracleConnection))
-                using (reader = command.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        string roleId = reader.GetString(1);
-                        if (roleId != roleID)
-                        {
-                            continue;
-                        }
-                        int? roleAction = null;
-                        if (!reader.IsDBNull(2))
-                        {
-                            roleAction = reader.GetInt32(2);
-                        }
-                        if (status.HasFlag(AccessRightStatus.Allowed))
-                        {
-                            return new AccessRightField()
-                            {
-                                Status = roleAction.HasValue && roleAction.Value == 1 ? AccessRightStatus.Allowed : AccessRightStatus.Denied
-                            };
-                        }
-                        else
-                        {
-                            return new AccessRightField()
-                            {
-                                Status = roleAction.HasValue && roleAction.Value == 0 ? AccessRightStatus.Allowed : AccessRightStatus.Denied
-                            };
-                        }
-                    }
-                }
-            }
-            catch (OracleException ex)
-            {
-                _logger.Error(ex, "An error occured when retrieving claim filds. ClaimID: {0}.", claim);
-                if (command != null)
-                {
-                    StaticExtensions.ShowExceptionMessage(claim.DbConnection as OracleConnection, ex, command.CommandText, _sqlResource);
-                }
-                claim.DbConnection.Close();
-            }
-            return null;
-        }
-
-        /// <summary>
-        /// Получает все поля из общей таблицы атрибутов и представления дополнительных атрибутов.
-        /// </summary>
-        /// <param name="claimID">Идентификатор заявки.</param>
-        /// <returns>
-        /// Полный перечень связанных с данным типом заявки атрибутами
-        /// и дополными данными общего представления, основанного на данных выбранной заявки.
-        /// </returns>
-        private Dictionary<string, ClaimField> GetFields(Claim claim)
-        {
-            Dictionary<string, ClaimField> result = new Dictionary<string, ClaimField>();
-            string attributesQuery = string.Format(_sqlResource.GetStringByName("Q_HRDAttributeIdsValues_ByRequest"), claim.ID);
-            string viewQuery = string.Format(_sqlResource.GetStringByName("Q_HRDAddressAction_ByRequest"), claim.ID);
-            OracleCommand command = null;
-            OracleDataReader reader = null;
-            try
-            {
-                using (command = new OracleCommand(attributesQuery, claim.DbConnection as OracleConnection))
-                using (reader = command.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        string attributeId = reader.GetString(0);
-                        string attributeVal = string.Empty;
-                        if (!reader.IsDBNull(1))
-                        {
-                            attributeVal = reader.GetString(1);
-                        }
-                        result.Add(attributeId, new ClaimField() { Value = attributeVal });
-                    }
-                }
-                using (command = new OracleCommand(viewQuery, claim.DbConnection as OracleConnection))
-                using (reader = command.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        for (int i = 0; i < reader.FieldCount; i++)
-                        {
-                            string attributeName = reader.GetName(i);
-                            string attributeVal = string.Empty;
-                            if (!reader.IsDBNull(i))
-                            {
-                                attributeVal = reader.GetString(i);
-                            }
-                            result.Add(attributeName, new ClaimField() { Value = attributeVal });
-                        }
-                    }
-                }
-            }
-            catch (OracleException ex)
-            {
-                _logger.Error(ex, "An error occured when retrieving claim filds. ClaimID: {0}.", claim.ID);
-                if (command != null)
-                {
-                    StaticExtensions.ShowExceptionMessage(claim.DbConnection as OracleConnection, ex, command.CommandText, _sqlResource);
-                }
-                claim.DbConnection.Close();
-            }
-            return result;
-        }
-
-        public IEnumerable<ClaimField> GetFiledListByClaimId(Claim claim)
-        {
+                Claim = claim,
+                Logger = _logger,
+                SqlReqource = _sqlResource,
+            };
             var result = new List<ClaimField>();
-            string attributesQuery = string.Format(_sqlResource.GetStringByName("Q_HRDClaimFieldsList_ByRequest"), claim.ID);
-            string viewQuery = string.Format(_sqlResource.GetStringByName("Q_HRDAddressAction_ByRequest"), claim.ID);
-            OracleCommand command = null;
-            OracleDataReader reader = null;
-            try
+            if (loadNames)
             {
-                using (command = new OracleCommand(attributesQuery, claim.DbConnection as OracleConnection))
-                using (reader = command.ExecuteReader())
+                if (_da.Count == 0)
                 {
-                    while (reader.Read())
-                    {
-                        string categoryName = reader.GetString(0);
-                        string attributeName = reader.GetString(1);
-                        string attributeId = reader.GetString(2);
-                        string attributeVal = string.Empty;
-                        if (!reader.IsDBNull(3))
+                    List<System.Tuple<string, string>> da = new List<System.Tuple<string, string>>();
+                    executerWork.Query = string.Format(_sqlResource.GetStringByName("Q_HRDClaimFieldNameList_ByRequestType"), claim.TypeID);
+                    using (QueryExecuter executer = new QueryExecuter(executerWork))
+                        while (executer.Reader.Read())
                         {
-                            attributeVal = reader.GetString(3);
+                            string categoryName = executer.Reader.GetString(0);
+                            string attributeName = executer.Reader.GetString(1);
+                            int attributeId = executer.Reader.GetInt32(2);
+                            _da.Add(attributeId, System.Tuple.Create(categoryName, attributeName));
                         }
-                        result.Add(new ClaimField() {
-                            VerbousID = attributeId,
-                            Category = categoryName,
-                            Attribute = attributeName,
-                            Value = attributeVal,
+                }
+            }
+            executerWork.Query = string.Format(_sqlResource.GetStringByName("Q_HRDAttributeIdsValues_ByRequest"), claim.ID);
+            using (QueryExecuter executer = new QueryExecuter(executerWork))
+                while (executer.Reader.Read())
+                {
+                    result.Add(new ClaimField()
+                    {
+                        VerbousID = executer.Reader.GetString(0),
+                        Category = loadNames ? _da[executer.Reader.GetInt32(0)].Item1 : string.Empty,
+                        Attribute = loadNames ? _da[executer.Reader.GetInt32(0)].Item2 : string.Empty,
+                        Value = executer.Reader.IsDBNull(1) ? string.Empty : executer.Reader.GetString(1),
+                    });
+                }
+            executerWork.Query = string.Format(_sqlResource.GetStringByName("Q_HRDAddressAction_ByRequest"), claim.ID);
+            using (QueryExecuter executer = new QueryExecuter(executerWork))
+                while (executer.Reader.Read())
+                {
+                    for (int i = 0; i < executer.Reader.FieldCount; i++)
+                    {
+                        result.Add(new ClaimField()
+                        {
+                            VerbousID = executer.Reader.GetName(i),
+                            Category = string.Empty,
+                            Attribute = loadNames ? executer.Reader.GetName(i) : string.Empty,
+                            Value = executer.Reader.IsDBNull(i) ? string.Empty : executer.Reader.GetString(i),
                         });
                     }
                 }
-                using (command = new OracleCommand(viewQuery, claim.DbConnection as OracleConnection))
-                using (reader = command.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        for (int i = 0; i < reader.FieldCount; i++)
-                        {
-                            string attributeName = reader.GetName(i);
-                            string attributeVal = string.Empty;
-                            if (!reader.IsDBNull(i))
-                            {
-                                attributeVal = reader.GetString(i);
-                            }
-                            result.Add(new ClaimField() {
-                                VerbousID = attributeName,
-                                Category = attributeName,
-                                Attribute = string.Empty,
-                                Value = attributeVal,
-                            });
-                        }
-                    }
-                }
-            }
-            catch (OracleException ex)
-            {
-                _logger.Error(ex, "An error occured when retrieving claim filds. ClaimID: {0}.", claim.ID);
-                if (command != null)
-                {
-                    StaticExtensions.ShowExceptionMessage(claim.DbConnection as OracleConnection, ex, command.CommandText, _sqlResource);
-                }
-                claim.DbConnection.Close();
-            }
             return result;
         }
 
         public IEnumerable<AccessRightField> GetFilledAccessListByClaimId(Claim claim)
         {
             var result = new List<AccessRightField>();
-            string accessListQuery = string.Format(_sqlResource.GetStringByName("Q_HRDClaimAccessList_ByRequest"), claim.ID);
-            OracleCommand command = null;
-            OracleDataReader reader = null;
-            try
+            QueryExecuterWorkspace accessListRetrieve = new QueryExecuterWorkspace()
             {
-                using (command = new OracleCommand(accessListQuery, claim.DbConnection as OracleConnection))
-                using (reader = command.ExecuteReader())
+                Query = string.Format(_sqlResource.GetStringByName("Q_HRDClaimAccessList_ByRequest"), claim.ID),
+                Claim = claim,
+                Logger = _logger,
+                SqlReqource = _sqlResource,
+            };
+            using (QueryExecuter executer = new QueryExecuter(accessListRetrieve))
+                while (executer.Reader.Read())
                 {
-                    while (reader.Read())
+                    AccessRightStatus stat = AccessRightStatus.NotMentioned;
+                    if (!executer.Reader.IsDBNull(2))
                     {
-                        string name = reader.GetString(0);
-                        string code = reader.GetString(1);
-                        AccessRightStatus stat = AccessRightStatus.NotMentioned;
-                        if (!reader.IsDBNull(2))
+                        switch (executer.Reader.GetString(2))
                         {
-                            switch (reader.GetString(2))
-                            {
-                                case "0":
-                                    stat = AccessRightStatus.Denied;
-                                    break;
-                                case "1":
-                                    stat = AccessRightStatus.Allowed;
-                                    break;
-                                default:
-                                    break;
-                            }
+                            case "0":
+                                stat = AccessRightStatus.Denied;
+                                break;
+                            case "1":
+                                stat = AccessRightStatus.Allowed;
+                                break;
+                            default:
+                                break;
                         }
-                        result.Add(new AccessRightField() {
-                            NumeralID = int.Parse(code),
-                            Name = name,
-                            Status = stat,
-                        });
                     }
+                    result.Add(new AccessRightField()
+                    {
+                        NumeralID = executer.Reader.GetInt32(1),
+                        Name = executer.Reader.GetString(0),
+                        Status = stat,
+                    });
                 }
-            }
-            catch (OracleException ex)
-            {
-                _logger.Error(ex, "An error occured when retrieving claim filds. ClaimID: {0}.", claim.ID);
-                if (command != null)
-                {
-                    StaticExtensions.ShowExceptionMessage(claim.DbConnection as OracleConnection, ex, command.CommandText, _sqlResource);
-                }
-                claim.DbConnection.Close();
-            }
             return result;
         }
     }

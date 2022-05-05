@@ -74,7 +74,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                 Template = template,
                 DbConnection = connection,
             };
-            result.ClaimFields = _fieldRepository.GetFiledListByClaimId(result);
+            result.ClaimFields = _fieldRepository.GetFiledListByClaimId(result, false);
             result.AccessRightFields = _fieldRepository.GetFilledAccessListByClaimId(result);
             return result;
         }

@@ -33,7 +33,7 @@ namespace DocAggregator.API.Pages
                 return;
             }
             Claim = _claimRepository.GetClaim(claimID.Value);
-            ClaimFields = _fieldRepository.GetFiledListByClaimId(Claim).ToList();
+            ClaimFields = _fieldRepository.GetFiledListByClaimId(Claim, true).ToList();
             AccessFields = _fieldRepository.GetFilledAccessListByClaimId(Claim).ToList();
             return;
         }

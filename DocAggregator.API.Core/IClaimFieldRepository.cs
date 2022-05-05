@@ -9,28 +9,15 @@ namespace DocAggregator.API.Core
     public interface IClaimFieldRepository
     {
         /// <summary>
-        /// Получает значение числового или именованного поля по идентификатору заявки.
+        /// Получает перечисление всех полей из общей таблицы атрибутов и представления дополнительных атрибутов по идентификатору заявки.
         /// </summary>
         /// <param name="claim">Заявка.</param>
-        /// <param name="fieldName">Идентификатор поля.</param>
-        /// <returns>Строковое представление значения поля.</returns>
-        //public ClaimField GetFieldByNameOrId(Claim claim, string fieldName);
-
-        /// <summary>
-        /// Получает значение права доступа для выбранного действия по идентификатору заявки.
-        /// </summary>
-        /// <param name="claim">Заявка.</param>
-        /// <param name="roleID">Идентификатор роли.</param>
-        /// <param name="status">Действие к роли.</param>
-        /// <returns>Наличие действия к роли.</returns>
-        //public AccessRightField GetAccessRightByIdAndStatus(Claim claim, string roleID, AccessRightStatus status);
-
-        /// <summary>
-        /// Получает перечисление всех полей используя данные определённой заявки.
-        /// </summary>
-        /// <param name="claim">Заявка.</param>
-        /// <returns>Перечисление полей заявки.</returns>
-        public IEnumerable<ClaimField> GetFiledListByClaimId(Claim claim);
+        /// <param name="loadNames">Подгружать имена полей.</param>
+        /// <returns>
+        /// Полный перечень связанных с данным типом заявки атрибутами
+        /// и дополными данными общего представления, основанного на данных выбранной заявки.
+        /// </returns>
+        public IEnumerable<ClaimField> GetFiledListByClaimId(Claim claim, bool loadNames = false);
 
         /// <summary>
         /// Получает перечисление всех полей доступа используя данные определённой заявки.
