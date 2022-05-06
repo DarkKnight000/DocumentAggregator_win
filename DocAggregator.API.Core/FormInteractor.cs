@@ -87,7 +87,7 @@ namespace DocAggregator.API.Core
                 }
             }
             _editor.SetInserts(document, inserts);
-            response.ResultStream = _editor.Export(document) as MemoryStream;
+            response.ResultStream = _editor.Finalize(document) as MemoryStream;
         }
     }
 }

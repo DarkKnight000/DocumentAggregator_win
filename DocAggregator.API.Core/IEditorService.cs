@@ -41,10 +41,10 @@ namespace DocAggregator.API.Core
         void SetInserts(IDocument document, IEnumerable<Insert> inserts);
 
         /// <summary>
-        /// Производит сохранение документа в формате PDF.
+        /// Производит конвертацию документа в формат PDF и удаление временных файлов, при наличии.
         /// </summary>
         /// <param name="document">Экземпляр документа.</param>
         /// <returns>Поток со сконвертированным файлом.</returns>
-        Stream Export(IDocument document);
+        Stream Finalize(IDocument document);
     }
 }

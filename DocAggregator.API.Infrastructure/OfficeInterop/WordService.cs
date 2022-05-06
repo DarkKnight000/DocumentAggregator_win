@@ -124,7 +124,7 @@ namespace DocAggregator.API.Infrastructure.OfficeInterop
             }
         }
 
-        public Stream Export(IDocument document)
+        public Stream Finalize(IDocument document)
         //public string Export(IDocument document)
         {
             throw new NotImplementedException("OfficeInterop doesn't support exporting into a stream.");

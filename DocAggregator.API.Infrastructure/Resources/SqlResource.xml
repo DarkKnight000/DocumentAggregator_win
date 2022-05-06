@@ -59,6 +59,7 @@ order by typ.order_number
 	</SqlQuery>
 	<SqlQuery name="Q_HRDAddressAction_ByRequest">
 SELECT
+    pkzi.pkzi_name AS pkzi,
     build.description AS address,
     CASE MAX(acc.action)
         WHEN 0 THEN 'False'
@@ -73,12 +74,13 @@ SELECT
         ELSE 'False'
     END AS deny
 FROM hrd.request_hdr req
+    JOIN hrd.register_pkzi pkzi ON (pkzi.user_id = req.applicant_id)
     JOIN obd_sys.user_location loc ON (loc.user_id = req.applicant_id)
     JOIN hrd.dict_room room ON (room.room_id = loc.room_id)
     JOIN hrd.building build ON (build.building_id = room.building_id)
     JOIN hrd.it_access_right_request acc ON (acc.request_hdr_id = req.request_hdr_id)
 WHERE req.request_hdr_id = {0}
-GROUP BY build.description
+GROUP BY pkzi.pkzi_name, build.description
 	</SqlQuery>
 	<SqlQuery name="Q_HRDClaimSystemType_ByRequest">
 select distinct req.request_type_id req_type, res.information_system_id inf_sys

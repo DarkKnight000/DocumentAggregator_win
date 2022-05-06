@@ -65,6 +65,7 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
         private string _scripts;
 
         private bool initializedValue;
+        private bool finalizedValue;
         private bool disposedValue;
 
         public EditorService(IOptionsFactory options, ILoggerFactory loggerFactory)
@@ -81,6 +82,10 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
 
         public void EnsureInitialize()
         {
+            if (finalizedValue || disposedValue)
+            {
+                throw new InvalidOperationException("Already called finalize or dispose method.");
+            }
             if (!initializedValue)
             {
                 Initialize();
@@ -146,7 +151,7 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
             _wmlEditor.SetInserts(System.Linq.Enumerable.ToArray(inserts));
         }
 
-        public Stream Export(IDocument document)
+        public Stream Finalize(IDocument document)
         {
             EnsureInitialize();
             WordMLDocument documentContainer = document as WordMLDocument;
@@ -191,16 +196,6 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
             _logger.Trace("Start a converter.");
             convertingProcess.Start();
             convertingProcess.BeginErrorReadLine();
-            //documentContainer.ResultStream.Seek(0, SeekOrigin.Begin);
-            //_logger.Debug("Copying a result stream to the standard input of the converter.");
-            //documentContainer.ResultStream.CopyTo(convertingProcess.StandardInput.BaseStream);
-            /*using (Stream file = File.OpenRead(tempFile.LocalPath))
-            {
-                file.CopyTo(convertingProcess.StandardInput.BaseStream);
-            }*/
-            /*_logger.Debug("Flushing all data in input stream and closing it.");
-            convertingProcess.StandardInput.Flush();
-            convertingProcess.StandardInput.Close();*/
             _logger.Debug("Reading converter output.");
             var outputStream = new MemoryStream();
             convertingProcess.StandardOutput.BaseStream.CopyTo(outputStream);
@@ -212,6 +207,7 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
                 Debugger.Break();
             }
             File.Delete(documentContainer.TemporaryDocumentPath);
+            finalizedValue = true;
             return outputStream;
         }
 
