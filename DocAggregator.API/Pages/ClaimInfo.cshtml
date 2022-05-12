@@ -4,8 +4,10 @@
 @if (Model.IsCorrect)
 {
     <h1>
-        Инспектируемая заявка &lt;@(Model.Claim.ID)[@Model.Claim.TypeID,@Model.Claim.SystemID]&gt;.
+        Инспектируемая заявка &lt;@(Model.Claim.ID)&gt;.
     </h1>
+    <p>Тип: @Model.Claim.TypeID</p>
+    <p>Система: @Model.Claim.SystemID</p>
     <table cellspacing="0" border="1">
         <caption>
             Перечень всех доступных полей для шаблона.
@@ -48,24 +50,24 @@
             <td>
                 *a
             </td>
-            <td align="center">
-                ?
+            <td align="center" class="@Model.AllowAccess.ToString()">
+                @Model.AllowAccess
             </td>
         </tr>
         <tr>
             <td>
                 *с
             </td>
-            <td align="center">
-                ?
+            <td align="center" class="@Model.ChangeAccess.ToString()">
+                @Model.ChangeAccess
             </td>
         </tr>
         <tr>
             <td>
                 *d
             </td>
-            <td align="center">
-                ?
+            <td align="center" class="@Model.DenyAccess.ToString()">
+                @Model.DenyAccess
             </td>
         </tr>
         @foreach (var accessRight in Model.AccessFields)
@@ -77,7 +79,7 @@
                 <td>
                     *@(accessRight.NumeralID)a
                 </td>
-                <td align="center">
+                <td align="center" class="@accessRight.IsAllowed.ToString()">
                     @accessRight.IsAllowed
                 </td>
             </tr>
@@ -85,7 +87,7 @@
                 <td>
                     *@(accessRight.NumeralID)d
                 </td>
-                <td align="center">
+                <td align="center" class="@accessRight.IsDenied.ToString()">
                     @accessRight.IsDenied
                 </td>
             </tr>

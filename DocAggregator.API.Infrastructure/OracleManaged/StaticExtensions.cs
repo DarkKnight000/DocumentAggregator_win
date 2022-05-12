@@ -1,8 +1,12 @@
-﻿using Oracle.ManagedDataAccess.Client;
+﻿using DocAggregator.API.Core;
+using DocAggregator.API.Core.Models;
+using Oracle.ManagedDataAccess.Client;
 using Oracle.ManagedDataAccess.Types;
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace DocAggregator.API.Infrastructure.OracleManaged
@@ -10,7 +14,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
     /// <summary>
     /// Содержит статические методы и методы расширения для работы с базой данных Oracle.
     /// </summary>
-    internal static class StaticExtensions
+    public static class StaticExtensions
     {
         /// <summary>
         /// Выводит сообщение об ошибке и часть запроса, вызвавшую её.
@@ -64,6 +68,11 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
             }
             Debugger.Break();
             throw new Exception(message);
+        }
+
+        public static AccessRightStatus GetWholeStatus(this IEnumerable<AccessRightField> fields)
+        {
+            return fields.Aggregate(AccessRightStatus.NotMentioned, (ars, arf) => ars | arf.Status);
         }
     }
 }
