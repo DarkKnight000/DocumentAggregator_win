@@ -11,6 +11,7 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
     /// </summary>
     public class WordMLDocument : IDocument
     {
+        public bool Finalized { get; set; }
         public string TemporaryDocumentPath { get; private set; }
         /// <summary>
         /// Поток, содержащий документ.

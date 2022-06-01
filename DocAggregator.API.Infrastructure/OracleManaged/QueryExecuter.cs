@@ -24,16 +24,32 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
     /// </remarks>
     class QueryExecuter : IDisposable
     {
+        OracleConnection _connection = null;
         OracleCommand _command = null;
         OracleDataReader _reader = null;
 
+        public OracleConnection Connection => _connection;
         public OracleDataReader Reader => _reader;
 
         public QueryExecuter(QueryExecuterWorkspace work)
         {
             try
             {
-                _command = new OracleCommand(work.Query, work.Claim.DbConnection as OracleConnection);
+                if (work.Claim == null)
+                {
+                    _connection = new OracleConnection(new OracleConnectionStringBuilder()
+                    {
+                        DataSource = work.SqlReqource.Server,
+                        UserID = work.SqlReqource.Username,
+                        Password = work.SqlReqource.Password,
+                    }.ToString());
+                    _connection.Open();
+                    _command = new OracleCommand(work.Query, _connection);
+                }
+                else
+                {
+                    _command = new OracleCommand(work.Query, work.Claim.DbConnection as OracleConnection);
+                }
                 _reader = _command.ExecuteReader();
             }
             catch (OracleException ex)

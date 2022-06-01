@@ -65,7 +65,6 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
         private string _scripts;
 
         private bool initializedValue;
-        private bool finalizedValue;
         private bool disposedValue;
 
         public EditorService(IOptionsFactory options, ILoggerFactory loggerFactory)
@@ -82,10 +81,6 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
 
         public void EnsureInitialize()
         {
-            if (finalizedValue || disposedValue)
-            {
-                throw new InvalidOperationException("Already called finalize or dispose method.");
-            }
             if (!initializedValue)
             {
                 Initialize();
@@ -142,12 +137,20 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
         public IEnumerable<Insert> GetInserts(IDocument document)
         {
             EnsureInitialize();
+            if ((document as WordMLDocument).Finalized)
+            {
+                throw new InvalidOperationException("The document was already finalized.");
+            }
             return _wmlEditor.FindInserts((document as WordMLDocument).MainPart);
         }
 
         public void SetInserts(IDocument document, IEnumerable<Insert> inserts)
         {
             EnsureInitialize();
+            if ((document as WordMLDocument).Finalized)
+            {
+                throw new InvalidOperationException("The document was already finalized.");
+            }
             _wmlEditor.SetInserts(System.Linq.Enumerable.ToArray(inserts));
         }
 
@@ -155,6 +158,10 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
         {
             EnsureInitialize();
             WordMLDocument documentContainer = document as WordMLDocument;
+            if (documentContainer.Finalized)
+            {
+                throw new InvalidOperationException("The document was already finalized.");
+            }
             string inputFile = documentContainer.TemporaryDocumentPath;
             var wordDocument = documentContainer.Content;
             _logger.Trace("Save an edited part back into a stream.");
@@ -207,7 +214,7 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
                 Debugger.Break();
             }
             File.Delete(documentContainer.TemporaryDocumentPath);
-            finalizedValue = true;
+            documentContainer.Finalized = true;
             return outputStream;
         }
 

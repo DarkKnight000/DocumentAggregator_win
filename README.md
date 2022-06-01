@@ -26,13 +26,22 @@
 - ClaimResponse - Ответ от генератора
 - ClaimInteractor - Класс обработки заявки
 
+Обработка документа
+- FormRequest - Запрос на докуомент
+- FormResponse - Ответ от редактора
+- FormInteractor - Класс обработки формы
+
 Обработка вставки
 - InsertRequest - Запрос на вставку
-- InsertResponse - Ответ на вставку
+- InsertResponse - Ответ от парсера
 - ParseInsertInteractor - Класс обработки вставки
 
 ### Интерфейсы
 
+Внедрение зависимостей
+- ILogger - .
+
+Внешние службы
 - IClaimRepository - Репозиторий объектов `Claim`
 - IMixedFieldRepository - Репозиторий `string` для получения по имени поля `Insert`
 - IEditorService - Сервис редактора документа

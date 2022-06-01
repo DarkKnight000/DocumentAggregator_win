@@ -3,8 +3,28 @@
 Root: D:\Users\akkostin\Documents\Templates\Edited\
 -->
 <ArrayOfTemplateBind xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-	<TemplateBind typeID="10" systemID="420">Заявка для сотрудников НТЦ (версия 2.0.5).docx</TemplateBind>
-	<TemplateBind typeID="10" systemID="86984">Заявка для сотрудников НТЦ ИС ЛУ ЦГИС.DOCX</TemplateBind>
-	<TemplateBind typeID="10" systemID="380">Заявка для сотрудников НТЦ ИС КП.DOCX</TemplateBind>
-	<TemplateBind typeID="10" systemID="85908">Заявка для удаленных сотрудников НТЦ ИС Вектор.docx</TemplateBind>
+	<!-- Placeholder : Currently working on the document below : Not formatted well -->
+	<TemplateBind typeID="10" systemID="3">КРР-03 ИС КП/Заявка для сотрудников НТЦ ИС КП.DOCX</TemplateBind>
+	<TemplateBind typeID="10" systemID="4">КРР-04 ИС ОДФР/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind> <!-- Check a list inner format filling (?) -->
+	<TemplateBind typeID="10" systemID="8">КРР-08 ИС 1С БУНУ/Заявка для сотрудников НТЦ.docx</TemplateBind>
+	<TemplateBind typeID="10" systemID="10">КРР-10 ИС АСЭР/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind> <!-- Check a right access for guests -->
+	<TemplateBind typeID="10" systemID="11">КРР-11 ИС ТД/Заявка для сотрудников НТЦ (версия 2.0.5).docx</TemplateBind> <!-- Check the last frames correctness -->
+	<TemplateBind typeID="10" systemID="17">КРР-17 ИС ОиК/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind> <!-- Check a course title -->
+	<TemplateBind typeID="10" systemID="18">КРР-18 ИС СЭД/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind> <!-- Check access rights -->
+	<TemplateBind typeID="10" systemID="19">КРР-19 ИС РН-КИН/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind>
+	<TemplateBind typeID="10" systemID="20">КРР-20 ИС СУПП/Заявка для сотрудников НТЦ.docx</TemplateBind>
+	<TemplateBind typeID="10" systemID="21">КРР-21 ИС WDB/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind>
+	<TemplateBind typeID="10" systemID="24">КРР-24 ИС ЛУ ЦГИС/Заявка для сотрудников НТЦ ИС ЛУ ЦГИС.DOCX</TemplateBind> <!-- IP-address issue -->
+	<TemplateBind typeID="10" systemID="25">КРР-25 ИС АБПО/Заявка для сотрудников НТЦ.docx</TemplateBind> <!-- Check informational resource using -->
+	<TemplateBind typeID="10" systemID="34">КРР-34 ИС NormaCS/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind>
+	<TemplateBind typeID="10" systemID="35">КРР-35 ИС ПП/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind> <!-- Check access rights for the department head -->
+	<TemplateBind typeID="10" systemID="37">КРР-37 ИС ВОТ/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind>
+	<TemplateBind typeID="10" systemID="38">КРР-38 ИС Геобанк-ПТД/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind> <!-- Check access rights for the loader -->
+	<TemplateBind typeID="10" systemID="39">КРР-39 ИС ПР/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind>
+	<TemplateBind typeID="10" systemID="41">КРР-41 ИС СУРК/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind>
+	<TemplateBind typeID="10" systemID="42">КРР-42 ИС Вектор/Заявка для удаленных сотрудников НТЦ ИС Вектор.docx</TemplateBind>
+	<TemplateBind typeID="10" systemID="44">КРР-44 ИС УСИЗ/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind> <!-- Check if access rights should be equal or not -->
+	<TemplateBind typeID="10" systemID="45">КРР-45 ИС КУЗ/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind>
+	<!-- Placeholder : Currently working on the document below : Empty -->
+	<TemplateBind typeID="10" systemID="47">КРР-47 ИС Сапсан+/</TemplateBind> <!-- Where? -->
 </ArrayOfTemplateBind>

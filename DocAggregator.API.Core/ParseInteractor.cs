@@ -70,7 +70,7 @@ namespace DocAggregator.API.Core
                 return !ParseBoolField(claim, insertionFormat.Substring(1));
             }
             return claim.ClaimFields.Where(
-                    cf => (cf.NumeralID?.ToString() ?? cf.VerbousID) == insertionFormat
+                    cf => (cf.NumeralID?.ToString() ?? cf.VerbousID).Equals(insertionFormat, System.StringComparison.OrdinalIgnoreCase)
                 ).SingleOrDefault()?.ToBoolean() ?? false;
         }
 
@@ -129,7 +129,7 @@ namespace DocAggregator.API.Core
                 return recursiveResult;
             }
             return claim.ClaimFields.Where(
-                    cf => (cf.NumeralID?.ToString() ?? cf.VerbousID ?? "") == insertionFormat
+                    cf => (cf.NumeralID?.ToString() ?? cf.VerbousID ?? "").Equals(insertionFormat, System.StringComparison.OrdinalIgnoreCase)
                 ).SingleOrDefault()?.Value ?? "";
         }
 

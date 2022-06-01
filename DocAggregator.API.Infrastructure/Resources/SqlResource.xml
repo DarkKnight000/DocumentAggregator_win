@@ -82,12 +82,13 @@ FROM hrd.request_hdr req
 WHERE req.request_hdr_id = {0}
 GROUP BY pkzi.pkzi_name, build.description
 	</SqlQuery>
-	<SqlQuery name="Q_HRDClaimSystemType_ByRequest">
-select distinct req.request_type_id req_type, res.information_system_id inf_sys
+	<SqlQuery name="Q_HRDClaimSystemID_ByRequest">
+select distinct req.request_type_id req_type, sys.register_id inf_sys
 from hrd.request_hdr req
     JOIN hrd.it_access_right_request acc ON (acc.request_hdr_id = req.request_hdr_id)
     JOIN hrd.it_access_right_hdr rit ON (rit.access_right_hdr_id = acc.access_right_hdr_id)
     JOIN hrd.it_dict_information_resource res ON (res.information_resource_id = rit.object_id)
+    JOIN hrd.it_dict_information_system sys ON (sys.information_system_id = res.information_system_id)
 where req.request_hdr_id = {0}
 	</SqlQuery>
 	<SqlQuery name="Q_HRDClaimFieldsList_ByRequest">
