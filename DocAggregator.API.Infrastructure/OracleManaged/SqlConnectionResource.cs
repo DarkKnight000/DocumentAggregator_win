@@ -52,6 +52,8 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
         /// </summary>
         public string Password { get; set; }
 
+        public int Count => _queriesContainer.Count;
+
         public SqlConnectionResource(IOptionsFactory optionsFactory, ILoggerFactory loggerFactory)
         {
             _logger = loggerFactory.GetLoggerFor<SqlConnectionResource>();

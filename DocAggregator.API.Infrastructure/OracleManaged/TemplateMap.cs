@@ -38,6 +38,8 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
         private ILogger _logger;
         private IEnumerable<TemplateBind> _bindsContainer;
 
+        public int Count => _bindsContainer.Count();
+
         public TemplateMap(IOptionsFactory optionsFactory, ILoggerFactory loggerFactory)
         {
             _logger = loggerFactory.GetLoggerFor<TemplateMap>();

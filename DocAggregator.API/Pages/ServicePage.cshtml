@@ -1,0 +1,79 @@
+﻿@page
+@model DocAggregator.API.Pages.ServicePageModel
+
+@if (Model.IsCorrect)
+{
+    <h1>Проверка конфигурации.</h1>
+    <h2>DataBase:</h2>
+    <p>
+        Ресурс запросов -
+        @if (Model.Queries.HasValue)
+        {
+            <span class="Ready">@Model.Queries.Value запрос(а/ов)</span>
+        }
+        else
+        {
+            <span class="Error">отсутствует</span>
+        }
+    </p>
+    <p>
+        Привязка типов к шаблонам -
+        @if (Model.Bindings.HasValue)
+        {
+            <span class="Ready">@Model.Bindings.Value привязка(и/ок)</span>
+        }
+        else
+        {
+            <span class="Error">отсутствует</span>
+        }
+    </p>
+    <p>
+        Подключение к базе данных -
+        @if (Model.Connection)
+        {
+            <span class="Ready">готово</span>
+        }
+        else
+        {
+            <span class="Error">отсутствует</span>
+        }
+    </p>
+    <h2>Editor:</h2>
+    <p>
+        Файлы шаблонов -
+        @if (Model.Templates.HasValue && !Model.Templates.Value.Equals(0))
+        {
+            <span class="Ready">@Model.Templates.Value файл(а/ов)</span>
+        }
+        else
+        {
+            <span class="Error">не найдены</span>
+        }
+    </p>
+    <p>
+        Редактор LibreOffice -
+        @if (Model.Editor)
+        {
+            <span class="Ready">готов</span>
+        }
+        else
+        {
+            <span class="Error">отсутствует</span><span> по пути "@Model.EditorPath"</span>
+        }
+    </p>
+    <p>
+        Сервер конвертера -
+        @if (Model.Scripts)
+        {
+            <span class="Ready">готов</span>
+        }
+        else
+        {
+            <span class="Error">отсутствует</span>
+        }
+    </p>
+}
+else
+{
+    <h1>An error occured!</h1>
+}
