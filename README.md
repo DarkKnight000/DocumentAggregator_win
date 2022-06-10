@@ -1,6 +1,9 @@
-# Document aggregator
+# Манифест приложения
 
-Проект глобального Web-API приложения для автоматизации документооборота.
+Document aggregator - Проект глобального Web-API приложения для автоматизации документооборота.
+
+Автор:
+Костин Анатолий (anatolii.kostin.99@gmail.com)
 
 Требования:
 - Доступ из существующей инфраструктуры\
@@ -81,3 +84,50 @@ Content-Type: application/problem+json; charset=utf-8
 ```
 
 Содержимое пакета зависит от ошибки.
+
+# Причины отказа от решений в ходе разработки
+
+## OfficeInterop
+
+Первым и самым простым способом работы с файлами DOCX был взят OfficeInterop.
+Но благодаря проблемам серверной автоматизации, а именно полного отсутствия её варианта реализации, от данной библиотеки отказались, а модуль `DocAggregator.API.Infrastructure.OfficeInterop` заброшен.
+
+Спарвка: [Вопросы серверной автоматизации Office](https://support.microsoft.com/ru-ru/topic/%D0%B2%D0%BE%D0%BF%D1%80%D0%BE%D1%81%D1%8B-%D1%81%D0%B5%D1%80%D0%B2%D0%B5%D1%80%D0%BD%D0%BE%D0%B9-%D0%B0%D0%B2%D1%82%D0%BE%D0%BC%D0%B0%D1%82%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D0%B8-office-48bcfe93-8a89-47f1-0bce-017433ad79e2)
+
+## Редактирование файла .DOCX на лету, в памяти
+
+Одним из моих желаний, как разработчика, был контроль за объектами.
+Файлу нет смысла быть записаным на диск, если программа, породившая его, через секунду его уже уничтожит...
+Подумал я и реализовал редактирование архива в рамках потока `MemoryStream`.
+Но, вопреки ожиданиям, изменения ни за что не желали сохраняться в память.
+Проблема оказалась далеко не в классе `WordprocessingDocument`, который и позволяет использовать любой вид потока на вход.
+Ошибка находится в самом .NET Core, который не даёт сохранить данные потока до его закрытия.
+Закрытие файлового потока работает.
+Закрытие потока в памяти приводит к полной потере данных.
+
+- Трекер ошибки из репозитория OpenXML SDK: [Calling Save() doesn't flush to the stream · Issue #294 · OfficeDev/Open-XML-SDK · GitHub](https://github.com/OfficeDev/Open-XML-SDK/issues/294)
+- Трекер ошибки из репозитория .NET: [Add Flush to ZipArchive · Issue #24149 · dotnet/runtime · GitHub](https://github.com/dotnet/runtime/issues/24149)
+
+На .NET Framework такой ошибки нет.
+
+Это могло бы подсказать ответ: [c# - Open XML WordprocessingDocument with MemoryStream is 0KB - Stack Overflow](https://stackoverflow.com/questions/61196148/open-xml-wordprocessingdocument-with-memorystream-is-0kb)
+
+## Запись лога в базу данных
+
+Отложено, так как запись в медленное хранилище данных требует дополнительных управляющих обхъктов.
+
+Справка: [Guidance on how to log to a message queue for slow data stores · Issue #11801 · dotnet/AspNetCore.Docs · GitHub](https://github.com/dotnet/AspNetCore.Docs/issues/11801)
+
+# Другие беды
+
+## unoconvert: connection refused
+
+NoConnectException: Connector : couldn't connect to socket (WSAECONNREFUSED, Connection refused)
+
+Вероятно, сервер не отвечает, потому что не запущен.
+
+## unoconvert: type detection failed
+
+IllegalArgumentException: Unsupported URL <file:///C:/bla/bla.docx>: "type detection failed"
+
+Не выяснено, по какой причине возникает. Решалось перезагрузкой конвертера?

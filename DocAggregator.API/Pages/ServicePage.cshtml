@@ -4,7 +4,7 @@
 @if (Model.IsCorrect)
 {
     <h1>Проверка конфигурации.</h1>
-    <h2>DataBase:</h2>
+    <h2>Database:</h2>
     <p>
         Ресурс запросов -
         @if (Model.Queries.HasValue)
@@ -62,8 +62,19 @@
         }
     </p>
     <p>
-        Сервер конвертера -
+        Скрипты конвертера -
         @if (Model.Scripts)
+        {
+            <span class="Ready">готов</span>
+        }
+        else
+        {
+            <span class="Error">отсутствует</span><span> по пути "@Model.ScriptsPath"</span>
+        }
+    </p>
+    <p>
+        Сервер конвертера -
+        @if (Model.Server)
         {
             <span class="Ready">готов</span>
         }

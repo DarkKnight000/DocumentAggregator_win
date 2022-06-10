@@ -1,9 +1,8 @@
 ﻿using DocAggregator.API.Core;
-using DocAggregator.API.Core.Models;
 using DocAggregator.API.Infrastructure.OracleManaged;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Oracle.ManagedDataAccess.Client;
-using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -15,8 +14,6 @@ namespace DocAggregator.API.Pages
         private readonly SqlConnectionResource _sqlResource;
         private readonly TemplateMap _templateMap;
         private readonly Infrastructure.OpenXMLProcessing.EditorService _editorService;
-        private readonly IClaimRepository _claimRepository;
-        private readonly IClaimFieldRepository _fieldRepository;
 
         public int? Queries { get; set; }
         public int? Bindings { get; set; }
@@ -26,18 +23,16 @@ namespace DocAggregator.API.Pages
         public string EditorPath { get; set; }
         public bool Scripts { get; set; }
         public string ScriptsPath { get; set; }
+        public bool Server { get; set; }
         public bool IsCorrect { get; set; } = true;
 
         public ServicePageModel(ILoggerFactory loggerFactory,
-            SqlConnectionResource sqlResource, TemplateMap templateMap,
-            IEditorService editorService, IClaimRepository claimRepository, IClaimFieldRepository fieldRepository)
+            SqlConnectionResource sqlResource, TemplateMap templateMap, IEditorService editorService)
         {
             _logger = loggerFactory.GetLoggerFor<ClaimInfoModel>();
             _sqlResource = sqlResource;
             _templateMap = templateMap;
             _editorService = editorService as Infrastructure.OpenXMLProcessing.EditorService;
-            _claimRepository = claimRepository;
-            _fieldRepository = fieldRepository;
         }
 
         public void OnGet()
@@ -79,6 +74,10 @@ namespace DocAggregator.API.Pages
                 System.IO.File.Exists(Path.Combine(ScriptsPath, "converter.py")))
             {
                 Scripts = true;
+            }
+            if (Process.GetProcessesByName("soffice").Length != 0)
+            {
+                Server = true;
             }
             return;
         }

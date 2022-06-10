@@ -54,7 +54,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
             }
             catch (OracleException ex)
             {
-                work.Logger.Error(ex, "An error occured when retrieving data. ClaimID: {0}.", work.Claim.ID);
+                work.Logger.Error(ex, "An error occured when retrieving data. ClaimID: {0}.", work.Claim?.ID.ToString() ?? "-");
                 if (_command != null)
                 {
                     StaticExtensions.ShowExceptionMessage(work.Claim.DbConnection as OracleConnection, ex, _command.CommandText, work.SqlReqource);
