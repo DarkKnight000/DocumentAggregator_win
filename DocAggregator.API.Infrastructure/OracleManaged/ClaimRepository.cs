@@ -61,7 +61,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                 DbConnection = connection,
             };
             result.ClaimFields = _fieldRepository.GetFiledListByClaimId(result, false);
-            result.AccessRightFields = _fieldRepository.GetFilledAccessListByClaimId(result);
+            result.InformationResources = _fieldRepository.GetInformationalResourcesByClaim(result);
             return result;
         }
     }

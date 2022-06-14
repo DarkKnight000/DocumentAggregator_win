@@ -31,13 +31,27 @@ namespace DocAggregator.API.Core.Wml
             if (document == null || document.Root == null)
             {
                 _logger.Trace("Будет возвращена пустая коллекция вставок.");
-                yield break;
+                return Enumerable.Empty<Insert>();
             }
             _logger.Debug("Получаем все не вложенные элементы управления.");
             var topLevelControls = from control in document.Root.DescendantsAndSelf(W.sdt)
                                    where !control.Ancestors(W.sdt).Any()
                                    select control;
-            foreach (var sdt in topLevelControls)
+            return RecursiveDetectInserts(topLevelControls);
+        }
+
+        /// <summary>
+        /// Проводит рекурсивный сбор вставок на основе элементов управления.
+        /// </summary>
+        /// <remarks>
+        /// Максимально корректно поддерживаемый уровень рекурсии - 1,
+        /// так как не подразумевается вкладывание контейнеров внутрь других контейнеров.
+        /// </remarks>
+        /// <param name="targets">Элементы управления содержимым.</param>
+        /// <returns>Перечисление определённых на основе элементов вставок.</returns>
+        private IEnumerable<Insert> RecursiveDetectInserts(IEnumerable<XElement> targets)
+        {
+            foreach (var sdt in targets)
             {
                 InsertKind? detectedKind = null;
                 /// Локальная функция позволяет проверить значение перед присвоением локальной переменной.
@@ -73,11 +87,20 @@ namespace DocAggregator.API.Core.Wml
                 }
                 if (!detectedKind.HasValue)
                 {
-                    _logger.Trace("Проверка на таблицу.");
-                    var table = sdt.Element(W.sdtContent).Element(W.tbl);
-                    if (table != null)
+                    _logger.Trace("Проверка на строку таблицы.");
+                    var tableRow = sdt.Element(W.sdtContent).Element(W.tr);
+                    if (tableRow != null)
                     {
-                        yield return new FormInsert(_logger) { AssociatedChunk = sdt };
+                        var result = new FormInsert(_logger) { AssociatedChunk = sdt };
+                        _logger.Debug("Получаем ВСЕ вложенные элементы управления.");
+                        var innerLevelControls = tableRow.DescendantsAndSelf(W.sdt);
+                        // WARNING: При дальнейшей вложенности может обнаружиться дублирование элементов,
+                        // так как innerLevelControls будет содержать как элементы следующего в порядке уровня, так и остальных.
+                        foreach (var insert in RecursiveDetectInserts(innerLevelControls))
+                        {
+                            result.FormFields.Add(insert);
+                        }
+                        yield return result;
                     }
                     else
                     {
@@ -99,6 +122,13 @@ namespace DocAggregator.API.Core.Wml
             {
                 XElement sdt = insert.AssociatedChunk as XElement;
                 XElement innerContent = sdt.Element(W.sdtContent);
+                XElement row = innerContent.Element(W.tr);
+                if (row != null)
+                {
+                    _logger.Debug("Processing a table row.");
+                    ReplaceContentControl(sdt, row, insert);
+                    continue;
+                }
                 XElement cell = innerContent.Element(W.tc);
                 if (cell != null)
                 {
@@ -141,6 +171,45 @@ namespace DocAggregator.API.Core.Wml
             {
                 case InsertKind.CheckMark:
                     innerTextContainer.Descendants(W.t).Single().Value = insert.ReplacedCheckmark.Value ? "☒" : "☐";
+                    break;
+                case InsertKind.MultiField:
+                    if (insert is FormInsert form)
+                    {
+                        var content = innerTextContainer.Parent;
+                        var attrs = innerTextContainer.Attributes();
+                        var cells = innerTextContainer.Elements();
+                        _logger.Trace("Deleting the initial row.");
+                        innerTextContainer.Remove();
+                        var generatedRows = new List<XElement>();
+                        for (int line = 0; line < form.FormValues.Count; line++)
+                        {
+                            var controls = new Insert[form.FormFields.Count];
+                            var rowCopy = new XElement(innerTextContainer);
+                            _logger.Trace("Clonning the initial row.");
+                            var innerControls = rowCopy.DescendantsAndSelf(W.sdt).ToArray();
+                            for (int control = 0; control < form.FormValues[line].Count; control++)
+                            {
+                                _logger.Debug("Regenerating inner Insert with local data.");
+                                controls[control] = new Insert(form.FormFields[control].OriginalMask, form.FormFields[control].Kind)
+                                {
+                                    ReplacedText = form.FormValues[line][control],
+                                    ReplacedCheckmark = form.FormFields[control].Kind.Equals(InsertKind.CheckMark) ? bool.Parse(form.FormValues[line][control]) : null,
+                                    AssociatedChunk = innerControls[control],
+                                };
+                            }
+                            SetInserts(controls);
+                            _logger.Trace("Add a new row in a list.");
+                            generatedRows.Add(rowCopy);
+                        }
+                        _logger.Trace("Putting rows in a \"table\" content control.");
+                        sdt?.ReplaceWith(generatedRows.ToArray());
+                        insert.AssociatedChunk = innerTextContainer;
+                        return;
+                    }
+                    else
+                    {
+                        _logger.Warning("Insert of the {0} wasn't a {1} instance.", InsertKind.MultiField, typeof(FormInsert));
+                    }    
                     break;
                 default: // InsertKind.PlainText
                     innerTextContainer.Descendants(W.rStyle).SingleOrDefault()?.Remove();

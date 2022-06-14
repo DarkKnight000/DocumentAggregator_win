@@ -71,8 +71,8 @@ namespace DocAggregator.API.Core.Tests
         }
 
         [Theory]
-        [XmlData("..\\..\\..\\XmlData\\TableEmptyField.xml")]
-        public void WMLTools(string input)
+        [XmlData("..\\..\\..\\XmlData\\TableRowEmptyField.xml")]
+        public void WMLTools_FindInserts_FindTableRowField(string input)
         {
             var WMLDocument = XDocument.Parse(input);
             var WMLEditor = new Wml.WordprocessingMLEditor(Logger);
@@ -89,10 +89,27 @@ namespace DocAggregator.API.Core.Tests
             var actualKind = insert.Kind;
             Assert.Equal(expectedKind, actualKind);
 
+            var sdtRow = insert.AssociatedChunk as XElement;
+            Assert.NotNull(sdtRow);
+            Assert.Equal(Wml.W.sdt, sdtRow.Name);
+            Assert.Contains(sdtRow.Descendants(), e => e.Name == Wml.W.tr);
+
+            var innerInserts = (insert as FormInsert).FormFields;
+
+            expectedCount = 2;
+            actualCount = innerInserts.Count();
+            Assert.Equal(expectedCount, actualCount);
+
+            var exampleInsert = innerInserts.First();
+
             var sdtText = insert.AssociatedChunk as XElement;
             Assert.NotNull(sdtText);
             Assert.Equal(Wml.W.sdt, sdtText.Name);
-            Assert.Contains(sdtText.Descendants(), e => e.Name == Wml.W.tbl);
+            Assert.Contains(sdtText.Descendants(), e => e.Name == Wml.W.text);
+
+            expectedKind = InsertKind.PlainText;
+            actualKind = exampleInsert.Kind;
+            Assert.Equal(expectedKind, actualKind);
         }
 
         [Theory]
@@ -141,16 +158,19 @@ namespace DocAggregator.API.Core.Tests
         }
 
         [Theory]
-        [XmlData("..\\..\\..\\XmlData\\TableEmptyTextField.xml")]
+        [XmlData("..\\..\\..\\XmlData\\TableRowEmptyField.xml")]
         public void WMLTools_SetInserts_SetPlainTextFieldInTable(string input)
         {
             var expected = "Test";
             var WMLDocument = XDocument.Parse(input);
             var WMLEditor = new Wml.WordprocessingMLEditor(Logger);
-            var textInsert = WMLEditor.FindInserts(WMLDocument).First();
-            textInsert.ReplacedText = expected;
+            var rowInsert = WMLEditor.FindInserts(WMLDocument).First() as FormInsert;
+            var counterInsert = rowInsert.FormFields.ElementAt(0);
+            var textInsert = rowInsert.FormFields.ElementAt(1);
+            rowInsert.FormValues.Add(new List<string>() { 1.ToString(), expected });
+            rowInsert.FormValues.Add(new List<string>() { 2.ToString(), expected });
 
-            WMLEditor.SetInserts(textInsert);
+            WMLEditor.SetInserts(rowInsert);
 
             var inserts = WMLEditor.FindInserts(WMLDocument);
             Assert.Empty(inserts);

@@ -163,4 +163,42 @@ from hrd.request_attr_hdr attr
 where typ.request_type_id = {0}
 order by typ.order_number
     </SqlQuery>
+	<SqlQuery name="Q_HRDClaimInformationalResourcesList_ByRequest">
+select
+    rit.res_name,
+    rit.res_id,
+    rit.name,
+    rit.access_right_hdr_id as code,
+    acc.action
+from (
+    select
+       res.name as res_name,
+       res.information_resource_id as res_id,
+       rit.name,
+       rit.access_right_hdr_id
+    from hrd.it_access_right_hdr rit
+        join hrd.it_dict_information_resource res ON (res.information_resource_id = rit.object_id)
+    where rit.object_id in (
+        select distinct
+           res.information_resource_id
+        from hrd.it_dict_information_resource res
+            JOIN hrd.it_access_right_hdr rit ON (rit.object_id = res.information_resource_id)
+            JOIN hrd.it_access_right_request acc ON (acc.access_right_hdr_id = rit.access_right_hdr_id)
+            JOIN hrd.request_hdr req ON (req.request_hdr_id = acc.request_hdr_id)
+        where 
+            req.request_hdr_id = {0}
+    ) and rit.request_available = 1
+) rit full outer join (
+    select
+       acc.action,
+       acc.access_right_hdr_id
+    from hrd.it_access_right_hdr rit
+        JOIN hrd.it_dict_information_resource res ON (res.information_resource_id = rit.object_id)
+        JOIN hrd.it_access_right_request acc ON (acc.access_right_hdr_id = rit.access_right_hdr_id)
+        JOIN hrd.request_hdr req ON (req.request_hdr_id = acc.request_hdr_id)
+    where 
+        req.request_hdr_id = {0}
+) acc on (rit.access_right_hdr_id = acc.access_right_hdr_id)
+order by rit.access_right_hdr_id
+    </SqlQuery>
 </ArrayOfSqlQuery>

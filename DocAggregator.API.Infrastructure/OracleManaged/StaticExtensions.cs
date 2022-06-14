@@ -69,10 +69,5 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
             Debugger.Break();
             throw new Exception(message);
         }
-
-        public static AccessRightStatus GetWholeStatus(this IEnumerable<AccessRightField> fields)
-        {
-            return fields.Aggregate(AccessRightStatus.NotMentioned, (ars, arf) => ars | arf.Status);
-        }
     }
 }

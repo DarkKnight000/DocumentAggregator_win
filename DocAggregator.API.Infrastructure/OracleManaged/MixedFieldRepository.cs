@@ -78,6 +78,58 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
             return result;
         }
 
+        public IEnumerable<InformationResource> GetInformationalResourcesByClaim(Claim claim)
+        {
+            var result = new Dictionary<int, InformationResource>();
+            QueryExecuterWorkspace accessListRetrieve = new QueryExecuterWorkspace()
+            {
+                Query = string.Format(_sqlResource.GetStringByName("Q_HRDClaimInformationalResourcesList_ByRequest"), claim.ID),
+                Claim = claim,
+                Logger = _logger,
+                SqlReqource = _sqlResource,
+            };
+            using (QueryExecuter executer = new QueryExecuter(accessListRetrieve))
+                while (executer.Reader.Read())
+                {
+                    AccessRightStatus stat = AccessRightStatus.NotMentioned;
+                    if (!executer.Reader.IsDBNull(4))
+                    {
+                        switch (executer.Reader.GetString(4))
+                        {
+                            case "0":
+                                stat = AccessRightStatus.Denied;
+                                break;
+                            case "1":
+                                stat = AccessRightStatus.Allowed;
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                    AccessRightField accessField = new AccessRightField()
+                    {
+                        NumeralID = executer.Reader.GetInt32(3),
+                        Name = executer.Reader.GetString(2),
+                        Status = stat,
+                    };
+                    int infoResourceId = executer.Reader.GetInt32(1);
+                    if (result.TryGetValue(infoResourceId, out InformationResource infoResource))
+                    {
+                        infoResource.AccessRightFields = System.Linq.Enumerable.Append(infoResource.AccessRightFields, accessField);
+                    }
+                    else
+                    {
+                        result.Add(infoResourceId, new InformationResource()
+                            {
+                                ID = infoResourceId,
+                                Name = executer.Reader.GetString(0),
+                                AccessRightFields = new AccessRightField[] { accessField },
+                            });
+                    }
+                }
+            return result.Values;
+        }
+
         public IEnumerable<AccessRightField> GetFilledAccessListByClaimId(Claim claim)
         {
             var result = new List<AccessRightField>();

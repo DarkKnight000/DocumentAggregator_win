@@ -20,10 +20,18 @@ namespace DocAggregator.API.Core
         public IEnumerable<ClaimField> GetFiledListByClaimId(Claim claim, bool loadNames = false);
 
         /// <summary>
+        /// Получает перечмсление всех информационных ресурсов используя данные заявки.
+        /// </summary>
+        /// <param name="claim">Заявка.</param>
+        /// <returns>Перечисление информационных ресурсов и списком доступа для них.</returns>
+        public IEnumerable<InformationResource> GetInformationalResourcesByClaim(Claim claim);
+
+        /// <summary>
         /// Получает перечисление всех полей доступа используя данные определённой заявки.
         /// </summary>
         /// <param name="claim">Заявка.</param>
         /// <returns>Перечисление полей прав доступа заявки.</returns>
+        [System.Obsolete("The function should be changed to getter of an Enumerable of InformationResource.")]
         public IEnumerable<AccessRightField> GetFilledAccessListByClaimId(Claim claim);
     }
 }

@@ -39,9 +39,9 @@ namespace DocAggregator.API.Core.Models
         public IEnumerable<ClaimField> ClaimFields { get; set; }
 
         /// <summary>
-        /// Поля прав доступа заявки.
+        /// Список затронутых информационных ресурсов.
         /// </summary>
-        public IEnumerable<AccessRightField> AccessRightFields { get; set; }
+        public IEnumerable<InformationResource> InformationResources { get; set; }
 
         /// <summary>
         /// Подключение к базе данных.

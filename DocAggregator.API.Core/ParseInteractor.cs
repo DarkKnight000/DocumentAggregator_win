@@ -44,6 +44,25 @@ namespace DocAggregator.API.Core
                 case InsertKind.CheckMark:
                     insert.ReplacedCheckmark = ParseBoolField(request.Claim, insert.OriginalMask);
                     break;
+                case InsertKind.MultiField:
+                    if (insert is FormInsert form)
+                    {
+                        int counter = 1;
+                        foreach (var infoResource in request.Claim.InformationResources)
+                        {
+                            form.FormValues.Add(new System.Collections.Generic.List<string>() {
+                                counter++.ToString(),
+                                infoResource.Name,
+                                infoResource.AccessRightFields.ElementAt(0).Status.Equals(AccessRightStatus.Allowed).ToString(),
+                                infoResource.AccessRightFields.ElementAt(1).Status.Equals(AccessRightStatus.Allowed).ToString(),
+                            });
+                        }
+                    }
+                    else
+                    {
+                        Logger.Warning("Expected a {0}, but have got a {1}.", typeof(FormInsert), insert.GetType());
+                    }
+                    break;
                 default: // InsertKind.PlainText
                     insert.ReplacedText = ParseTextField(request.Claim, insert.OriginalMask);
                     break;
@@ -99,13 +118,11 @@ namespace DocAggregator.API.Core
             }
             if (insertionFormat == string.Empty)
             {
-                return claim.AccessRightFields.Aggregate(AccessRightStatus.NotMentioned,
-                        (ars, arf) => ars | arf.Status
-                    ).Equals(accessRight);
+                return claim.InformationResources.GetWholeStatus().Equals(accessRight);
             }
             else
             {
-                return claim.AccessRightFields.Where(
+                return claim.InformationResources.Single().AccessRightFields.Where(
                         arf => arf.NumeralID.ToString() == insertionFormat
                     ).SingleOrDefault()?.Status.Equals(accessRight) ?? false;
             }
