@@ -1,4 +1,6 @@
 ﻿using DocAggregator.API.Core.Models;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace DocAggregator.API.Core
@@ -50,11 +52,15 @@ namespace DocAggregator.API.Core
                         int counter = 1;
                         foreach (var infoResource in request.Claim.InformationResources)
                         {
-                            form.FormValues.Add(new System.Collections.Generic.List<string>() {
+                            var accessRolesValues = infoResource.AccessRightFields.Select(
+                                    (accessRole) => accessRole.Status.HasFlag(AccessRightStatus.Allowed).ToString()
+                                ).ToArray();
+                            form.FormValues.Add(new List<string>() {
                                 counter++.ToString(),
                                 infoResource.Name,
-                                infoResource.AccessRightFields.ElementAt(0).Status.Equals(AccessRightStatus.Allowed).ToString(),
-                                infoResource.AccessRightFields.ElementAt(1).Status.Equals(AccessRightStatus.Allowed).ToString(),
+                                accessRolesValues[0],
+                                accessRolesValues[1],
+                                accessRolesValues[2],
                             });
                         }
                     }
@@ -86,10 +92,10 @@ namespace DocAggregator.API.Core
             }
             if (insertionFormat.StartsWith('!'))
             {
-                return !ParseBoolField(claim, insertionFormat.Substring(1));
+                return !ParseBoolField(claim, insertionFormat[1..]);
             }
             return claim.ClaimFields.Where(
-                    cf => (cf.NumeralID?.ToString() ?? cf.VerbousID).Equals(insertionFormat, System.StringComparison.OrdinalIgnoreCase)
+                    cf => (cf.NumeralID?.ToString() ?? cf.VerbousID).Equals(insertionFormat, StringComparison.OrdinalIgnoreCase)
                 ).SingleOrDefault()?.ToBoolean() ?? false;
         }
 
@@ -101,8 +107,8 @@ namespace DocAggregator.API.Core
         /// <returns>true, если значение найденного поля равно <see cref="bool.TrueString"/>, иначе false.</returns>
         bool ParseAccessBoolField(Claim claim, string insertionFormat)
         {
-            string state = insertionFormat.Substring(insertionFormat.Length - 1);
-            insertionFormat = insertionFormat.Substring(1, insertionFormat.Length - 2);
+            string state = insertionFormat[^1..];
+            insertionFormat = insertionFormat[1..^1];
             AccessRightStatus accessRight = AccessRightStatus.NotMentioned;
             switch (state)
             {
@@ -146,7 +152,7 @@ namespace DocAggregator.API.Core
                 return recursiveResult;
             }
             return claim.ClaimFields.Where(
-                    cf => (cf.NumeralID?.ToString() ?? cf.VerbousID ?? "").Equals(insertionFormat, System.StringComparison.OrdinalIgnoreCase)
+                    cf => (cf.NumeralID?.ToString() ?? cf.VerbousID ?? "").Equals(insertionFormat, StringComparison.OrdinalIgnoreCase)
                 ).SingleOrDefault()?.Value ?? "";
         }
 

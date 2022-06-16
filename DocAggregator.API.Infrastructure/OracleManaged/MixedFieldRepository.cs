@@ -10,9 +10,9 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
     /// </summary>
     public class MixedFieldRepository : IClaimFieldRepository
     {
-        private ILogger _logger;
-        SqlConnectionResource _sqlResource;
-        Dictionary<int, System.Tuple<string, string>> _fieldNamesCache;
+        readonly ILogger _logger;
+        readonly SqlConnectionResource _sqlResource;
+        readonly Dictionary<int, System.Tuple<string, string>> _fieldNamesCache;
 
         /// <summary>
         /// Инициализирует объект <see cref="MixedFieldRepository"/>.
@@ -133,7 +133,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
         public IEnumerable<AccessRightField> GetFilledAccessListByClaimId(Claim claim)
         {
             var result = new List<AccessRightField>();
-            QueryExecuterWorkspace accessListRetrieve = new QueryExecuterWorkspace()
+            QueryExecuterWorkspace accessListRetrieve = new()
             {
                 Query = string.Format(_sqlResource.GetStringByName("Q_HRDClaimAccessList_ByRequest"), claim.ID),
                 Claim = claim,

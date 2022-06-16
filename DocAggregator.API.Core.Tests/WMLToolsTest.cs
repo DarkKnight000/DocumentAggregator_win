@@ -97,7 +97,7 @@ namespace DocAggregator.API.Core.Tests
             var innerInserts = (insert as FormInsert).FormFields;
 
             expectedCount = 2;
-            actualCount = innerInserts.Count();
+            actualCount = innerInserts.Count;
             Assert.Equal(expectedCount, actualCount);
 
             var exampleInsert = innerInserts.First();
@@ -165,7 +165,7 @@ namespace DocAggregator.API.Core.Tests
             var WMLDocument = XDocument.Parse(input);
             var WMLEditor = new Wml.WordprocessingMLEditor(Logger);
             var rowInsert = WMLEditor.FindInserts(WMLDocument).First() as FormInsert;
-            var counterInsert = rowInsert.FormFields.ElementAt(0);
+            _ = rowInsert.FormFields.ElementAt(0);
             var textInsert = rowInsert.FormFields.ElementAt(1);
             rowInsert.FormValues.Add(new List<string>() { 1.ToString(), expected });
             rowInsert.FormValues.Add(new List<string>() { 2.ToString(), expected });

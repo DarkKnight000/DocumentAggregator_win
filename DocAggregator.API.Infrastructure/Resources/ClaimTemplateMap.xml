@@ -1,11 +1,18 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
+
+<!DOCTYPE ArrayOfTemplateBind [
+	<!ELEMENT ArrayOfTemplateBind (TemplateBind*)>
+	<!ELEMENT TemplateBind (#PCDATA)>
+	<!ATTLIST TemplateBind typeID CDATA #REQUIRED>
+	<!ATTLIST TemplateBind systemID CDATA #REQUIRED>
+]>
 <!--
 Root: D:\Users\akkostin\Documents\Templates\Edited\
 -->
 <ArrayOfTemplateBind xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
 	<!-- Placeholder : Currently working on the document below : Not formatted well -->
 	<TemplateBind typeID="10" systemID="3">КРР-03 ИС КП/Заявка для сотрудников НТЦ ИС КП.DOCX</TemplateBind>
-	<TemplateBind typeID="10" systemID="4">КРР-04 ИС ОДФР/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind> <!-- Check a list inner format filling (?) -->
+	<TemplateBind typeID="10" systemID="4">КРР-04 ИС ОДФР/Заявка для сотрудников НТЦ.DOCX</TemplateBind> <!-- Check a list inner format filling (?) -->
 	<TemplateBind typeID="10" systemID="8">КРР-08 ИС 1С БУНУ/Заявка для сотрудников НТЦ.docx</TemplateBind>
 	<TemplateBind typeID="10" systemID="10">КРР-10 ИС АСЭР/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind> <!-- Check a right access for guests -->
 	<TemplateBind typeID="10" systemID="11">КРР-11 ИС ТД/Заявка для сотрудников НТЦ (версия 2.0.5).docx</TemplateBind> <!-- Check the last frames correctness -->

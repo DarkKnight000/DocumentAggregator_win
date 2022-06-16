@@ -1,4 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
+
+<!DOCTYPE ArrayOfSqlQuery [
+	<!ELEMENT ArrayOfSqlQuery (SqlQuery*)>
+	<!ELEMENT SqlQuery (#PCDATA)>
+	<!ATTLIST SqlQuery name CDATA #REQUIRED>
+	<!ATTLIST SqlQuery obsolete CDATA #IMPLIED>
+]>
 <!--
 P - procedures, end with ';'
 Q - queries, end without ';'

@@ -34,8 +34,8 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
     /// </summary>
     public class SqlConnectionResource
     {
-        private ILogger _logger;
-        private Dictionary<string, SqlQuery> _queriesContainer;
+        readonly ILogger _logger;
+        readonly Dictionary<string, SqlQuery> _queriesContainer;
 
         /// <summary>
         /// DataSource подключения к БД.

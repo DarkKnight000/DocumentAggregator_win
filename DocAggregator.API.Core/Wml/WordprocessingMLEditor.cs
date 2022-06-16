@@ -14,7 +14,7 @@ namespace DocAggregator.API.Core.Wml
     /// </remarks>
     public class WordprocessingMLEditor
     {
-        ILogger _logger;
+        readonly ILogger _logger;
 
         public WordprocessingMLEditor(ILogger logger)
         {
@@ -175,9 +175,6 @@ namespace DocAggregator.API.Core.Wml
                 case InsertKind.MultiField:
                     if (insert is FormInsert form)
                     {
-                        var content = innerTextContainer.Parent;
-                        var attrs = innerTextContainer.Attributes();
-                        var cells = innerTextContainer.Elements();
                         _logger.Trace("Deleting the initial row.");
                         innerTextContainer.Remove();
                         var generatedRows = new List<XElement>();

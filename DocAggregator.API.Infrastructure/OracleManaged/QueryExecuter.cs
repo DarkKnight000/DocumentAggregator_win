@@ -24,9 +24,9 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
     /// </remarks>
     class QueryExecuter : IDisposable
     {
-        OracleConnection _connection = null;
-        OracleCommand _command = null;
-        OracleDataReader _reader = null;
+        readonly OracleConnection _connection = null;
+        readonly OracleCommand _command = null;
+        readonly OracleDataReader _reader = null;
 
         public OracleConnection Connection => _connection;
         public OracleDataReader Reader => _reader;
@@ -57,7 +57,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                 work.Logger.Error(ex, "An error occured when retrieving data. ClaimID: {0}.", work.Claim?.ID.ToString() ?? "-");
                 if (_command != null)
                 {
-                    StaticExtensions.ShowExceptionMessage(work.Claim.DbConnection as OracleConnection, ex, _command.CommandText, work.SqlReqource);
+                    StaticExtensions.ShowExceptionMessage(work.Claim?.DbConnection as OracleConnection ?? _connection, ex, _command.CommandText, work.SqlReqource);
                 }
                 work.Claim.DbConnection.Close();
             }

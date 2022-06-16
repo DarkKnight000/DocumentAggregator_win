@@ -27,7 +27,7 @@ namespace DocAggregator.API.Core.Tests
             var parseInteractor = new ParseInteractor(LoggerFactory);
 
             // 3. Разбираем поле с числовым идентификатором заявки в значение поля
-            var response = parseInteractor.Handle(request);
+            _ = parseInteractor.Handle(request);
             var actual = request.Insertion.ReplacedText;
 
             Assert.Equal(expected, actual);
@@ -50,7 +50,7 @@ namespace DocAggregator.API.Core.Tests
             var expected = "";
 
             // 3. Разбираем поле с числовым идентификатором заявки в значение поля
-            var response = parseInteractor.Handle(request);
+            _ = parseInteractor.Handle(request);
             var actual = request.Insertion.ReplacedText;
 
             Assert.Equal(expected, actual);
@@ -74,7 +74,7 @@ namespace DocAggregator.API.Core.Tests
             var parseInteractor = new ParseInteractor(LoggerFactory);
 
             // 3. Разбираем поле с буквенным идентификатором заявки в значение поля
-            var response = parseInteractor.Handle(request);
+            _ = parseInteractor.Handle(request);
             var actual = request.Insertion.ReplacedText;
 
             Assert.Equal(expected, actual);
@@ -97,7 +97,7 @@ namespace DocAggregator.API.Core.Tests
             var expected = "";
 
             // 3. Разбираем поле с буквенным идентификатором заявки в значение поля
-            var response = parseInteractor.Handle(request);
+            _ = parseInteractor.Handle(request);
             var actual = request.Insertion.ReplacedText;
 
             Assert.Equal(expected, actual);
@@ -141,7 +141,7 @@ namespace DocAggregator.API.Core.Tests
             var parseInteractor = new ParseInteractor(LoggerFactory);
 
             // 3. Разбираем поле со смешанным идентификатором заявки в значение поля
-            var response = parseInteractor.Handle(request);
+            _ = parseInteractor.Handle(request);
             var actual = request.Insertion.ReplacedText;
 
             Assert.Equal(expected, actual);
@@ -171,7 +171,7 @@ namespace DocAggregator.API.Core.Tests
             var parseInteractor = new ParseInteractor(LoggerFactory);
 
             // 3. Разбираем поле с идентификатором поля заявки в значение логического поля
-            var response = parseInteractor.Handle(request);
+            _ = parseInteractor.Handle(request);
             var actual = request.Insertion.ReplacedCheckmark;
 
             Assert.True(actual.HasValue);
@@ -209,18 +209,28 @@ namespace DocAggregator.API.Core.Tests
             {
                 Claim = new Claim()
                 {
-                    AccessRightFields = new[]
+                    InformationResources = new[]
                     {
-                        new AccessRightField() { NumeralID = 27, Status = status }
-                    }
+                        new InformationResource()
+                        {
+                            AccessRightFields = new[] 
+                            {
+                                new AccessRightField()
+                                {
+                                    NumeralID = 27,
+                                    Status = status,
+                                },
+                            },
+                        },
+                    },
                 },
-                Insertion = new Insert(insertionFormat, InsertKind.CheckMark)
+                Insertion = new Insert(insertionFormat, InsertKind.CheckMark),
             };
             // 3. Получаем интерактор
             var parseInteractor = new ParseInteractor(LoggerFactory);
 
             // 4. Разбираем поле с идентификатором поля заявки в значение логического поля
-            var response = parseInteractor.Handle(request);
+            _ = parseInteractor.Handle(request);
             var actual = request.Insertion.ReplacedCheckmark;
 
             Assert.True(actual.HasValue);

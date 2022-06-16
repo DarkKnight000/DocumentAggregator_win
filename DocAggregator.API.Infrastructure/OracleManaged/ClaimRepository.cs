@@ -9,10 +9,10 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
     /// </summary>
     public class ClaimRepository : IClaimRepository
     {
-        private ILogger _logger;
-        private TemplateMap _templates;
-        private SqlConnectionResource _sqlResource;
-        private MixedFieldRepository _fieldRepository;
+        private readonly ILogger _logger;
+        private readonly TemplateMap _templates;
+        private readonly SqlConnectionResource _sqlResource;
+        private readonly MixedFieldRepository _fieldRepository;
 
         public ClaimRepository(SqlConnectionResource sqlResource, TemplateMap templateMap, IClaimFieldRepository fieldRepository, ILoggerFactory loggerFactory)
         {
@@ -26,7 +26,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
         {
             int typeID = -1, registerSystemID = -1;
             OracleConnection connection = null;
-            QueryExecuterWorkspace executerWork = new QueryExecuterWorkspace()
+            QueryExecuterWorkspace executerWork = new()
             {
                 Claim = null,
                 Logger = _logger,
@@ -52,7 +52,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
             {
                 _logger.Error("Template has not found for claim type [{0}, {1}].", typeID, registerSystemID);
             }
-            Claim result = new Claim()
+            Claim result = new()
             {
                 ID = id,
                 TypeID = typeID,

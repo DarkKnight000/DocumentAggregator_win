@@ -33,9 +33,21 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
         /// <exception cref="Exception"/>
         internal static void ShowExceptionMessage(OracleConnection connection, OracleException exception, string query, SqlConnectionResource sqlResource)
         {
-            if (connection == null || exception == null || query == null)
+            if (connection == null)
             {
-                throw new ArgumentNullException("Пропущен аргумент.");
+                throw new ArgumentNullException(nameof(connection));
+            }
+            if (exception == null)
+            {
+                throw new ArgumentNullException(nameof(exception));
+            }
+            if (query == null)
+            {
+                throw new ArgumentNullException(nameof(query));
+            }
+            if (sqlResource == null)
+            {
+                throw new ArgumentNullException(nameof(sqlResource));
             }
             if (connection.State != ConnectionState.Open)
             {
@@ -57,7 +69,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                     {
                         throw new IndexOutOfRangeException("Ошибок в запросе не обнаружено.");
                     }
-                    cause = Regex.Match(query.Substring(errorPosition), @"[\w\d\.]+").Value;
+                    cause = Regex.Match(query[errorPosition..], @"[\w\d\.]+").Value;
                     message += "The troubled table or view is \"" + cause + "\".\n\n" +
                         "In the following query:\n" + query;
                     break;
