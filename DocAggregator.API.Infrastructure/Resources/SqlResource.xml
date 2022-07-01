@@ -68,6 +68,8 @@ order by typ.order_number
 SELECT
     pkzi.pkzi_name AS pkzi,
     build.description AS address,
+    LISTAGG(res.name, chr(13) || chr(10))
+        WITHIN GROUP (ORDER BY res.name) AS resources,
     CASE MAX(acc.action)
         WHEN 0 THEN 'False'
         ELSE 'True'
@@ -86,6 +88,8 @@ FROM hrd.request_hdr req
     JOIN hrd.dict_room room ON (room.room_id = loc.room_id)
     JOIN hrd.building build ON (build.building_id = room.building_id)
     JOIN hrd.it_access_right_request acc ON (acc.request_hdr_id = req.request_hdr_id)
+    JOIN hrd.it_access_right_hdr rit ON (rit.access_right_hdr_id = acc.access_right_hdr_id)
+    JOIN hrd.it_dict_information_resource res ON (res.information_resource_id = rit.object_id)
 WHERE req.request_hdr_id = {0}
 GROUP BY pkzi.pkzi_name, build.description
 	</SqlQuery>
