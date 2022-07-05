@@ -15,6 +15,8 @@ namespace DocAggregator.API.Core
         /// Заявка, связанная с документом.
         /// </summary>
         public Claim Claim { get; set; }
+
+        public Inventory Inventory { get; set; }
     }
 
     /// <summary>
