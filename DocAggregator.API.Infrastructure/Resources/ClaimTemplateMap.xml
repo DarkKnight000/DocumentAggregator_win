@@ -16,7 +16,7 @@ Root: D:\Users\akkostin\Documents\Templates\Edited\
 	<TemplateBind typeID="10" systemID="8">КРР-08 ИС 1С БУНУ/Заявка для сотрудников НТЦ.docx</TemplateBind>
 	<TemplateBind typeID="10" systemID="10">КРР-10 ИС АСЭР/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind>
 	<TemplateBind typeID="10" systemID="11">КРР-11 ИС ТД/Заявка для сотрудников НТЦ (версия 2.0.5).docx</TemplateBind> <!-- Check the last frames correctness -->
-	<TemplateBind typeID="10" systemID="17">КРР-17 ИС ОиК/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind> <!-- Check a course title -->
+	<TemplateBind typeID="10" systemID="17">КРР-17 ИС ОиК/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind>
 	<TemplateBind typeID="10" systemID="18">КРР-18 ИС СЭД/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind> <!-- Check access rights -->
 	<TemplateBind typeID="10" systemID="19">КРР-19 ИС РН-КИН/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind>
 	<TemplateBind typeID="10" systemID="20">КРР-20 ИС СУПП/Заявка для сотрудников НТЦ.docx</TemplateBind>

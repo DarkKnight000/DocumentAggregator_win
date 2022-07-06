@@ -50,18 +50,43 @@ namespace DocAggregator.API.Core
                     if (insert is FormInsert form)
                     {
                         int counter = 1;
-                        foreach (var infoResource in request.Claim.InformationResources)
+                        switch (request.Claim.SystemID)
                         {
-                            var accessRolesValues = infoResource.AccessRightFields.Select(
-                                    (accessRole) => accessRole.Status.HasFlag(AccessRightStatus.Allowed).ToString()
-                                ).ToArray();
-                            form.FormValues.Add(new List<string>() {
-                                counter++.ToString(),
-                                infoResource.Name,
-                                accessRolesValues[0],
-                                accessRolesValues[1],
-                                accessRolesValues[2],
-                            });
+                            case 4: // ИС ОДФР
+                                foreach (var infoResource in request.Claim.InformationResources)
+                                {
+                                    var accessRolesValues = infoResource.AccessRightFields.Select(
+                                            (accessRole) => accessRole.Status.HasFlag(AccessRightStatus.Allowed).ToString()
+                                        ).ToArray();
+                                    form.FormValues.Add(new List<string>() {
+                                        counter++.ToString(),
+                                        infoResource.Name,
+                                        accessRolesValues[0],
+                                        accessRolesValues[1],
+                                        accessRolesValues[2],
+                                    });
+                                }
+                                break;
+                            case 17: // ИС ОиК
+                                foreach (var role in request.Claim.InformationResources.First().AccessRightFields)
+                                {
+                                    var status = request.Claim.InformationResources.Aggregate(AccessRightStatus.NotMentioned,
+                                            (ars, res) => ars | res.AccessRightFields.Where(
+                                                    (rf) => rf.Name.Equals(role.Name)
+                                                ).Select(
+                                                    (rf) => rf.Status
+                                                ).SingleOrDefault()
+                                        );
+                                    form.FormValues.Add(new List<string>() {
+                                        status.HasFlag(AccessRightStatus.Allowed).ToString(),
+                                        status.HasFlag(AccessRightStatus.Denied).ToString(),
+                                        role.Name,
+                                    });
+                                }
+                                break;
+                            default:
+                                Logger.Warning("Claim of type {0} with ID {1} has an unknown table.", request.Claim.SystemID, request.Claim.ID);
+                                break;
                         }
                     }
                     else

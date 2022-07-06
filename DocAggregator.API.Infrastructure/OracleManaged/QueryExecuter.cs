@@ -59,7 +59,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                 {
                     StaticExtensions.ShowExceptionMessage(work.Claim?.DbConnection as OracleConnection ?? _connection, ex, _command.CommandText, work.SqlReqource);
                 }
-                work.Claim.DbConnection.Close();
+                work.Claim?.DbConnection.Close();
             }
         }
 

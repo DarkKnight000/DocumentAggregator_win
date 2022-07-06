@@ -215,6 +215,10 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
             }
             File.Delete(documentContainer.TemporaryDocumentPath);
             documentContainer.Finalized = true;
+            if (convertingProcess.ExitCode != 0)
+            {
+                throw new InvalidOperationException($"Converter exited with an exit code {convertingProcess.ExitCode}.");
+            }
             return outputStream;
         }
 

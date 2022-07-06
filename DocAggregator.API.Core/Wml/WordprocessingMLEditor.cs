@@ -234,7 +234,24 @@ namespace DocAggregator.API.Core.Wml
                             }
                         }
                     }
-                    innerTextContainer.Descendants(W.t).Single().Value = insert.ReplacedText;
+                    var lines = insert.ReplacedText.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                    if (lines.Length < 2)
+                    {
+                        innerTextContainer.Descendants(W.t).Single().Value = insert.ReplacedText;
+                    }
+                    else
+                    {
+                        var text = new List<XElement>(lines.Length * 2 - 1);
+                        for (int i = 0; i < lines.Length; i++)
+                        {
+                            if (i != 0)
+                            {
+                                text.Add(new XElement(W.br));
+                            }
+                            text.Add(new XElement(W.t, lines[i]));
+                        }
+                        innerTextContainer.Descendants(W.t).Single().ReplaceWith(text);
+                    }
                     break;
             }
             sdt?.ReplaceWith(innerTextContainer);

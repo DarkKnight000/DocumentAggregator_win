@@ -81,6 +81,10 @@ namespace DocAggregator.API.Core.Wml
         /// </summary>
         public static readonly XName t = w + "t";
         /// <summary>
+        /// Line break.
+        /// </summary>
+        public static readonly XName br = w + "br";
+        /// <summary>
         /// Table.
         /// </summary>
         public static readonly XName tbl = w + "tbl";
