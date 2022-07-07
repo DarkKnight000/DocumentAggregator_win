@@ -14,6 +14,11 @@ namespace DocAggregator.API.Core
         /// Идентификатор обрабатываемой заявки.
         /// </summary>
         public int ClaimID { get; init; }
+
+        /// <summary>
+        /// IP-адрес заявителя.
+        /// </summary>
+        public string UserIP { get; init; }
     }
 
     /// <summary>
@@ -50,6 +55,17 @@ namespace DocAggregator.API.Core
         protected override void Handle(ClaimResponse response, ClaimRequest request)
         {
             Claim claim = _repo.GetClaim(request.ClaimID);
+            if (string.IsNullOrEmpty(request.UserIP))
+            {
+                throw new ArgumentNullException(nameof(request.UserIP));
+            }
+            claim.ClaimFields = claim.ClaimFields.Append(new ClaimField()
+            {
+                VerbousID = "UserIP",
+                Category = string.Empty,
+                Attribute = string.Empty,
+                Value = request.UserIP,
+            });
             if (claim == null)
             {
                 throw new ArgumentException("Заявка не найдена.", nameof(request.ClaimID));
