@@ -9,6 +9,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
 		README.md = README.md
+		Syntax.md = Syntax.md
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DocAggregator.API.Core", "DocAggregator.API.Core\DocAggregator.API.Core.csproj", "{18551FDB-A79F-49BD-A68F-AFA626714912}"
@@ -17,7 +18,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DocAggregator.API.Infrastru
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DocAggregator.API.Core.Tests", "DocAggregator.API.Core.Tests\DocAggregator.API.Core.Tests.csproj", "{2811B57A-156E-4A50-8C03-5DD46AACF68B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DocAggregator.Proxy", "DocAggregator.Proxy\DocAggregator.Proxy.csproj", "{953EF0EA-97E8-4A46-818F-8FE2CD2E2385}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DocAggregator.Proxy", "DocAggregator.Proxy\DocAggregator.Proxy.csproj", "{953EF0EA-97E8-4A46-818F-8FE2CD2E2385}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
