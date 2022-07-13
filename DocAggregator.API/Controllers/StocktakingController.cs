@@ -19,10 +19,9 @@ namespace DocAggregator.API.Controllers
 
         [HttpPost]
         [Consumes("application/json")]
-        public IActionResult Post(/*[FromBody] ClaimRequest request*/)
+        public IActionResult Post([FromBody] InventoryRequest request)
         {
-            return Ok();
-            /*ClaimResponse response = _claimInteractor.Handle(request);
+            InventoryResponse response = _inventoryInteractor.Handle(request);
             if (response.Success)
             {
                 // TODO: Remove debug log.
@@ -30,7 +29,7 @@ namespace DocAggregator.API.Controllers
                 {
                     _logger.Debug("Has found a memory stream.");
                 }
-                _logger.Information("Claim was successfully processed (id={0})", request.ClaimID);
+                //_logger.Information("Claim was successfully processed (id={0})", request.ClaimID);
 #if DEBUG
                 var outputFile = System.IO.Path.Combine(System.IO.Path.GetTempPath(), string.Concat(System.Guid.NewGuid().ToString(), ".pdf"));
                 var closableStream = System.IO.File.OpenWrite(outputFile);
@@ -41,14 +40,15 @@ namespace DocAggregator.API.Controllers
                 }.Start();
                 return new CreatedResult(new System.Uri(outputFile), null);
 #else
-                return ClaimResponsePresenter.ToFileStreamResult(response);
+                //return ClaimResponsePresenter.ToFileStreamResult(response);
 #endif
             }
             else
             {
-                _logger.Warning("Claim wasn't processed (id={0})", request.ClaimID);
-                return ClaimResponsePresenter.ToErrorReport(response);
-            }*/
+                //_logger.Warning("Claim wasn't processed (id={0})", request.ClaimID);
+                //return ClaimResponsePresenter.ToErrorReport(response);
+            }
+            return Ok();
         }
     }
 }

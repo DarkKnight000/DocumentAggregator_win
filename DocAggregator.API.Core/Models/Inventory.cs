@@ -7,6 +7,8 @@ namespace DocAggregator.API.Core.Models
 {
     public class Inventory : IDisposable
     {
+        public string Template { get; set; }
+
         public IEnumerable<ClaimField> InventoryFields { get; set; }
 
         /// <summary>

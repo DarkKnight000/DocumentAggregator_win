@@ -15,6 +15,8 @@ namespace DocAggregator.API.Core
         /// </summary>
         public Claim Claim { get; set; }
 
+        public Inventory Inventory { get; set; }
+
         /// <summary>
         /// Вставка, изменяемая в процессе обработки.
         /// </summary>
@@ -39,6 +41,22 @@ namespace DocAggregator.API.Core
             : base(loggerFactory.GetLoggerFor<ParseInteractor>()) { }
 
         protected override void Handle(ParseResponse response, ParseRequest request)
+        {
+            if (request.Claim != null)
+            {
+                HandleClaim(response, request);
+            }
+            else if (request.Inventory != null)
+            {
+                HandleInventory(response, request);
+            }
+            else
+            {
+                throw new ArgumentNullException(nameof(request), "Request has no valid object to process.");
+            }
+        }
+
+        private void HandleClaim(ParseResponse response, ParseRequest request)
         {
             var insert = request.Insertion;
             switch (insert.Kind)
@@ -96,6 +114,39 @@ namespace DocAggregator.API.Core
                     break;
                 default: // InsertKind.PlainText
                     insert.ReplacedText = ParseTextField(request.Claim, insert.OriginalMask);
+                    break;
+            }
+        }
+
+        private void HandleInventory(ParseResponse response, ParseRequest request)
+        {
+            var insert = request.Insertion;
+            switch (insert.Kind)
+            {
+                case InsertKind.CheckMark:
+                    insert.ReplacedCheckmark = request.Inventory.InventoryFields.SingleOrDefault((field) => field.VerbousID == insert.OriginalMask)?.ToBoolean() ?? false;
+                    break;
+                case InsertKind.MultiField:
+                    if (insert is FormInsert form)
+                    {
+                        int counter = 1;
+                        foreach (var infoResource in Enumerable.Range(0, 6))
+                        {
+                            form.FormValues.Add(new List<string>() {
+                                counter++.ToString(),
+                                "net",
+                                "pc",
+                                infoResource.ToString(),
+                            });
+                        }
+                    }
+                    else
+                    {
+                        Logger.Warning("Expected a {0}, but have got a {1}.", typeof(FormInsert), insert.GetType());
+                    }
+                    break;
+                default: // InsertKind.PlainText
+                    insert.ReplacedText = request.Inventory.InventoryFields.SingleOrDefault((field) => field.VerbousID == insert.OriginalMask)?.Value ?? "";
                     break;
             }
         }
