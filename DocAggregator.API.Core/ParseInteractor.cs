@@ -124,19 +124,19 @@ namespace DocAggregator.API.Core
             switch (insert.Kind)
             {
                 case InsertKind.CheckMark:
-                    insert.ReplacedCheckmark = request.Inventory.InventoryFields.SingleOrDefault((field) => field.VerbousID == insert.OriginalMask)?.ToBoolean() ?? false;
+                    insert.ReplacedCheckmark = request.Inventory.TestBool(insert.OriginalMask);
                     break;
                 case InsertKind.MultiField:
                     if (insert is FormInsert form)
                     {
                         int counter = 1;
-                        foreach (var infoResource in Enumerable.Range(0, 6))
+                        foreach (var os in request.Inventory.OSs)
                         {
                             form.FormValues.Add(new List<string>() {
                                 counter++.ToString(),
-                                "net",
-                                "pc",
-                                infoResource.ToString(),
+                                os.Name,
+                                os.SerialNumber,
+                                os.InventoryNumber,
                             });
                         }
                     }
@@ -146,7 +146,7 @@ namespace DocAggregator.API.Core
                     }
                     break;
                 default: // InsertKind.PlainText
-                    insert.ReplacedText = request.Inventory.InventoryFields.SingleOrDefault((field) => field.VerbousID == insert.OriginalMask)?.Value ?? "";
+                    insert.ReplacedText = request.Inventory.GetField(insert.OriginalMask);
                     break;
             }
         }

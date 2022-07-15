@@ -1,7 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE DataSource SYSTEM "BindingDoctype.dtd">
 <DataSource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 	documentKind="Claim">
-	<Attributes keyColumn="attr_id" valColumn="attr_value">
+	<List name="Attributes">
+		<SqlQuery argument="ClaimID" keyColumn="attr_id" valColumn="attr_value">
 select
 	attr.request_attr_hdr_id AS attr_id,
     pty.value_number
@@ -24,8 +26,10 @@ from hrd.request_attr_hdr attr
             AND pty.request_hdr_id = req.request_hdr_id)
 where req.request_hdr_id = {0}
 order by typ.order_number
-	</Attributes>
-	<Custom>
+	    </SqlQuery>
+    </List>
+	<List name="Custom">
+		<SqlQuery argument="ClaimID">
 SELECT
     build.description AS address,
     DECODE(acc.action, 1, 'True', 'False') AS allow,
@@ -36,7 +40,8 @@ FROM hrd.request_hdr req
     JOIN hrd.building build ON (build.building_id = room.building_id)
     JOIN hrd.it_access_right_request acc ON (acc.request_hdr_id = req.request_hdr_id)
 WHERE req.request_hdr_id = {0}
-	</Custom>
-	<Resources>
-    </Resources>
+	    </SqlQuery>
+    </List>
+	<List name="Resources">
+    </List>
 </DataSource>

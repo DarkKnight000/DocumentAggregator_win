@@ -40,13 +40,27 @@ namespace DocAggregator.API.Controllers
                 }.Start();
                 return new CreatedResult(new System.Uri(outputFile), null);
 #else
-                //return ClaimResponsePresenter.ToFileStreamResult(response);
+                return new FileStreamResult(response.ResultStream, "application/pdf");
 #endif
             }
             else
             {
-                //_logger.Warning("Claim wasn't processed (id={0})", request.ClaimID);
-                //return ClaimResponsePresenter.ToErrorReport(response);
+                _logger.Warning("Stocktaking wasn't processed (id={0})", request.InventoryID);
+                var result = new System.Text.StringBuilder();
+                foreach (var err in response.Errors)
+                {
+                    if (result.Length != 0)
+                    {
+                        result.AppendLine(new string('-', 14));
+                    }
+                    result.AppendLine(err.GetType().ToString());
+                    result.AppendLine(err.Message);
+                    result.AppendLine(err.StackTrace);
+                }
+                return new ObjectResult(result.ToString())
+                {
+                    StatusCode = 500,
+                };
             }
             return Ok();
         }
