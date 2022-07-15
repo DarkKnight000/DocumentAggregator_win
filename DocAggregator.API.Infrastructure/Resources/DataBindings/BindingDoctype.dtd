@@ -1,6 +1,6 @@
-﻿<!ELEMENT DataSource (List+)>
+﻿<!ELEMENT DataSource (List | SqlQuery)*>
 <!ATTLIST DataSource documentKind CDATA #REQUIRED>
-<!ELEMENT List (List | SqlQuery)>
+<!ELEMENT List (List | SqlQuery)*>
 <!ATTLIST List name CDATA #REQUIRED>
 <!ELEMENT SqlQuery (#PCDATA)>
 <!ATTLIST SqlQuery argument CDATA #IMPLIED>

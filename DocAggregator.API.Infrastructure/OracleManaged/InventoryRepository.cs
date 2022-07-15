@@ -2,6 +2,8 @@
 using DocAggregator.API.Core.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Xml.Linq;
 
 namespace DocAggregator.API.Infrastructure.OracleManaged
 {
@@ -20,49 +22,46 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
 
         public Inventory GetInventory(int ID)
         {
+            var filePath = @"D:\Users\akkostin\source\repos\DocumentAggregator\DocAggregator.API.Infrastructure\Resources\DataBindings\Stocktaking.xml";
+            XDocument desc = XDocument.Load(filePath);
+            XElement invRoot = new XElement("ROOT");
             QueryExecuterWorkspace executerWork = new()
             {
                 Claim = null,
                 Logger = _logger,
                 SqlReqource = _sqlResource,
             };
-            executerWork.Query = string.Format(_sqlResource.GetStringByName("Q_HRDInventInfoList_ById"), ID);
-            List<ClaimField> fields = new List<ClaimField>();
+            executerWork.Query = string.Format(desc.Root.Element("SqlQuery").Value, ID);
             using (QueryExecuter executer = new QueryExecuter(executerWork))
             {
                 while (executer.Reader.Read())
                 {
                     for (int i = 0; i < executer.Reader.FieldCount; i++)
                     {
-                        fields.Add(new ClaimField()
-                        {
-                            VerbousID = executer.Reader.GetName(i),
-                            Category = string.Empty,
-                            Attribute = executer.Reader.GetName(i),
-                            Value = executer.Reader.IsDBNull(i) ? string.Empty : executer.Reader.GetString(i),
-                        });
+                        invRoot.Add(new XElement(executer.Reader.GetName(i), executer.Reader.IsDBNull(i) ? string.Empty : executer.Reader.GetString(i)));
                     }
                 }
             }
-            executerWork.Query = string.Format(_sqlResource.GetStringByName("Q_HRDInventOSList_ById"), ID);
-            List<OS> oss = new List<OS>();
+            executerWork.Query = string.Format(desc.Root.Element("List").Element("SqlQuery").Value, ID);
+            XElement oses = new XElement("OSS");
             using (QueryExecuter executer = new QueryExecuter(executerWork))
             {
+                int columns = executer.Reader.FieldCount;
                 while (executer.Reader.Read())
                 {
-                    oss.Add(new OS()
+                    var row = new XElement(desc.Root.Element("List").Attribute("name").Value.ToUpper());
+                    for (int i = 0; i < columns; i++)
                     {
-                        Name = executer.Reader.GetString(0),
-                        SerialNumber = executer.Reader.IsDBNull(1) ? string.Empty : executer.Reader.GetString(1),
-                        InventoryNumber = executer.Reader.IsDBNull(2) ? string.Empty : executer.Reader.GetString(2),
-                    });
+                        row.Add(new XElement(executer.Reader.GetName(i), executer.Reader.IsDBNull(i) ? string.Empty : executer.Reader.GetString(i)));
+                    }
+                    oses.Add(row);
                 }
             }
+            invRoot.Add(oses);
             return new Inventory()
             {
                 Template = _templates.GetStocktakingActTemplatePath(),
-                InventoryFields = fields,
-                OSs = oss,
+                Root = invRoot,
             };
         }
     }

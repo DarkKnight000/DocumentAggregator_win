@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Xml.Linq;
 
 namespace DocAggregator.API.Core.Models
 {
@@ -32,6 +33,8 @@ namespace DocAggregator.API.Core.Models
         /// Шаблон соответствующий типу заявки.
         /// </summary>
         public string Template { get; init; }
+
+        public XElement Root { get; set; }
 
         /// <summary>
         /// Поля заявки.

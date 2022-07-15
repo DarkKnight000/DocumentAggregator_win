@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE DataSource SYSTEM "BindingDoctype.dtd">
+<DataSource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	documentKind="Stocktaking">
+	<SqlQuery argument="inventoryID">
+select distinct inv.akt_id AS entity,
+    TO_CHAR(inv.create_on, 'DD.MM.YYYY', 'nls_date_language = RUSSIAN') AS created,
+    OBD_SYS.GET_FIO_FULL(inv.mover) AS mover_full,
+    OBD_SYS.GET_FIO_FULL(inv.accepts) AS acceptor_full,
+    OBD_SYS.GET_DEPARTMENT_NAME(inv.accepts) AS department,
+    OBD_SYS.GET_USER_POSITION(inv.mover) AS mover_position,
+    OBD_SYS.GET_USER_POSITION(inv.accepts) AS acceptor_position,
+    case addr.building_id
+        when 3115 then 'удаленно'
+        else 'по адресу – ' || addr.description
+    end AS address,
+    OBD_SYS.GET_FIO(inv.mover) AS mover,
+    OBD_SYS.GET_FIO(inv.accepts) AS acceptor
+from hrd.invent_process inv
+    JOIN obd_sys.user_location loc ON (loc.user_id = inv.accepts)
+    JOIN hrd.dict_room room ON (room.room_id = loc.room_id)
+    JOIN hrd.building addr ON (addr.building_id = room.building_id)
+where inv.akt_id = {0}
+	</SqlQuery>
+	<List name="os">
+		<SqlQuery argument="inventoryID">
+select os_type.name_type || ' ' || os_manufact.manufacturer_name || ' ' || os_model.name_model name,
+    os.ser_number serial,
+    os.invent_number inventory
+from hrd.invent_process inv
+    join hrd.invent_os os on (os.id_os = inv.id_os)
+    join hrd.invent_dict_type os_type on (os_type.id_type = os.type_os)
+    join hrd.invent_dict_manufacturer os_manufact on (os_manufact.manufacturer_id = os.manafacture)
+    join hrd.invent_dict_model os_model on (os_model.id_model = os.model_os)
+where inv.akt_id = {0}
+        </SqlQuery>
+    </List>
+</DataSource>

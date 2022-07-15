@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Xml.Linq;
 
 namespace DocAggregator.API.Core
 {
@@ -113,7 +114,7 @@ namespace DocAggregator.API.Core
                     }
                     break;
                 default: // InsertKind.PlainText
-                    insert.ReplacedText = ParseTextField(request.Claim, insert.OriginalMask);
+                    insert.ReplacedText = ParseTextField(request.Claim.Root, insert.OriginalMask);
                     break;
             }
         }
@@ -130,14 +131,14 @@ namespace DocAggregator.API.Core
                     if (insert is FormInsert form)
                     {
                         int counter = 1;
-                        foreach (var os in request.Inventory.OSs)
+                        foreach (var os in request.Inventory.Root.Element("OSS").Descendants())
                         {
-                            form.FormValues.Add(new List<string>() {
-                                counter++.ToString(),
-                                os.Name,
-                                os.SerialNumber,
-                                os.InventoryNumber,
-                            });
+                            var row = new List<string>();
+                            foreach (var cell in form.FormFields)
+                            {
+                                row.Add(cell.OriginalMask == "." ? counter++.ToString() : os.Element(cell.OriginalMask.ToUpper())?.Value ?? string.Empty);
+                            }
+                            form.FormValues.Add(row);
                         }
                     }
                     else
@@ -170,9 +171,10 @@ namespace DocAggregator.API.Core
             {
                 return !ParseBoolField(claim, insertionFormat[1..]);
             }
-            return claim.ClaimFields.Where(
+            return bool.TryParse(claim.Root.Element(insertionFormat.ToUpper())?.Value, out bool result) & result;
+            /*return claim.ClaimFields.Where(
                     cf => (cf.NumeralID?.ToString() ?? cf.VerbousID).Equals(insertionFormat, StringComparison.OrdinalIgnoreCase)
-                ).SingleOrDefault()?.ToBoolean() ?? false;
+                ).SingleOrDefault()?.ToBoolean() ?? false;*/
         }
 
         /// <summary>
@@ -200,10 +202,18 @@ namespace DocAggregator.API.Core
             }
             if (insertionFormat == string.Empty)
             {
+                /*return claim.Root.Element("RESOURCES").Descendants().Aggregate(AccessRightStatus.NotMentioned,
+                        (ars, arf) => ars | arf.Element("RIGHTS").Descendants().Aggregate(AccessRightStatus.NotMentioned,
+                            (ars, arf) => ars | (AccessRightStatus)Enum.Parse(typeof(AccessRightStatus), arf.Value)
+                        )
+                    ).Equals(accessRight);*/
                 return claim.InformationResources.GetWholeStatus().Equals(accessRight);
             }
             else
             {
+                /*return claim.Root.Element("RESOURCES").Descendants().Single().Element("RIGHTS").Descendants().Where(
+                        da => da.Name == insertionFormat
+                    ).SingleOrDefault()?.Value.Equals(accessRight.ToString()) ?? false;*/
                 return claim.InformationResources.Single().AccessRightFields.Where(
                         arf => arf.NumeralID.ToString() == insertionFormat
                     ).SingleOrDefault()?.Status.Equals(accessRight) ?? false;
@@ -216,7 +226,7 @@ namespace DocAggregator.API.Core
         /// <param name="claim">Заявка.</param>
         /// <param name="insertionFormat">Код поля.</param>
         /// <returns>Текстовое значение поля или пустая строка.</returns>
-        string ParseTextField(Claim claim, string insertionFormat)
+        string ParseTextField(XElement claim, string insertionFormat)
         {
             string recursiveResult;
             if (TryParseDelimetedFields(claim, insertionFormat, ',', ", ", out recursiveResult))
@@ -227,9 +237,10 @@ namespace DocAggregator.API.Core
             {
                 return recursiveResult;
             }
-            return claim.ClaimFields.Where(
+            return claim.Element(insertionFormat.ToUpper()).Value ?? "";
+            /*return claim.ClaimFields.Where(
                     cf => (cf.NumeralID?.ToString() ?? cf.VerbousID ?? "").Equals(insertionFormat, StringComparison.OrdinalIgnoreCase)
-                ).SingleOrDefault()?.Value ?? "";
+                ).SingleOrDefault()?.Value ?? "";*/
         }
 
         /// <summary>
@@ -241,7 +252,7 @@ namespace DocAggregator.API.Core
         /// <param name="connector">Соединитель значений полей.</param>
         /// <param name="result">Результат рекурсивного разрешения кода.</param>
         /// <returns>Значение, указывающее на успешность операции.</returns>
-        bool TryParseDelimetedFields(Claim claim, string insertionFormat, char delimiter, string connector, out string result)
+        bool TryParseDelimetedFields(XElement claim, string insertionFormat, char delimiter, string connector, out string result)
         {
             if (insertionFormat.Contains(delimiter))
             {
