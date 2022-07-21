@@ -202,18 +202,18 @@ namespace DocAggregator.API.Core
             }
             if (insertionFormat == string.Empty)
             {
-                return claim.Element("RESOURCES").Descendants().Aggregate(AccessRightStatus.NotMentioned,
-                        (ars, arf) => ars | arf.Element("RIGHTS").Descendants().Aggregate(AccessRightStatus.NotMentioned,
-                            (ars, arf) => ars | (AccessRightStatus)Enum.Parse(typeof(AccessRightStatus), arf.Value)
+                return claim.Element("RESOURCES").Elements().Aggregate(AccessRightStatus.NotMentioned,
+                        (ars, arf) => ars | arf.Element("RIGHTS").Elements().Aggregate(AccessRightStatus.NotMentioned,
+                            (ars, arf) => ars | (AccessRightStatus)Enum.Parse(typeof(AccessRightStatus), arf.Element("STATUS").Value)
                         )
                     ).Equals(accessRight);
                 //return claim.InformationResources.GetWholeStatus().Equals(accessRight);
             }
             else
             {
-                return claim.Element("RESOURCES").Descendants().Single().Element("RIGHTS").Descendants().Where(
-                        da => da.Name == insertionFormat
-                    ).SingleOrDefault()?.Value.Equals(accessRight.ToString()) ?? false;
+                return claim.Element("RESOURCES").Elements().Single().Element("RIGHTS").Elements().Where(
+                        da => da.Attribute("index").Value == insertionFormat
+                    ).SingleOrDefault()?.Element("STATUS").Value.Equals(accessRight.ToString()) ?? false;
                 /*return claim.InformationResources.Single().AccessRightFields.Where(
                         arf => arf.NumeralID.ToString() == insertionFormat
                     ).SingleOrDefault()?.Status.Equals(accessRight) ?? false;*/
@@ -237,7 +237,13 @@ namespace DocAggregator.API.Core
             {
                 return recursiveResult;
             }
-            return claim.Element(insertionFormat.ToUpper()).Value ?? "";
+            var attribute = claim.Element("ATTRIBUTES").Elements().Where((e) => e.Attribute("index").Value.Equals(insertionFormat))?.SingleOrDefault()?.Value;
+            if (attribute != null)
+            {
+                return attribute;
+            }
+            var custom = claim.Element("CUSTOM").Element(insertionFormat.ToUpper())?.Value;
+            return custom ?? "";
             /*return claim.ClaimFields.Where(
                     cf => (cf.NumeralID?.ToString() ?? cf.VerbousID ?? "").Equals(insertionFormat, StringComparison.OrdinalIgnoreCase)
                 ).SingleOrDefault()?.Value ?? "";*/

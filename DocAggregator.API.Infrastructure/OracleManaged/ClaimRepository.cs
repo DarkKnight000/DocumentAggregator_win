@@ -117,21 +117,21 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                     }
                     XElement accessField = new XElement("ITEM",
                         new XAttribute("index", executer.Reader.GetInt32(3)),
-                        new XElement("Name", executer.Reader.GetString(2)),
-                        new XElement("Status", stat)
+                        new XElement("NAME", executer.Reader.GetString(2)),
+                        new XElement("STATUS", stat)
                     );
                     var infoResourceId = executer.Reader.GetInt32(1).ToString(); // ToString!?
                     var accField = res.Elements().Where((n) => n.Attribute("index").Value.Equals(infoResourceId)).SingleOrDefault();
                     if (accField != null)
                     {
-                        accField.Element("AccessRightFields").Add(accessField);
+                        accField.Element("RIGHTS").Add(accessField);
                     }
                     else
                     {
                         res.Add(new XElement("ITEM",
                             new XAttribute("index", infoResourceId),
-                            new XElement("Name", executer.Reader.GetString(0)),
-                            new XElement("AccessRightFields", accessField)
+                            new XElement("NAME", executer.Reader.GetString(0)),
+                            new XElement("RIGHTS", accessField)
                         ));
                     }
                 }
