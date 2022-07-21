@@ -2,8 +2,8 @@
 <!DOCTYPE DataSource SYSTEM "BindingDoctype.dtd">
 <DataSource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 	documentKind="Claim">
-	<List name="Attributes">
-		<SqlQuery argument="ClaimID" keyColumn="attr_id" valColumn="attr_value">
+	<Collection name="Attributes">
+		<SqlQuery argument="ClaimID" itemIndexColumn="attr_id" valColumn="attr_value">
 select
 	attr.request_attr_hdr_id AS attr_id,
     pty.value_number
@@ -27,21 +27,77 @@ from hrd.request_attr_hdr attr
 where req.request_hdr_id = {0}
 order by typ.order_number
 	    </SqlQuery>
-    </List>
-	<List name="Custom">
+    </Collection>
+	<Collection name="Custom">
 		<SqlQuery argument="ClaimID">
 SELECT
+    pkzi.pkzi_name AS pkzi,
     build.description AS address,
-    DECODE(acc.action, 1, 'True', 'False') AS allow,
-    DECODE(acc.action, 0, 'True', 'False') AS deny
+    LISTAGG(res.name, chr(13) || chr(10))
+        WITHIN GROUP (ORDER BY res.name) AS resources,
+    CASE MAX(acc.action)
+        WHEN 0 THEN 'False'
+        ELSE 'True'
+    END AS allow,
+    CASE
+        WHEN MAX(acc.action) = MIN(acc.action) THEN 'False'
+        ELSE 'True'
+    END AS change,
+    CASE MIN(acc.action)
+        WHEN 0 THEN 'True'
+        ELSE 'False'
+    END AS deny
 FROM hrd.request_hdr req
+    JOIN hrd.register_pkzi pkzi ON (pkzi.user_id = req.applicant_id)
     JOIN obd_sys.user_location loc ON (loc.user_id = req.applicant_id)
     JOIN hrd.dict_room room ON (room.room_id = loc.room_id)
     JOIN hrd.building build ON (build.building_id = room.building_id)
     JOIN hrd.it_access_right_request acc ON (acc.request_hdr_id = req.request_hdr_id)
+    JOIN hrd.it_access_right_hdr rit ON (rit.access_right_hdr_id = acc.access_right_hdr_id)
+    JOIN hrd.it_dict_information_resource res ON (res.information_resource_id = rit.object_id)
 WHERE req.request_hdr_id = {0}
+    AND SYSDATE BETWEEN pkzi.begin_date AND pkzi.end_date
+GROUP BY pkzi.pkzi_name, build.description
 	    </SqlQuery>
-    </List>
-	<List name="Resources">
-    </List>
+    </Collection>
+	<Collection name="Resources">
+		<SqlQuery argument="ClaimID">
+select
+    rit.res_name,
+    rit.res_id,
+    rit.name,
+    rit.access_right_hdr_id as code,
+    acc.action
+from (
+    select
+       res.name as res_name,
+       res.information_resource_id as res_id,
+       rit.name,
+       rit.access_right_hdr_id
+    from hrd.it_access_right_hdr rit
+        join hrd.it_dict_information_resource res ON (res.information_resource_id = rit.object_id)
+    where rit.object_id in (
+        select distinct
+           res.information_resource_id
+        from hrd.it_dict_information_resource res
+            JOIN hrd.it_access_right_hdr rit ON (rit.object_id = res.information_resource_id)
+            JOIN hrd.it_access_right_request acc ON (acc.access_right_hdr_id = rit.access_right_hdr_id)
+            JOIN hrd.request_hdr req ON (req.request_hdr_id = acc.request_hdr_id)
+        where 
+            req.request_hdr_id = {0}
+    ) and rit.request_available = 1
+) rit full outer join (
+    select
+       acc.action,
+       acc.access_right_hdr_id
+    from hrd.it_access_right_hdr rit
+        JOIN hrd.it_dict_information_resource res ON (res.information_resource_id = rit.object_id)
+        JOIN hrd.it_access_right_request acc ON (acc.access_right_hdr_id = rit.access_right_hdr_id)
+        JOIN hrd.request_hdr req ON (req.request_hdr_id = acc.request_hdr_id)
+    where 
+        req.request_hdr_id = {0}
+) acc on (rit.access_right_hdr_id = acc.access_right_hdr_id)
+order by rit.access_right_hdr_id
+        </SqlQuery>
+    </Collection>
 </DataSource>

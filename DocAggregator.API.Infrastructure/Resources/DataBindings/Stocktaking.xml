@@ -22,7 +22,7 @@ from hrd.invent_process inv
     JOIN hrd.building addr ON (addr.building_id = room.building_id)
 where inv.akt_id = {0}
 	</SqlQuery>
-	<List name="os">
+	<Collection name="os">
 		<SqlQuery argument="inventoryID">
 select os_type.name_type || ' ' || os_manufact.manufacturer_name || ' ' || os_model.name_model name,
     os.ser_number serial,
@@ -34,5 +34,5 @@ from hrd.invent_process inv
     join hrd.invent_dict_model os_model on (os_model.id_model = os.model_os)
 where inv.akt_id = {0}
         </SqlQuery>
-    </List>
+    </Collection>
 </DataSource>

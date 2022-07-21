@@ -42,14 +42,14 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                     }
                 }
             }
-            executerWork.Query = string.Format(desc.Root.Element("List").Element("SqlQuery").Value, ID);
+            executerWork.Query = string.Format(desc.Root.Element("Collection").Element("SqlQuery").Value, ID);
             XElement oses = new XElement("OSS");
             using (QueryExecuter executer = new QueryExecuter(executerWork))
             {
                 int columns = executer.Reader.FieldCount;
                 while (executer.Reader.Read())
                 {
-                    var row = new XElement(desc.Root.Element("List").Attribute("name").Value.ToUpper());
+                    var row = new XElement(desc.Root.Element("Collection").Attribute("name").Value.ToUpper());
                     for (int i = 0; i < columns; i++)
                     {
                         row.Add(new XElement(executer.Reader.GetName(i), executer.Reader.IsDBNull(i) ? string.Empty : executer.Reader.GetString(i)));

@@ -57,7 +57,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
         public string GetPathByTypeAndSystem(int typeID, int systemID) => GetBindByTypeAndSystem(typeID, systemID)?.FileName;
 
         public TemplateBind GetBindByTypeAndSystem(int typeID, int systemID) =>
-            _bindsContainer.Single(bind => bind.TypeID == typeID && bind.SystemID == systemID);
+            _bindsContainer.SingleOrDefault(bind => bind.TypeID == typeID && bind.SystemID == systemID);
 
         public string GetStocktakingActTemplatePath() => @"..\temp_inv\Акт приема-передачи ТМЦ_в пользование.docx";
     }

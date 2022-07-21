@@ -63,7 +63,7 @@ namespace DocAggregator.API.Core
             switch (insert.Kind)
             {
                 case InsertKind.CheckMark:
-                    insert.ReplacedCheckmark = ParseBoolField(request.Claim, insert.OriginalMask);
+                    insert.ReplacedCheckmark = ParseBoolField(request.Claim.Root, insert.OriginalMask);
                     break;
                 case InsertKind.MultiField:
                     if (insert is FormInsert form)
@@ -161,7 +161,7 @@ namespace DocAggregator.API.Core
         /// Значение может быть инвертировано ведущим символом '!' в коде поля.
         /// </remarks>
         /// <returns>true, если значение найденного поля равно <see cref="bool.TrueString"/>, иначе false.</returns>
-        bool ParseBoolField(Claim claim, string insertionFormat)
+        bool ParseBoolField(XElement claim, string insertionFormat)
         {
             if (insertionFormat.StartsWith('*'))
             {
@@ -171,7 +171,7 @@ namespace DocAggregator.API.Core
             {
                 return !ParseBoolField(claim, insertionFormat[1..]);
             }
-            return bool.TryParse(claim.Root.Element(insertionFormat.ToUpper())?.Value, out bool result) & result;
+            return bool.TryParse(claim.Element(insertionFormat.ToUpper())?.Value, out bool result) & result;
             /*return claim.ClaimFields.Where(
                     cf => (cf.NumeralID?.ToString() ?? cf.VerbousID).Equals(insertionFormat, StringComparison.OrdinalIgnoreCase)
                 ).SingleOrDefault()?.ToBoolean() ?? false;*/
@@ -183,7 +183,7 @@ namespace DocAggregator.API.Core
         /// <param name="claim">Заявка.</param>
         /// <param name="insertionFormat">Код поля.</param>
         /// <returns>true, если значение найденного поля равно <see cref="bool.TrueString"/>, иначе false.</returns>
-        bool ParseAccessBoolField(Claim claim, string insertionFormat)
+        bool ParseAccessBoolField(XElement claim, string insertionFormat)
         {
             string state = insertionFormat[^1..];
             insertionFormat = insertionFormat[1..^1];
@@ -202,21 +202,21 @@ namespace DocAggregator.API.Core
             }
             if (insertionFormat == string.Empty)
             {
-                /*return claim.Root.Element("RESOURCES").Descendants().Aggregate(AccessRightStatus.NotMentioned,
+                return claim.Element("RESOURCES").Descendants().Aggregate(AccessRightStatus.NotMentioned,
                         (ars, arf) => ars | arf.Element("RIGHTS").Descendants().Aggregate(AccessRightStatus.NotMentioned,
                             (ars, arf) => ars | (AccessRightStatus)Enum.Parse(typeof(AccessRightStatus), arf.Value)
                         )
-                    ).Equals(accessRight);*/
-                return claim.InformationResources.GetWholeStatus().Equals(accessRight);
+                    ).Equals(accessRight);
+                //return claim.InformationResources.GetWholeStatus().Equals(accessRight);
             }
             else
             {
-                /*return claim.Root.Element("RESOURCES").Descendants().Single().Element("RIGHTS").Descendants().Where(
+                return claim.Element("RESOURCES").Descendants().Single().Element("RIGHTS").Descendants().Where(
                         da => da.Name == insertionFormat
-                    ).SingleOrDefault()?.Value.Equals(accessRight.ToString()) ?? false;*/
-                return claim.InformationResources.Single().AccessRightFields.Where(
+                    ).SingleOrDefault()?.Value.Equals(accessRight.ToString()) ?? false;
+                /*return claim.InformationResources.Single().AccessRightFields.Where(
                         arf => arf.NumeralID.ToString() == insertionFormat
-                    ).SingleOrDefault()?.Status.Equals(accessRight) ?? false;
+                    ).SingleOrDefault()?.Status.Equals(accessRight) ?? false;*/
             }
         }
 
