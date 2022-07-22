@@ -118,7 +118,9 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                     XElement accessField = new XElement("ITEM",
                         new XAttribute("index", executer.Reader.GetInt32(3)),
                         new XElement("NAME", executer.Reader.GetString(2)),
-                        new XElement("STATUS", stat)
+                        new XElement("Allowed", stat.Equals(AccessRightStatus.Allowed)),
+                        new XElement("Changed", stat.Equals(AccessRightStatus.Changed)),
+                        new XElement("Denied", stat.Equals(AccessRightStatus.Denied))
                     );
                     var infoResourceId = executer.Reader.GetInt32(1).ToString(); // ToString!?
                     var accField = res.Elements().Where((n) => n.Attribute("index").Value.Equals(infoResourceId)).SingleOrDefault();
@@ -131,6 +133,9 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                         res.Add(new XElement("ITEM",
                             new XAttribute("index", infoResourceId),
                             new XElement("NAME", executer.Reader.GetString(0)),
+                            new XElement("Allowed", cust.Element("ALLOW").Value),
+                            new XElement("Changed", cust.Element("CHANGE").Value),
+                            new XElement("Denied", cust.Element("DENY").Value),
                             new XElement("RIGHTS", accessField)
                         ));
                     }

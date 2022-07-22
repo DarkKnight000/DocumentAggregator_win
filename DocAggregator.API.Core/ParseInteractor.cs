@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
+using System.Xml.XPath;
 
 namespace DocAggregator.API.Core
 {
@@ -202,6 +203,7 @@ namespace DocAggregator.API.Core
             }
             if (insertionFormat == string.Empty)
             {
+                return bool.TryParse(claim.XPathSelectElement(string.Format("./RESOURCES/*[1]/{0}", accessRight))?.Value, out bool res) && res;
                 return claim.Element("RESOURCES").Elements().Aggregate(AccessRightStatus.NotMentioned,
                         (ars, arf) => ars | arf.Element("RIGHTS").Elements().Aggregate(AccessRightStatus.NotMentioned,
                             (ars, arf) => ars | (AccessRightStatus)Enum.Parse(typeof(AccessRightStatus), arf.Element("STATUS").Value)
@@ -211,6 +213,7 @@ namespace DocAggregator.API.Core
             }
             else
             {
+                return bool.TryParse(claim.XPathSelectElement(string.Format("./RESOURCES/*[1]/RIGHTS/*[@index='{0}']/{1}", insertionFormat, accessRight))?.Value, out bool res) && res;
                 return claim.Element("RESOURCES").Elements().Single().Element("RIGHTS").Elements().Where(
                         da => da.Attribute("index").Value == insertionFormat
                     ).SingleOrDefault()?.Element("STATUS").Value.Equals(accessRight.ToString()) ?? false;
@@ -237,12 +240,14 @@ namespace DocAggregator.API.Core
             {
                 return recursiveResult;
             }
-            var attribute = claim.Element("ATTRIBUTES").Elements().Where((e) => e.Attribute("index").Value.Equals(insertionFormat))?.SingleOrDefault()?.Value;
+            var attribute = claim.XPathSelectElement(string.Format("./ATTRIBUTES/*[@index='{0}']", insertionFormat))?.Value;
+            //var attribute = claim.Element("ATTRIBUTES").Elements().Where((e) => e.Attribute("index").Value.Equals(insertionFormat))?.SingleOrDefault()?.Value;
             if (attribute != null)
             {
                 return attribute;
             }
-            var custom = claim.Element("CUSTOM").Element(insertionFormat.ToUpper())?.Value;
+            var custom = claim.XPathSelectElement(string.Format("./CUSTOM/{0}", insertionFormat.ToUpper()))?.Value;
+            //var custom = claim.Element("CUSTOM").Element(insertionFormat.ToUpper())?.Value;
             return custom ?? "";
             /*return claim.ClaimFields.Where(
                     cf => (cf.NumeralID?.ToString() ?? cf.VerbousID ?? "").Equals(insertionFormat, StringComparison.OrdinalIgnoreCase)
