@@ -1,14 +1,16 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE DataSource SYSTEM "BindingDoctype.dtd">
-<DataSource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-	documentKind="Claim">
+<!--DOCTYPE DataSource SYSTEM "BindingDoctype.dtd"-->
+<ds:DataSource xmlns:ds="http://ntc.rosneft.ru/DBD/DocumentAggegator/Structure"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	        documentKind="Claim">
     <!--
      ! Additional parameters:
      ! ClaimID
      ! UserIP
      !-->
-	<Collection name="Attributes">
-		<Query arguments="/*/ID" itemIndexColumn="attr_id" valColumn="attr_value">
+	<ds:Collection name="Attributes">
+		<ds:Query arguments="/*/ID" itemIndexColumn="attr_id" valColumn="attr_value">
 select
 	attr.request_attr_hdr_id AS attr_id,
     pty.value_number
@@ -31,10 +33,10 @@ from hrd.request_attr_hdr attr
             AND pty.request_hdr_id = req.request_hdr_id)
 where req.request_hdr_id = {0}
 order by typ.order_number
-	    </Query>
-    </Collection>
-	<Collection name="Custom">
-		<Query arguments="/*/ID">
+	    </ds:Query>
+    </ds:Collection>
+	<ds:Collection name="Custom">
+		<ds:Query arguments="/*/ID">
 SELECT
     pkzi.pkzi_name AS pkzi,
     build.description AS address,
@@ -63,10 +65,10 @@ FROM hrd.request_hdr req
 WHERE req.request_hdr_id = {0}
     AND SYSDATE BETWEEN pkzi.begin_date AND pkzi.end_date
 GROUP BY pkzi.pkzi_name, build.description
-	    </Query>
-    </Collection>
-	<Table name="Resources">
-        <For arguments="/*/ID" itemIndexColumn="information_resource_id">
+	    </ds:Query>
+    </ds:Collection>
+	<ds:Table name="Resources">
+		<ds:For arguments="/*/ID" itemIndexColumn="information_resource_id">
 select distinct
     res.information_resource_id,
     res.name as name,
@@ -90,9 +92,9 @@ where
     req.request_hdr_id = {0}
 group by
     res.information_resource_id, res.name
-        </For>
-        <Get name="Rights">
-		    <Query arguments="/*/ID" groupColumn="id" itemIndexColumn="key">
+        </ds:For>
+		<ds:Get name="Rights">
+			<ds:Query arguments="/*/ID" groupColumn="id" itemIndexColumn="key">
 select
     --rit.res_name,
     rit.res_id as id,
@@ -122,7 +124,7 @@ from (
         req.request_hdr_id = {1}
 ) acc on (rit.access_right_hdr_id = acc.access_right_hdr_id)
 order by rit.access_right_hdr_id
-            </Query>
-		</Get>
-    </Table>
-</DataSource>
+            </ds:Query>
+		</ds:Get>
+    </ds:Table>
+</ds:DataSource>

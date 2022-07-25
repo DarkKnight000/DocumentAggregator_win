@@ -39,7 +39,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
             {
                 QueryExecuterWorkspace executerWork = new()
                 {
-                    Claim = null,
+                    Connection = QueryExecuter.BuildConnection(_sqlResource),
                     Logger = _logger,
                     SqlReqource = _sqlResource,
                     Query = string.Format(scheme.Value, scheme.Attribute("argument").Value),

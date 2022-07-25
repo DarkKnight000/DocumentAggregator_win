@@ -1,6 +1,4 @@
-﻿<!-- Move to XMLShcema file with URI: http://ntc.rosneft.ru/DBD/DocumentAggegator/Structure -->
-
-<!ELEMENT DataSource (Collection | Table | Query)*>
+﻿<!ELEMENT DataSource (Collection | Table | Query)*>
 <!ATTLIST DataSource documentKind CDATA #REQUIRED>
 
 <!ELEMENT Collection (Collection | Table | Query)*>

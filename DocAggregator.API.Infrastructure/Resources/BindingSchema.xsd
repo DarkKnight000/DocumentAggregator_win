@@ -1,0 +1,66 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+		   targetNamespace="http://ntc.rosneft.ru/DBD/DocumentAggegator/Structure"
+		   xmlns="http://ntc.rosneft.ru/DBD/DocumentAggegator/Structure"
+		   elementFormDefault="qualified">
+	<xs:element name="Query">
+		<xs:complexType>
+			<xs:simpleContent>
+				<xs:extension base="xs:string">
+					<xs:attribute name="for" type="xs:string"/>
+					<xs:attribute name="arguments" type="xs:string"/>
+					<xs:attribute name="itemIndexColumn" type="xs:string"/>
+					<xs:attribute name="keyColumn" type="xs:string"/>
+					<xs:attribute name="valColumn" type="xs:string"/>
+				</xs:extension>
+			</xs:simpleContent>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="For">
+		<xs:complexType>
+			<xs:simpleContent>
+				<xs:extension base="xs:string">
+					<xs:attribute name="lable" type="xs:string"/>
+					<xs:attribute name="arguments" type="xs:string"/>
+					<xs:attribute name="itemIndexColumn" type="xs:string"/>
+				</xs:extension>
+			</xs:simpleContent>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="Get">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="Query"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="Table">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="For"/>
+				<xs:element ref="Get"/>
+			</xs:sequence>
+			<xs:attribute name="name" type="xs:string" use="required"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="Collection">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="Collection"/>
+				<xs:element ref="Table"/>
+				<xs:element ref="Query"/>
+			</xs:sequence>
+			<xs:attribute name="name" type="xs:string" use="required"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="DataSource">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="Collection"/>
+				<xs:element ref="Table"/>
+				<xs:element ref="Query"/>
+			</xs:sequence>
+			<xs:attribute name="documentKind" type="xs:string" use="required"/>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>

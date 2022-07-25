@@ -11,7 +11,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
     struct QueryExecuterWorkspace
     {
         public string Query { get; set; }
-        public Claim Claim { get; set; }
+        public OracleConnection Connection { get; set; }
         public ILogger Logger { get; set; }
         public SqlConnectionResource SqlReqource { get; set; }
     }
@@ -24,43 +24,44 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
     /// </remarks>
     class QueryExecuter : IDisposable
     {
-        readonly OracleConnection _connection = null;
         readonly OracleCommand _command = null;
         readonly OracleDataReader _reader = null;
 
-        public OracleConnection Connection => _connection;
         public OracleDataReader Reader => _reader;
 
         public QueryExecuter(QueryExecuterWorkspace work)
         {
             try
             {
-                if (work.Claim == null)
+                if (work.Connection == null)
                 {
-                    _connection = new OracleConnection(new OracleConnectionStringBuilder()
-                    {
-                        DataSource = work.SqlReqource.Server,
-                        UserID = work.SqlReqource.Username,
-                        Password = work.SqlReqource.Password,
-                    }.ToString());
-                    _connection.Open();
-                    _command = new OracleCommand(work.Query, _connection);
+                    throw new Exception("Where is the connection?");
                 }
                 else
                 {
-                    _command = new OracleCommand(work.Query, work.Claim.DbConnection as OracleConnection);
+                    _command = new OracleCommand(work.Query, work.Connection);
                 }
                 _reader = _command.ExecuteReader();
             }
             catch (OracleException ex)
             {
-                work.Logger.Error(ex, "An error occured when retrieving data. ClaimID: {0}.", work.Claim?.ID.ToString() ?? "-");
+                work.Logger.Error(ex, "An error occured when retrieving data.");
                 if (_command != null)
                 {
-                    StaticExtensions.ShowExceptionMessage(work.Claim?.DbConnection as OracleConnection ?? _connection, ex, _command.CommandText, work.SqlReqource);
+                    StaticExtensions.ShowExceptionMessage(work.Connection, ex, _command.CommandText, work.SqlReqource);
                 }
-                work.Claim?.DbConnection.Close();
+                work.Connection.Close();
             }
+        }
+
+        public static OracleConnection BuildConnection(SqlConnectionResource sqlResource)
+        {
+            return new OracleConnection(new OracleConnectionStringBuilder()
+            {
+                DataSource = sqlResource.Server,
+                UserID = sqlResource.Username,
+                Password = sqlResource.Password,
+            }.ToString());
         }
 
         public void Dispose()

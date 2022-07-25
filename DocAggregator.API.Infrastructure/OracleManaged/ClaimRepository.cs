@@ -29,14 +29,15 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
         public Claim GetClaim(int id)
         {
             var filePath = @"D:\Users\akkostin\source\repos\DocumentAggregator\DocAggregator.API.Infrastructure\Resources\DataBindings\TestClaim.xml";
-            XDocument desc = XDocument.Load(filePath);
+            XDocument blockDocument = XDocument.Load(filePath);
             //XElement altRoot = ComputeRoot(desc.Root);
             int typeID = -1, registerSystemID = -1;
             XElement partRoot = new XElement("ROOT", new XElement("ID", id));
-            OracleConnection connection = null;
+            OracleConnection connection = QueryExecuter.BuildConnection(_sqlResource);
+            connection.Open();
             QueryExecuterWorkspace executerWork = new()
             {
-                Claim = null,
+                Connection = connection,
                 Logger = _logger,
                 SqlReqource = _sqlResource,
             };
@@ -55,7 +56,6 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                         id, typeID, registerSystemID, executer.Reader.GetInt32(0), executer.Reader.GetInt32(1));
                     throw new System.Exception("One claim had two or more related informational systems. See the log for more info.");
                 }
-                connection = executer.Connection;
             }
             _logger.Trace("Getting a template for type [{0}, {1}].", typeID, registerSystemID);
             string template = _templates.GetPathByTypeAndSystem(typeID, registerSystemID);
@@ -74,10 +74,9 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                 Root = partRoot,
                 SystemID = registerSystemID,
                 Template = template,
-                DbConnection = connection,
             };
-            executerWork.Claim = result;
-            executerWork.Query = string.Format(desc.Root.Element("Collection").Element("Query").Value, result.ID);
+            var blockCollectionFirst = blockDocument.Root.Element(DSS.Collection);
+            executerWork.Query = string.Format(blockCollectionFirst.Element(DSS.Query).Value, result.ID);
             XElement partFields = new XElement("ATTRIBUTES");
             partRoot.Add(partFields);
             using (QueryExecuter executer = new QueryExecuter(executerWork))
@@ -86,7 +85,8 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                     var nodeName = executer.Reader.IsDBNull(0) ? "-" : executer.Reader.GetString(0);
                     partFields.Add(new XElement("ITEM", new XAttribute("index", nodeName), executer.Reader.IsDBNull(1) ? string.Empty : executer.Reader.GetString(1)));
                 }
-            executerWork.Query = string.Format(desc.Root.Elements("Collection").Where((n) => n.Attribute("name").Value.Equals("Custom")).Single().Element("Query").Value, result.ID);
+            var blockCollectionSecond = blockDocument.Root.Elements(DSS.Collection).Where((n) => n.Attribute(DSS.name).Value.Equals("Custom")).Single();
+            executerWork.Query = string.Format(blockCollectionSecond.Element(DSS.Query).Value, result.ID);
             XElement partCustomFields = new XElement("CUSTOM");
             partRoot.Add(partCustomFields);
             using (QueryExecuter executer = new QueryExecuter(executerWork))
@@ -97,8 +97,9 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                         partCustomFields.Add(new XElement(executer.Reader.GetName(i), executer.Reader.IsDBNull(i) ? string.Empty : executer.Reader.GetString(i)));
                     }
                 }
-            result.ClaimFields = _fieldRepository.GetFiledListByClaimId(result, false);
-            var blockFor = desc.Root.Elements("Table").Where((n) => n.Attribute("name").Value.Equals("Resources")).Single().Element("For");
+            //result.ClaimFields = _fieldRepository.GetFiledListByClaimId(result, false);
+            var blockTable = blockDocument.Root.Elements(DSS.Table).Where((n) => n.Attribute(DSS.name).Value.Equals("Resources")).Single();
+            var blockFor = blockTable.Element(DSS.For);
             executerWork.Query = string.Format(blockFor.Value, result.ID);
             XElement partResources = new XElement("RESOURCES");
             partRoot.Add(partResources);
@@ -129,8 +130,8 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                     partResources.Add(partItem);
                     partResources.Elements().Last().Add(new XElement("RIGHTS"));
                 }
-            var blockGet = desc.Root.Elements("Table").Where((n) => n.Attribute("name").Value.Equals("Resources")).Single().Element("Get");
-            var blockTableQuery = blockGet.Element("Query");
+            var blockGet = blockTable.Element(DSS.Get);
+            var blockTableQuery = blockGet.Element(DSS.Query);
             foreach (var lineArg in listOfLines)
             {
                 executerWork.Query = string.Format(blockTableQuery.Value, lineArg, result.ID);
@@ -143,11 +144,11 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                         int indexColumn = -1, groupColumn = -1;
                         for (int i = 0; i < columns; i++)
                         {
-                            if (executer.Reader.GetName(i).Equals(blockTableQuery.Attribute("itemIndexColumn").Value.ToUpper()))
+                            if (executer.Reader.GetName(i).Equals(blockTableQuery.Attribute(DSS.itemIndexColumn).Value.ToUpper()))
                             {
                                 indexColumn = i;
                             }
-                            if (executer.Reader.GetName(i).Equals(blockTableQuery.Attribute("groupColumn").Value.ToUpper()))
+                            if (executer.Reader.GetName(i).Equals(blockTableQuery.Attribute(DSS.groupColumn).Value.ToUpper()))
                             {
                                 groupColumn = i;
                             }
@@ -173,7 +174,8 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                         }
                     }
             }
-            result.InformationResources = _fieldRepository.GetInformationalResourcesByClaim(result);
+            //result.InformationResources = _fieldRepository.GetInformationalResourcesByClaim(result);
+            connection.Close();
             return result;
         }
 
@@ -199,7 +201,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
             {
                 QueryExecuterWorkspace executerWork = new()
                 {
-                    Claim = null,
+                    Connection = null, //connection,
                     Logger = _logger,
                     SqlReqource = _sqlResource,
                 };

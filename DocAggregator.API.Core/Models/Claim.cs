@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Data.Common;
+﻿using System.Collections.Generic;
 using System.Xml.Linq;
 
 namespace DocAggregator.API.Core.Models
@@ -9,10 +6,7 @@ namespace DocAggregator.API.Core.Models
     /// <summary>
     /// Представляет объект заявки.
     /// </summary>
-    /// <remarks>
-    /// Реализует паттерн единицы работы, отвечая за жизненный цикл соединения с бд.
-    /// </remarks>
-    public class Claim : IDisposable
+    public class Claim
     {
         /// <summary>
         /// Идентификатор заявки, согласно базе данных.
@@ -45,35 +39,5 @@ namespace DocAggregator.API.Core.Models
         /// Список затронутых информационных ресурсов.
         /// </summary>
         public IEnumerable<InformationResource> InformationResources { get; set; }
-
-        /// <summary>
-        /// Подключение к базе данных.
-        /// </summary>
-        public DbConnection DbConnection
-        {
-            get
-            {
-                if (_dbConnection == null)
-                {
-                    return null;
-                }
-                if (!_dbConnection.State.HasFlag(ConnectionState.Open))
-                {
-                    _dbConnection.Open();
-                }
-                return _dbConnection;
-            }
-            init => _dbConnection = value;
-        }
-        private DbConnection _dbConnection;
-
-        public void Dispose()
-        {
-            if (DbConnection.State.HasFlag(ConnectionState.Open))
-            {
-                DbConnection.Close();
-            }
-            ((IDisposable)DbConnection).Dispose();
-        }
     }
 }

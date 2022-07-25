@@ -27,7 +27,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
             XElement invRoot = new XElement("ROOT");
             QueryExecuterWorkspace executerWork = new()
             {
-                Claim = null,
+                Connection = QueryExecuter.BuildConnection(_sqlResource),
                 Logger = _logger,
                 SqlReqource = _sqlResource,
             };

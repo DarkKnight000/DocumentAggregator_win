@@ -28,7 +28,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
         {
             QueryExecuterWorkspace executerWork = new QueryExecuterWorkspace()
             {
-                Claim = claim,
+                Connection = QueryExecuter.BuildConnection(_sqlResource),
                 Logger = _logger,
                 SqlReqource = _sqlResource,
             };
@@ -84,7 +84,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
             QueryExecuterWorkspace accessListRetrieve = new QueryExecuterWorkspace()
             {
                 Query = string.Format(_sqlResource.GetStringByName("Q_HRDClaimInformationalResourcesList_ByRequest"), claim.ID),
-                Claim = claim,
+                Connection = QueryExecuter.BuildConnection(_sqlResource),
                 Logger = _logger,
                 SqlReqource = _sqlResource,
             };
@@ -136,7 +136,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
             QueryExecuterWorkspace accessListRetrieve = new()
             {
                 Query = string.Format(_sqlResource.GetStringByName("Q_HRDClaimAccessList_ByRequest"), claim.ID),
-                Claim = claim,
+                Connection = QueryExecuter.BuildConnection(_sqlResource),
                 Logger = _logger,
                 SqlReqource = _sqlResource,
             };
