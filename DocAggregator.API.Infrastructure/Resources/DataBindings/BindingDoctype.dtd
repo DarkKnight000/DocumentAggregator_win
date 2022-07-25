@@ -1,9 +1,25 @@
-﻿<!ELEMENT DataSource (Collection | SqlQuery)*>
+﻿<!-- Move to XMLShcema file with URI: http://ntc.rosneft.ru/DBD/DocumentAggegator/Structure -->
+
+<!ELEMENT DataSource (Collection | Table | Query)*>
 <!ATTLIST DataSource documentKind CDATA #REQUIRED>
-<!ELEMENT Collection (Collection | SqlQuery)*>
+
+<!ELEMENT Collection (Collection | Table | Query)*>
 <!ATTLIST Collection name CDATA #REQUIRED>
-<!ELEMENT SqlQuery (#PCDATA)>
-<!ATTLIST SqlQuery argument CDATA #IMPLIED>
-<!ATTLIST SqlQuery itemIndexColumn CDATA #IMPLIED>
-<!ATTLIST SqlQuery keyColumn CDATA #IMPLIED>
-<!ATTLIST SqlQuery valColumn CDATA #IMPLIED>
+
+<!ELEMENT Table (For, Get+)>
+<!ATTLIST Table name CDATA #REQUIRED>
+
+<!ELEMENT For (#PCDATA)>
+<!ATTLIST For lable CDATA #IMPLIED>
+<!ATTLIST For arguments CDATA #IMPLIED>
+<!ATTLIST For itemIndexColumn CDATA #IMPLIED>
+
+<!ELEMENT Get (Query)>
+<!ATTLIST Get name CDATA #REQUIRED>
+
+<!ELEMENT Query (#PCDATA)>
+<!ATTLIST Query for CDATA #IMPLIED>
+<!ATTLIST Query arguments CDATA #IMPLIED>
+<!ATTLIST Query itemIndexColumn CDATA #IMPLIED>
+<!ATTLIST Query keyColumn CDATA #IMPLIED>
+<!ATTLIST Query valColumn CDATA #IMPLIED>

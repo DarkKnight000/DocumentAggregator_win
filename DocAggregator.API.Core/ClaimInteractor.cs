@@ -59,6 +59,10 @@ namespace DocAggregator.API.Core
             {
                 throw new ArgumentNullException(nameof(request.UserIP));
             }
+            if (claim == null)
+            {
+                throw new ArgumentException("Заявка не найдена.", nameof(request.ClaimID));
+            }
             claim.ClaimFields = claim.ClaimFields.Append(new ClaimField()
             {
                 VerbousID = "UserIP",
@@ -66,10 +70,6 @@ namespace DocAggregator.API.Core
                 Attribute = string.Empty,
                 Value = request.UserIP,
             });
-            if (claim == null)
-            {
-                throw new ArgumentException("Заявка не найдена.", nameof(request.ClaimID));
-            }
             FormRequest formRequest = new FormRequest();
             formRequest.Claim = claim;
             FormResponse formResponse = _former.Handle(formRequest);
