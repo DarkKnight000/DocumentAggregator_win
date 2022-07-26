@@ -3,28 +3,37 @@
 		   targetNamespace="http://ntc.rosneft.ru/DBD/DocumentAggegator/Structure"
 		   xmlns="http://ntc.rosneft.ru/DBD/DocumentAggegator/Structure"
 		   elementFormDefault="qualified">
+	<!-- ===== Type declaration ===== -->
+	<xs:complexType name="Query">
+		<xs:simpleContent>
+			<xs:extension base="xs:string">
+				<xs:attribute name="arguments" type="xs:string"/>
+				<xs:attribute name="itemIndexColumn" type="xs:string"/>
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:complexType name="Container">
+		<xs:attribute name="name" type="xs:string" use="required"/>
+	</xs:complexType>
+	<!-- ===== Element declaration ===== -->
 	<xs:element name="Query">
 		<xs:complexType>
-			<xs:simpleContent>
-				<xs:extension base="xs:string">
+			<xs:complexContent>
+				<xs:extension base="Query">
 					<xs:attribute name="for" type="xs:string"/>
-					<xs:attribute name="arguments" type="xs:string"/>
-					<xs:attribute name="itemIndexColumn" type="xs:string"/>
 					<xs:attribute name="keyColumn" type="xs:string"/>
 					<xs:attribute name="valColumn" type="xs:string"/>
 				</xs:extension>
-			</xs:simpleContent>
+			</xs:complexContent>
 		</xs:complexType>
 	</xs:element>
 	<xs:element name="For">
 		<xs:complexType>
-			<xs:simpleContent>
-				<xs:extension base="xs:string">
+			<xs:complexContent>
+				<xs:extension base="Query">
 					<xs:attribute name="lable" type="xs:string"/>
-					<xs:attribute name="arguments" type="xs:string"/>
-					<xs:attribute name="itemIndexColumn" type="xs:string"/>
 				</xs:extension>
-			</xs:simpleContent>
+			</xs:complexContent>
 		</xs:complexType>
 	</xs:element>
 	<xs:element name="Get">
@@ -36,21 +45,27 @@
 	</xs:element>
 	<xs:element name="Table">
 		<xs:complexType>
-			<xs:sequence>
-				<xs:element ref="For"/>
-				<xs:element ref="Get"/>
-			</xs:sequence>
-			<xs:attribute name="name" type="xs:string" use="required"/>
+			<xs:complexContent>
+				<xs:extension base="Container">
+					<xs:sequence>
+						<xs:element ref="For"/>
+						<xs:element ref="Get"/>
+					</xs:sequence>
+				</xs:extension>
+			</xs:complexContent>
 		</xs:complexType>
 	</xs:element>
 	<xs:element name="Collection">
 		<xs:complexType>
-			<xs:sequence>
-				<xs:element ref="Collection"/>
-				<xs:element ref="Table"/>
-				<xs:element ref="Query"/>
-			</xs:sequence>
-			<xs:attribute name="name" type="xs:string" use="required"/>
+			<xs:complexContent>
+				<xs:extension base="Container">
+					<xs:sequence>
+						<xs:element ref="Collection"/>
+						<xs:element ref="Table"/>
+						<xs:element ref="Query"/>
+					</xs:sequence>
+				</xs:extension>
+			</xs:complexContent>
 		</xs:complexType>
 	</xs:element>
 	<xs:element name="DataSource">

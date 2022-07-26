@@ -30,6 +30,9 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
 
         public static readonly XName name = "name";
         public static readonly XName itemIndexColumn = "itemIndexColumn";
+        public static readonly XName keyColumn = "keyColumn";
+        public static readonly XName valColumn = "valColumn";
         public static readonly XName groupColumn = "groupColumn";
+        public static readonly XName arguments = "arguments";
     }
 }
