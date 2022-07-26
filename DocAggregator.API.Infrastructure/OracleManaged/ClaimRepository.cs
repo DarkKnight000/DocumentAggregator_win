@@ -47,9 +47,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                 executer.Reader.Read();
                 //Setting Initials
                 typeID = executer.Reader.GetInt32(0);
-                partRoot.Add(new XElement("TYPEID", typeID));
                 registerSystemID = executer.Reader.GetInt32(1);
-                partRoot.Add(new XElement("SYSTEMID", registerSystemID));
                 if (executer.Reader.Read())
                 {
                     _logger.Error("When processing a claim with id {0} two or more system bindings were found. The first two: [{1}, {2}] and [{3}, {4}].",
@@ -66,7 +64,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                 _logger.Error(ex, msg);
                 throw ex;
             }
-            partRoot.Add(new XElement("TEMPLATE", template));
+            partRoot.Add(new XAttribute("template", template));
             Claim result = new()
             {
                 ID = id,
@@ -77,6 +75,10 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
             };
             foreach(var block in blockDocument.Root.Elements())
             {
+                if (block.Name.Equals(DSS.Query))
+                {
+                    ExtractedQueryProcessing(block, partRoot, executerWork);
+                }
                 if (block.Name.Equals(DSS.Collection))
                 {
                     ExtractedCollectionProcessing(block, partRoot, executerWork);
@@ -86,26 +88,17 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                     ExtractedTableProcessing(block, partRoot, executerWork);
                 }
             }
-            /*var blockCollectionFirst = blockDocument.Root.Element(DSS.Collection);
-            ExtractedCollectionProcessing(blockCollectionFirst, partRoot, executerWork);
-            var blockCollectionSecond = blockDocument.Root.Elements(DSS.Collection).Where((n) => n.Attribute(DSS.name).Value.Equals("Custom")).Single();
-            ExtractedCollectionProcessing(blockCollectionSecond, partRoot, executerWork);
-            var blockTable = blockDocument.Root.Elements(DSS.Table).Where((n) => n.Attribute(DSS.name).Value.Equals("Resources")).Single();
-            ExtractedTableProcessing(blockTable, partRoot, executerWork);*/
             //result.ClaimFields = _fieldRepository.GetFiledListByClaimId(result, false);
             //result.InformationResources = _fieldRepository.GetInformationalResourcesByClaim(result);
             connection.Close();
             return result;
         }
 
-        private void ExtractedCollectionProcessing(XElement blockCollection, XElement partRoot, QueryExecuterWorkspace executerWork)
+        private void ExtractedQueryProcessing(XElement blockQuery, XElement partRoot, QueryExecuterWorkspace executerWork)
         {
-            var blockQuery = blockCollection.Element(DSS.Query);
+            int mode = -1;
             var argument = partRoot.XPathSelectElement(blockQuery.Attribute(DSS.arguments).Value)?.Value;
             executerWork.Query = string.Format(blockQuery.Value, argument);
-            XElement partFields = new XElement(blockCollection.Attribute(DSS.name)?.Value.ToUpper());
-            partRoot.Add(partFields);
-            int mode = -1;
             if (blockQuery.Attributes().Any((a) => a.Name.Equals(DSS.itemIndexColumn)) &&
                 blockQuery.Attributes().Any((a) => a.Name.Equals(DSS.valColumn)))
             {
@@ -122,7 +115,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                         while (executer.Reader.Read())
                         {
                             var nodeName = executer.Reader.IsDBNull(0) ? "-" : executer.Reader.GetString(0);
-                            partFields.Add(new XElement("ITEM", new XAttribute("index", nodeName), executer.Reader.IsDBNull(1) ? string.Empty : executer.Reader.GetString(1)));
+                            partRoot.Add(new XElement("ITEM", new XAttribute("key", nodeName), executer.Reader.IsDBNull(1) ? string.Empty : executer.Reader.GetString(1)));
                         }
                         break;
                     case 2:
@@ -130,11 +123,19 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                         {
                             for (int i = 0; i < executer.Reader.FieldCount; i++)
                             {
-                                partFields.Add(new XElement(executer.Reader.GetName(i), executer.Reader.IsDBNull(i) ? string.Empty : executer.Reader.GetString(i)));
+                                partRoot.Add(new XElement(executer.Reader.GetName(i), executer.Reader.IsDBNull(i) ? string.Empty : executer.Reader.GetString(i)));
                             }
                         }
                         break;
                 }
+        }
+
+        private void ExtractedCollectionProcessing(XElement blockCollection, XElement partRoot, QueryExecuterWorkspace executerWork)
+        {
+            var blockQuery = blockCollection.Element(DSS.Query);
+            XElement partFields = new XElement(blockCollection.Attribute(DSS.name)?.Value.ToUpper());
+            partRoot.Add(partFields);
+            ExtractedQueryProcessing(blockQuery, partFields, executerWork);
         }
 
         /// <summary>
@@ -171,7 +172,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                     {
                         if (i == indexColumn)
                         {
-                            partItem.Add(new XAttribute("index", executer.Reader.GetString(indexColumn)));
+                            partItem.Add(new XAttribute("key", executer.Reader.GetString(indexColumn)));
                             continue;
                         }
                         partItem.Add(new XElement(executer.Reader.GetName(i).ToUpper(), executer.Reader.GetString(i)));
@@ -210,12 +211,12 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                             }
                             if (i == indexColumn)
                             {
-                                partAccessField.Add(new XAttribute("index", executer.Reader.GetString(indexColumn)));
+                                partAccessField.Add(new XAttribute("key", executer.Reader.GetString(indexColumn)));
                                 continue;
                             }
                             partAccessField.Add(new XElement(executer.Reader.GetName(i).ToUpper(), executer.Reader.GetString(i)));
                         }
-                        var partFoundedAccessFields = partResources.Elements().Where((n) => n.Attribute("index").Value.Equals(infoResourceId)).SingleOrDefault();
+                        var partFoundedAccessFields = partResources.Elements().Where((n) => n.Attribute("key").Value.Equals(infoResourceId)).SingleOrDefault();
                         if (partFoundedAccessFields != null)
                         {
                             partFoundedAccessFields.Element(containerName).Add(partAccessField);

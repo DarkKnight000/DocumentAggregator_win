@@ -6,37 +6,21 @@
 	           documentKind="Claim">
     <!--
      ! Additional parameters:
-     ! ClaimID
+     ! ID
      ! UserIP
      !-->
-	<ds:Collection name="Attributes">
-		<ds:Query arguments="/ID" itemIndexColumn="attr_id" valColumn="attr_value">
-select
-	attr.request_attr_hdr_id AS attr_id,
-    pty.value_number
-		|| pty.value_varchar2
-        || pty.value_date
-        || decode(pty.value_boolean, 0, 'Нет', 1, 'Да', null)
-        || pty.value_clob
-		AS attr_value
-from hrd.request_attr_hdr attr
-    join hrd.request_attr_hdr cat
-        on (attr.p_request_attr_hdr_id = cat.request_attr_hdr_id)
-    join hrd.request_attr_types typ
-        on (attr.request_attr_hdr_id = typ.request_attr_hdr_id)
-    join hrd.request_hdr req
-        on (req.request_type_id = typ.request_type_id)
-    -- Позволяет выбирать атрибуты заявки из hrd.request_attr_hdr
-    -- без какого-либо значения из hrd.request_attr_pty
-    left outer join hrd.request_attr_pty pty
-        on (pty.request_attr_hdr_id = attr.request_attr_hdr_id
-            AND pty.request_hdr_id = req.request_hdr_id)
+    <!-- Основные данные - тип запроса и идентификатор системы -->
+	<ds:Query arguments="/ID">
+select distinct req.request_type_id typeId, sys.register_id systemId
+from hrd.request_hdr req
+    JOIN hrd.it_access_right_request acc ON (acc.request_hdr_id = req.request_hdr_id)
+    JOIN hrd.it_access_right_hdr rit ON (rit.access_right_hdr_id = acc.access_right_hdr_id)
+    JOIN hrd.it_dict_information_resource res ON (res.information_resource_id = rit.object_id)
+    JOIN hrd.it_dict_information_system sys ON (sys.information_system_id = res.information_system_id)
 where req.request_hdr_id = {0}
-order by typ.order_number
-	    </ds:Query>
-    </ds:Collection>
-	<ds:Collection name="Custom">
-		<ds:Query arguments="/ID">
+    </ds:Query>
+    <!-- Дополнительные поля заявки -->
+	<ds:Query arguments="/ID">
 SELECT
     pkzi.pkzi_name AS pkzi,
     build.description AS address,
@@ -65,8 +49,35 @@ FROM hrd.request_hdr req
 WHERE req.request_hdr_id = {0}
     AND SYSDATE BETWEEN pkzi.begin_date AND pkzi.end_date
 GROUP BY pkzi.pkzi_name, build.description
+	</ds:Query>
+    <!-- Основные поля заявки (в собственной категории) -->
+	<ds:Collection name="Attributes">
+		<ds:Query arguments="/ID" itemIndexColumn="attr_id" valColumn="attr_value">
+select
+	attr.request_attr_hdr_id AS attr_id,
+    pty.value_number
+		|| pty.value_varchar2
+        || pty.value_date
+        || decode(pty.value_boolean, 0, 'Нет', 1, 'Да', null)
+        || pty.value_clob
+		AS attr_value
+from hrd.request_attr_hdr attr
+    join hrd.request_attr_hdr cat
+        on (attr.p_request_attr_hdr_id = cat.request_attr_hdr_id)
+    join hrd.request_attr_types typ
+        on (attr.request_attr_hdr_id = typ.request_attr_hdr_id)
+    join hrd.request_hdr req
+        on (req.request_type_id = typ.request_type_id)
+    -- Позволяет выбирать атрибуты заявки из hrd.request_attr_hdr
+    -- без какого-либо значения из hrd.request_attr_pty
+    left outer join hrd.request_attr_pty pty
+        on (pty.request_attr_hdr_id = attr.request_attr_hdr_id
+            AND pty.request_hdr_id = req.request_hdr_id)
+where req.request_hdr_id = {0}
+order by typ.order_number
 	    </ds:Query>
     </ds:Collection>
+    <!-- Перечень ресурсов и списков ролей для них (таблица объектов или вложенные списки) -->
 	<ds:Table name="Resources">
 		<ds:For arguments="/ID" itemIndexColumn="information_resource_id">
 select distinct
