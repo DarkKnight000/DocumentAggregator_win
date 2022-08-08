@@ -37,8 +37,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
             {
                 if (_fieldNamesCache.Count == 0)
                 {
-                    executerWork.Query = string.Format(_sqlResource.GetStringByName("Q_HRDClaimFieldNameList_ByRequestType"), claim.TypeID);
-                    using (QueryExecuter executer = new QueryExecuter(executerWork))
+                    using (QueryExecuter executer = executerWork.GetExecuterForQuery(_sqlResource.GetStringByName("Q_HRDClaimFieldNameList_ByRequestType"), claim.TypeID))
                         while (executer.Reader.Read())
                         {
                             string categoryName = executer.Reader.GetString(0);
@@ -48,8 +47,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                         }
                 }
             }
-            executerWork.Query = string.Format(_sqlResource.GetStringByName("Q_HRDAttributeIdsValues_ByRequest"), claim.ID);
-            using (QueryExecuter executer = new QueryExecuter(executerWork))
+            using (QueryExecuter executer = executerWork.GetExecuterForQuery(_sqlResource.GetStringByName("Q_HRDAttributeIdsValues_ByRequest"), claim.ID))
                 while (executer.Reader.Read())
                 {
                     result.Add(new ClaimField()
@@ -60,8 +58,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                         Value = executer.Reader.IsDBNull(1) ? string.Empty : executer.Reader.GetString(1),
                     });
                 }
-            executerWork.Query = string.Format(_sqlResource.GetStringByName("Q_HRDAddressAction_ByRequest"), claim.ID);
-            using (QueryExecuter executer = new QueryExecuter(executerWork))
+            using (QueryExecuter executer = executerWork.GetExecuterForQuery(_sqlResource.GetStringByName("Q_HRDAddressAction_ByRequest"), claim.ID))
                 while (executer.Reader.Read())
                 {
                     for (int i = 0; i < executer.Reader.FieldCount; i++)
@@ -83,12 +80,11 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
             var result = new Dictionary<int, InformationResource>();
             QueryExecuterWorkspace accessListRetrieve = new QueryExecuterWorkspace()
             {
-                Query = string.Format(_sqlResource.GetStringByName("Q_HRDClaimInformationalResourcesList_ByRequest"), claim.ID),
                 Connection = QueryExecuter.BuildConnection(_sqlResource),
                 Logger = _logger,
                 SqlReqource = _sqlResource,
             };
-            using (QueryExecuter executer = new QueryExecuter(accessListRetrieve))
+            using (QueryExecuter executer = accessListRetrieve.GetExecuterForQuery(_sqlResource.GetStringByName("Q_HRDClaimInformationalResourcesList_ByRequest"), claim.ID))
                 while (executer.Reader.Read())
                 {
                     AccessRightStatus stat = AccessRightStatus.NotMentioned;
@@ -97,10 +93,10 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                         switch (executer.Reader.GetString(4))
                         {
                             case "0":
-                                stat = AccessRightStatus.Denied;
+                                stat = AccessRightStatus.Deny;
                                 break;
                             case "1":
-                                stat = AccessRightStatus.Allowed;
+                                stat = AccessRightStatus.Allow;
                                 break;
                             default:
                                 break;
@@ -135,12 +131,11 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
             var result = new List<AccessRightField>();
             QueryExecuterWorkspace accessListRetrieve = new()
             {
-                Query = string.Format(_sqlResource.GetStringByName("Q_HRDClaimAccessList_ByRequest"), claim.ID),
                 Connection = QueryExecuter.BuildConnection(_sqlResource),
                 Logger = _logger,
                 SqlReqource = _sqlResource,
             };
-            using (QueryExecuter executer = new QueryExecuter(accessListRetrieve))
+            using (QueryExecuter executer = accessListRetrieve.GetExecuterForQuery(_sqlResource.GetStringByName("Q_HRDClaimAccessList_ByRequest"), claim.ID))
                 while (executer.Reader.Read())
                 {
                     AccessRightStatus stat = AccessRightStatus.NotMentioned;
@@ -149,10 +144,10 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                         switch (executer.Reader.GetString(2))
                         {
                             case "0":
-                                stat = AccessRightStatus.Denied;
+                                stat = AccessRightStatus.Deny;
                                 break;
                             case "1":
-                                stat = AccessRightStatus.Allowed;
+                                stat = AccessRightStatus.Allow;
                                 break;
                             default:
                                 break;

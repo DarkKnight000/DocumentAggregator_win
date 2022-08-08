@@ -198,11 +198,11 @@ namespace DocAggregator.API.Core.Tests
             var status = new AccessRightStatus();
             if (anyAllow)
             {
-                status |= AccessRightStatus.Allowed;
+                status |= AccessRightStatus.Allow;
             }
             if (anyDeny)
             {
-                status |= AccessRightStatus.Denied;
+                status |= AccessRightStatus.Deny;
             }
             // 2. Берём заявку
             var request = new ParseRequest()

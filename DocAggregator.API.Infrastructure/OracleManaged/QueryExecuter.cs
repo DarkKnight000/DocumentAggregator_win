@@ -8,12 +8,17 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
     /// <summary>
     /// Содержит набор параметров для работы исполнительного блока.
     /// </summary>
-    struct QueryExecuterWorkspace
+    class QueryExecuterWorkspace
     {
-        public string Query { get; set; }
         public OracleConnection Connection { get; set; }
         public ILogger Logger { get; set; }
         public SqlConnectionResource SqlReqource { get; set; }
+
+        public QueryExecuter GetExecuterForQuery(string query)
+            => new QueryExecuter(this, query);
+
+        public QueryExecuter GetExecuterForQuery(string query, params object[] args)
+            => new QueryExecuter(this, string.Format(query, args));
     }
 
     /// <summary>
@@ -29,7 +34,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
 
         public OracleDataReader Reader => _reader;
 
-        public QueryExecuter(QueryExecuterWorkspace work)
+        public QueryExecuter(QueryExecuterWorkspace work, string query)
         {
             try
             {
@@ -39,7 +44,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                 }
                 else
                 {
-                    _command = new OracleCommand(work.Query, work.Connection);
+                    _command = new OracleCommand(query, work.Connection);
                 }
                 _reader = _command.ExecuteReader();
             }

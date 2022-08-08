@@ -63,13 +63,13 @@ namespace DocAggregator.API.Core
             {
                 throw new ArgumentException("Заявка не найдена.", nameof(request.ClaimID));
             }
-            claim.ClaimFields = claim.ClaimFields.Append(new ClaimField()
+            /*claim.ClaimFields = claim.ClaimFields.Append(new ClaimField()
             {
                 VerbousID = "UserIP",
                 Category = string.Empty,
                 Attribute = string.Empty,
                 Value = request.UserIP,
-            });
+            });*/
             FormRequest formRequest = new FormRequest();
             formRequest.Claim = claim;
             FormResponse formResponse = _former.Handle(formRequest);

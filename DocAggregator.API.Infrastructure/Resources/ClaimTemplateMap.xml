@@ -5,33 +5,52 @@
 	<!ELEMENT TemplateBind (#PCDATA)>
 	<!ATTLIST TemplateBind typeID CDATA #REQUIRED>
 	<!ATTLIST TemplateBind systemID CDATA #REQUIRED>
+	<!ATTLIST TemplateBind remote (true|false) #IMPLIED>
 ]>
 <!--
 Root: D:\Users\akkostin\Documents\Templates\Edited\
 -->
 <ArrayOfTemplateBind xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
 	<!-- Placeholder : Currently working on the document below : Not formatted well -->
-	<TemplateBind typeID="10" systemID="3">КРР-03 ИС КП/Заявка для сотрудников НТЦ ИС КП.DOCX</TemplateBind>
-	<TemplateBind typeID="10" systemID="4">КРР-04 ИС ОДФР/Заявка для сотрудников НТЦ.DOCX</TemplateBind>
-	<TemplateBind typeID="10" systemID="8">КРР-08 ИС 1С БУНУ/Заявка для сотрудников НТЦ.docx</TemplateBind>
-	<TemplateBind typeID="10" systemID="10">КРР-10 ИС АСЭР/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind>
-	<TemplateBind typeID="10" systemID="11">КРР-11 ИС ТД/Заявка для сотрудников НТЦ (версия 2.0.5).docx</TemplateBind> <!-- Check the last frames correctness -->
-	<TemplateBind typeID="10" systemID="17">КРР-17 ИС ОиК/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind>
-	<TemplateBind typeID="10" systemID="18">КРР-18 ИС СЭД/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind> <!-- Check access rights -->
-	<TemplateBind typeID="10" systemID="19">КРР-19 ИС РН-КИН/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind>
-	<TemplateBind typeID="10" systemID="20">КРР-20 ИС СУПП/Заявка для сотрудников НТЦ.docx</TemplateBind>
-	<TemplateBind typeID="10" systemID="21">КРР-21 ИС WDB/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind>
-	<TemplateBind typeID="10" systemID="24">КРР-24 ИС ЛУ ЦГИС/Заявка для сотрудников НТЦ ИС ЛУ ЦГИС.DOCX</TemplateBind>
-	<TemplateBind typeID="10" systemID="25">КРР-25 ИС АБПО/Заявка для сотрудников НТЦ.docx</TemplateBind> <!-- Check informational resource using -->
-	<TemplateBind typeID="10" systemID="34">КРР-34 ИС NormaCS/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind>
-	<TemplateBind typeID="10" systemID="35">КРР-35 ИС ПП/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind>
-	<TemplateBind typeID="10" systemID="37">КРР-37 ИС ВОТ/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind>
-	<TemplateBind typeID="10" systemID="38">КРР-38 ИС Геобанк-ПТД/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind>
-	<TemplateBind typeID="10" systemID="39">КРР-39 ИС ПР/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind>
-	<TemplateBind typeID="10" systemID="41">КРР-41 ИС СУРК/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind>
-	<TemplateBind typeID="10" systemID="42">КРР-42 ИС Вектор/Заявка для удаленных сотрудников НТЦ ИС Вектор.docx</TemplateBind>
-	<TemplateBind typeID="10" systemID="44">КРР-44 ИС УСИЗ/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind>
-	<TemplateBind typeID="10" systemID="45">КРР-45 ИС КУЗ/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind>
-	<!-- Placeholder : Currently working on the document below : Empty -->
-	<TemplateBind typeID="10" systemID="47">КРР-47 ИС Сапсан+/</TemplateBind> <!-- Where? -->
+	<TemplateBind typeID="10" systemID="1" remote="false">КРР-01 ИС УЛК/Заявка для сотрудников НТЦ УЛК.docx</TemplateBind> <!-- Wasn't processed -->
+	<TemplateBind typeID="10" systemID="1" remote="true">КРР-01 ИС УЛК/Заявка для удаленных сотрудников НТЦ УЛК.docx</TemplateBind> <!-- Wasn't processed -->
+	<TemplateBind typeID="10" systemID="3" remote="false">КРР-03 ИС КП/Заявка для сотрудников НТЦ ИС КП.DOCX</TemplateBind>
+	<TemplateBind typeID="10" systemID="3" remote="true">КРР-03 ИС КП/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind>
+	<TemplateBind typeID="10" systemID="4" remote="false">КРР-04 ИС ОДФР/Заявка для сотрудников НТЦ.DOCX</TemplateBind>
+	<TemplateBind typeID="10" systemID="4" remote="true">КРР-04 ИС ОДФР/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind>
+	<TemplateBind typeID="10" systemID="5" remote="false">КРР-05 ИС ОИСД/Заявка для сотрудников НТЦ ИС ОИСД.docx</TemplateBind> <!-- Wasn't processed -->
+	<TemplateBind typeID="10" systemID="8" remote="true">КРР-08 ИС 1С БУНУ/Заявка для сотрудников НТЦ.docx</TemplateBind>
+	<TemplateBind typeID="10" systemID="8">КРР-08 ИС 1С Заявка для сотрудников РН-Учет (Версия 2.3.0).docx</TemplateBind> <!-- For РН-Учёт -->
+	<TemplateBind typeID="10" systemID="10" remote="true">КРР-10 ИС АСЭР/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind>
+	<TemplateBind typeID="10" systemID="11" remote="true">КРР-11 ИС ТД/Заявка для сотрудников НТЦ (версия 2.0.5).docx</TemplateBind> <!-- Also check the PC/ARM name --> <!-- Check the last frames correctness -->
+	<TemplateBind typeID="10" systemID="11">КРР-11 ИС ТД/Заявка для сотрудников НТЦ.docx</TemplateBind>
+	<TemplateBind typeID="10" systemID="11">КРР-11 ИС ТД/Заявка для сотрудников ОГ_ДО (Версия 2.1.0).docx</TemplateBind> <!-- Check an organization name -->
+	<TemplateBind typeID="10" systemID="14">КРР-14 ИС УДФР/Заявка для сотрудников НТЦ УДФР.docx</TemplateBind> <!-- Wasn't processed -->
+	<TemplateBind typeID="10" systemID="14">КРР-14 ИС УДФР/Заявка для сотрудников ОГ_ДО УДФР.docx</TemplateBind> <!-- Wasn't processed -->
+	<TemplateBind typeID="10" systemID="15">КРР-15 ИС КНИ/Заявка для сотрудников НТЦ КНИ.docx</TemplateBind> <!-- Wasn't processed -->
+	<TemplateBind typeID="10" systemID="17" remote="true">КРР-17 ИС ОиК/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind> <!-- Test resorces' rights aggregation -->
+	<TemplateBind typeID="10" systemID="18" remote="true">КРР-18 ИС СЭД/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind> <!-- Check access right "КП: Протоколы" -->
+	<TemplateBind typeID="10" systemID="19" remote="true">КРР-19 ИС РН-КИН/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind>
+	<TemplateBind typeID="10" systemID="20" remote="true">КРР-20 ИС СУПП/Заявка для сотрудников НТЦ.docx</TemplateBind>
+	<TemplateBind typeID="10" systemID="21" remote="true">КРР-21 ИС WDB/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind>
+	<TemplateBind typeID="10" systemID="24" remote="false">КРР-24 ИС ЛУ ЦГИС/Заявка для сотрудников НТЦ ИС ЛУ ЦГИС.DOCX</TemplateBind>
+	<TemplateBind typeID="10" systemID="24" remote="true">КРР-24 ИС ЛУ ЦГИС/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind>
+	<TemplateBind typeID="10" systemID="25" remote="true">КРР-25 ИС АБПО/Заявка для сотрудников НТЦ.docx</TemplateBind> <!-- Single informational resource -->
+	<TemplateBind typeID="10" systemID="31">КРР-31 ИС РДРИ/Заявка для сотрудников НТЦ РДРИ.docx</TemplateBind> <!-- Wasn't processed -->
+	<TemplateBind typeID="10" systemID="34" remote="true">КРР-34 ИС NormaCS/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind>
+	<TemplateBind typeID="10" systemID="35" remote="true">КРР-35 ИС ПП/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind>
+	<TemplateBind typeID="10" systemID="37" remote="true">КРР-37 ИС ВОТ/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind>
+	<TemplateBind typeID="10" systemID="38" remote="true">КРР-38 ИС Геобанк-ПТД/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind>
+	<TemplateBind typeID="10" systemID="39" remote="true">КРР-39 ИС ПР/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind>
+	<TemplateBind typeID="10" systemID="41" remote="true">КРР-41 ИС СУРК/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind>
+	<TemplateBind typeID="10" systemID="42" remote="true">КРР-42 ИС Вектор/Заявка для удаленных сотрудников НТЦ ИС Вектор.docx</TemplateBind>
+	<TemplateBind typeID="10" systemID="44" remote="true">КРР-44 ИС УСИЗ/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind>
+	<TemplateBind typeID="10" systemID="45" remote="true">КРР-45 ИС КУЗ/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind>
+	<TemplateBind typeID="10" systemID="46" remote="true">КРР-46 ИС СУТ/Заявка на доступ к системе СУТЗ (для удаленных сотрудников).docx</TemplateBind> <!-- Wasn't processed -->
+	<TemplateBind typeID="10" systemID="46" remote="false">КРР-46 ИС СУТ/Заявка на доступ к системе СУТЗ.docx</TemplateBind> <!-- Wasn't processed -->
+	<TemplateBind typeID="10" systemID="47">КРР-47 ИС Сапсан+/Заявка для сотрудников НТЦ Сапсан+.docx</TemplateBind> <!-- Wasn't processed -->
+	<TemplateBind typeID="10" systemID="47">КРР-47 ИС Сапсан+/Заявка для удаленных сотрудников НТЦ Сапсан+.docx</TemplateBind> <!-- Wasn't processed -->
+	<TemplateBind typeID="10" systemID="53">КРР-53 ИС ХКД/Заявка на доступ пользователей в ИС ХКД.docx</TemplateBind> <!-- Wasn't processed -->
+	<TemplateBind typeID="10" systemID="57">КРР-57 ИС КП 2.0/Заявка для сотрудников НТЦ ИС КП 2.0.docx</TemplateBind> <!-- Wasn't processed -->
+	<TemplateBind typeID="10" systemID="57">КРР-57 ИС КП 2.0/Заявка для удаленных сотрудников ИС КП2.0.docx</TemplateBind> <!-- Wasn't processed -->
 </ArrayOfTemplateBind>

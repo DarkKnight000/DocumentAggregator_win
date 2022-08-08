@@ -1,5 +1,6 @@
 ﻿using DocAggregator.API.Core.Models;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
@@ -69,6 +70,17 @@ namespace DocAggregator.API.Core
                 case InsertKind.MultiField:
                     if (insert is FormInsert form)
                     {
+                        var listedObjects = request.Claim.Root.XPathSelectElements(form.OriginalMask);
+                        foreach (var item in listedObjects)
+                        {
+                            var line = new List<string>();
+                            foreach (var field in form.FormFields)
+                            {
+                                line.Add(ExtractValue(item.XPathEvaluate(field.OriginalMask)));
+                            }
+                            form.FormValues.Add(line);
+                        }
+                        break;
                         int counter = 1;
                         switch (request.Claim.SystemID)
                         {
@@ -76,7 +88,7 @@ namespace DocAggregator.API.Core
                                 foreach (var infoResource in request.Claim.InformationResources)
                                 {
                                     var accessRolesValues = infoResource.AccessRightFields.Select(
-                                            (accessRole) => accessRole.Status.HasFlag(AccessRightStatus.Allowed).ToString()
+                                            (accessRole) => accessRole.Status.HasFlag(AccessRightStatus.Allow).ToString()
                                         ).ToArray();
                                     form.FormValues.Add(new List<string>() {
                                         counter++.ToString(),
@@ -98,8 +110,8 @@ namespace DocAggregator.API.Core
                                                 ).SingleOrDefault()
                                         );
                                     form.FormValues.Add(new List<string>() {
-                                        status.HasFlag(AccessRightStatus.Allowed).ToString(),
-                                        status.HasFlag(AccessRightStatus.Denied).ToString(),
+                                        status.HasFlag(AccessRightStatus.Allow).ToString(),
+                                        status.HasFlag(AccessRightStatus.Deny).ToString(),
                                         role.Name,
                                     });
                                 }
@@ -161,7 +173,7 @@ namespace DocAggregator.API.Core
         /// <remarks>
         /// Значение может быть инвертировано ведущим символом '!' в коде поля.
         /// </remarks>
-        /// <returns>true, если значение найденного поля равно <see cref="bool.TrueString"/>, иначе false.</returns>
+        /// <returns><see langword="true"/>, если значение найденного поля равно <see cref="bool.TrueString"/>, иначе <see langword="false"/>.</returns>
         bool ParseBoolField(XElement claim, string insertionFormat)
         {
             if (insertionFormat.StartsWith('*'))
@@ -172,7 +184,8 @@ namespace DocAggregator.API.Core
             {
                 return !ParseBoolField(claim, insertionFormat[1..]);
             }
-            return bool.TryParse(claim.Element(insertionFormat.ToUpper())?.Value, out bool result) & result;
+            return bool.TryParse(claim.XPathSelectElement(insertionFormat.ToLower())?.Value, out bool result) & result;
+            //return bool.TryParse(claim.Element(insertionFormat.ToUpper())?.Value, out bool result) & result;
             /*return claim.ClaimFields.Where(
                     cf => (cf.NumeralID?.ToString() ?? cf.VerbousID).Equals(insertionFormat, StringComparison.OrdinalIgnoreCase)
                 ).SingleOrDefault()?.ToBoolean() ?? false;*/
@@ -183,7 +196,7 @@ namespace DocAggregator.API.Core
         /// </summary>
         /// <param name="claim">Заявка.</param>
         /// <param name="insertionFormat">Код поля.</param>
-        /// <returns>true, если значение найденного поля равно <see cref="bool.TrueString"/>, иначе false.</returns>
+        /// <returns><see langword="true"/>, если значение найденного поля равно <see cref="bool.TrueString"/>, иначе <see langword="false"/>.</returns>
         bool ParseAccessBoolField(XElement claim, string insertionFormat)
         {
             string state = insertionFormat[^1..];
@@ -192,13 +205,13 @@ namespace DocAggregator.API.Core
             switch (state)
             {
                 case "a":
-                    accessRight = AccessRightStatus.Allowed;
+                    accessRight = AccessRightStatus.Allow;
                     break;
                 case "c":
-                    accessRight = AccessRightStatus.Changed;
+                    accessRight = AccessRightStatus.Change;
                     break;
                 case "d":
-                    accessRight = AccessRightStatus.Denied;
+                    accessRight = AccessRightStatus.Deny;
                     break;
             }
             if (insertionFormat == string.Empty)
@@ -231,15 +244,30 @@ namespace DocAggregator.API.Core
         /// <returns>Текстовое значение поля или пустая строка.</returns>
         string ParseTextField(XElement claim, string insertionFormat)
         {
-            string recursiveResult;
-            if (TryParseDelimetedFields(claim, insertionFormat, ',', ", ", out recursiveResult))
+            /*string recursiveResult;
+            /*if (TryParseDelimetedFields(claim, insertionFormat, ',', ", ", out recursiveResult))
             {
                 return recursiveResult;
             }
             if (TryParseDelimetedFields(claim, insertionFormat, '/', " / ", out recursiveResult))
             {
                 return recursiveResult;
+            }*/
+            //var el = claim.XPathSelectElement(insertionFormat.ToLower());
+            /*var daa = claim.XPathSelectElements(insertionFormat.ToLower());
+            var faa = claim.XPathEvaluate(insertionFormat.ToLower());
+            foreach (var p in daa)
+            {
+                p.ToString();
             }
+            foreach (var d in (IEnumerable)faa)
+            {
+                d.ToString();
+            }*/
+            var a = claim.ToXPathNavigable();
+            var nav = a.CreateNavigator();
+            var res = nav.Evaluate(insertionFormat.ToLower());
+            return ExtractValue(res);
             var attribute = claim.XPathSelectElement(string.Format("./ATTRIBUTES/*[@index='{0}']", insertionFormat))?.Value;
             //var attribute = claim.Element("ATTRIBUTES").Elements().Where((e) => e.Attribute("index").Value.Equals(insertionFormat))?.SingleOrDefault()?.Value;
             if (attribute != null)
@@ -252,6 +280,39 @@ namespace DocAggregator.API.Core
             /*return claim.ClaimFields.Where(
                     cf => (cf.NumeralID?.ToString() ?? cf.VerbousID ?? "").Equals(insertionFormat, StringComparison.OrdinalIgnoreCase)
                 ).SingleOrDefault()?.Value ?? "";*/
+        }
+
+        private string ExtractValue(object res)
+        {
+            if (res == null)
+            {
+                return "";
+            }
+            if (res is bool bul)
+            {
+                return bul.ToString();
+            }
+            if (res is double dbl)
+            {
+                return dbl.ToString();
+            }
+            if (res is string str)
+            {
+                return str;
+            }
+            if (res is XElement el)
+            {
+                return el.Value;
+            }
+            if (res is XPathNavigator nav)
+            {
+                return nav.Value;
+            }
+            if (res is IEnumerable iter) // XPathNodeIterator or compiller generated <EvaluateIterator>d_1`1
+            {
+                return string.Concat(iter.Cast<object>().Select((o) => ExtractValue(o)));
+            }
+            return "";
         }
 
         /// <summary>

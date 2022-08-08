@@ -42,12 +42,11 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                     Connection = QueryExecuter.BuildConnection(_sqlResource),
                     Logger = _logger,
                     SqlReqource = _sqlResource,
-                    Query = string.Format(scheme.Value, scheme.Attribute("argument").Value),
                 };
                 string keyColName = scheme.Attribute("keyColumn")?.Value, valColName = scheme.Attribute("valColumn")?.Value;
                 if (keyColName != null && valColName != null)
                 {
-                    using (QueryExecuter executer = new QueryExecuter(executerWork))
+                    using (QueryExecuter executer = executerWork.GetExecuterForQuery(scheme.Value, scheme.Attribute("argument").Value))
                     {
                         executer.Reader.Read();
                         int keyCol = -1, valCol = -1, fieldCount = executer.Reader.FieldCount;
@@ -77,7 +76,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                 }
                 else
                 {
-                    using (QueryExecuter executer = new QueryExecuter(executerWork))
+                    using (QueryExecuter executer = executerWork.GetExecuterForQuery(scheme.Value, scheme.Attribute("argument").Value))
                     {
                         executer.Reader.Read();
                     }

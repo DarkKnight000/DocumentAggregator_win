@@ -31,8 +31,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                 Logger = _logger,
                 SqlReqource = _sqlResource,
             };
-            executerWork.Query = string.Format(desc.Root.Element("SqlQuery").Value, ID);
-            using (QueryExecuter executer = new QueryExecuter(executerWork))
+            using (QueryExecuter executer = executerWork.GetExecuterForQuery(desc.Root.Element("SqlQuery").Value, ID))
             {
                 while (executer.Reader.Read())
                 {
@@ -42,9 +41,8 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                     }
                 }
             }
-            executerWork.Query = string.Format(desc.Root.Element("Collection").Element("SqlQuery").Value, ID);
             XElement oses = new XElement("OSS");
-            using (QueryExecuter executer = new QueryExecuter(executerWork))
+            using (QueryExecuter executer = executerWork.GetExecuterForQuery(desc.Root.Element("Collection").Element("SqlQuery").Value, ID))
             {
                 int columns = executer.Reader.FieldCount;
                 while (executer.Reader.Read())

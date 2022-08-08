@@ -91,7 +91,7 @@ namespace DocAggregator.API.Core.Wml
                     var tableRow = sdt.Element(W.sdtContent).Element(W.tr);
                     if (tableRow != null)
                     {
-                        var result = new FormInsert(_logger) { AssociatedChunk = sdt };
+                        var result = new FormInsert(alias, _logger) { AssociatedChunk = sdt };
                         _logger.Debug("Получаем ВСЕ вложенные элементы управления.");
                         var innerLevelControls = tableRow.DescendantsAndSelf(W.sdt);
                         // WARNING: При дальнейшей вложенности может обнаружиться дублирование элементов,

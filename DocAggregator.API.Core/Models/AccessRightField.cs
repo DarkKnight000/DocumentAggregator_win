@@ -23,11 +23,11 @@
         /// <summary>
         /// Сокращённая проверка на запрос доступа.
         /// </summary>
-        public bool IsAllowed => Status.HasFlag(AccessRightStatus.Allowed);
+        public bool IsAllowed => Status.HasFlag(AccessRightStatus.Allow);
 
         /// <summary>
         /// Сокращённая проверка на отзыв доступа.
         /// </summary>
-        public bool IsDenied => Status.HasFlag(AccessRightStatus.Denied);
+        public bool IsDenied => Status.HasFlag(AccessRightStatus.Deny);
     }
 }

@@ -38,9 +38,9 @@ namespace DocAggregator.API.Pages
             ClaimFields = _fieldRepository.GetFiledListByClaimId(Claim, true);
             InformationResources = _fieldRepository.GetInformationalResourcesByClaim(Claim);
             var fullStatus = InformationResources.GetWholeStatus();
-            AllowAccess = fullStatus.Equals(AccessRightStatus.Allowed);
-            ChangeAccess = fullStatus.Equals(AccessRightStatus.Changed);
-            DenyAccess = fullStatus.Equals(AccessRightStatus.Denied);
+            AllowAccess = fullStatus.Equals(AccessRightStatus.Allow);
+            ChangeAccess = fullStatus.Equals(AccessRightStatus.Change);
+            DenyAccess = fullStatus.Equals(AccessRightStatus.Deny);
             return;
         }
     }

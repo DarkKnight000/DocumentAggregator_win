@@ -15,14 +15,14 @@ namespace DocAggregator.API.Core
         /// <summary>
         /// Запрошен доступ.
         /// </summary>
-        Allowed,
+        Allow,
         /// <summary>
         /// Запрошен отзыв.
         /// </summary>
-        Denied,
+        Deny,
         /// <summary>
         /// Запрошен и отзыв, и доступ.
         /// </summary>
-        Changed,
+        Change,
     }
 }
