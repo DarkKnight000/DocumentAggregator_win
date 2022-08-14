@@ -29,7 +29,7 @@ namespace DocAggregator.API.Pages
         public ServicePageModel(ILoggerFactory loggerFactory,
             SqlConnectionResource sqlResource, TemplateMap templateMap, IEditorService editorService)
         {
-            _logger = loggerFactory.GetLoggerFor<ClaimInfoModel>();
+            _logger = loggerFactory.GetLoggerFor<ServicePageModel>();
             _sqlResource = sqlResource;
             _templateMap = templateMap;
             _editorService = editorService as Infrastructure.OpenXMLProcessing.EditorService;
