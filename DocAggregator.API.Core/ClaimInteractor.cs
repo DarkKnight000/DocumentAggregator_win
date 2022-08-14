@@ -7,24 +7,18 @@ using System.Linq;
 namespace DocAggregator.API.Core
 {
     /// <summary>
-    /// Запрос на обработку заявки.
+    /// Запрос на обработку документа.
     /// </summary>
-    public class ClaimRequest
-    {
-        /// <summary>
-        /// Идентификатор обрабатываемой заявки.
-        /// </summary>
-        public int ClaimID { get; init; }
-
-        /// <summary>
-        /// IP-адрес заявителя.
-        /// </summary>
-        public string UserIP { get; init; }
-    }
-
     public class DocumentRequest
     {
+        /// <summary>
+        /// Тип обрабатываемого документа.
+        /// </summary>
         public string Type { get; set; }
+
+        /// <summary>
+        /// Инициализирующие модель поля.
+        /// </summary>
         public Dictionary<string, string> Args { get; set; }
     }
 
@@ -59,17 +53,6 @@ namespace DocAggregator.API.Core
             _repo = repository;
         }
 
-        public ClaimResponse Handle(ClaimRequest request)
-        {
-            return Handle(new DocumentRequest() {
-                Type = "claim",
-                Args = new() {
-                    { "ID", request.ClaimID.ToString() },
-                    { "UserIP", request.UserIP },
-                },
-            });
-        }
-
         protected override void Handle(ClaimResponse response, DocumentRequest request)
         {
             Claim claim = _repo.GetClaim(request);
@@ -77,13 +60,6 @@ namespace DocAggregator.API.Core
             {
                 throw new ArgumentException("Заявка не найдена.", nameof(request));
             }
-            /*claim.ClaimFields = claim.ClaimFields.Append(new ClaimField()
-            {
-                VerbousID = "UserIP",
-                Category = string.Empty,
-                Attribute = string.Empty,
-                Value = request.UserIP,
-            });*/
             FormRequest formRequest = new FormRequest();
             formRequest.Claim = claim;
             FormResponse formResponse = _former.Handle(formRequest);

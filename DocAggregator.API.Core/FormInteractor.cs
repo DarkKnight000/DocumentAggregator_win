@@ -15,8 +15,6 @@ namespace DocAggregator.API.Core
         /// Заявка, связанная с документом.
         /// </summary>
         public Claim Claim { get; set; }
-
-        public Inventory Inventory { get; set; }
     }
 
     /// <summary>
@@ -53,22 +51,6 @@ namespace DocAggregator.API.Core
 
         protected override void Handle(FormResponse response, FormRequest request)
         {
-            if (request.Claim != null)
-            {
-                HandleClaim(response, request);
-            }
-            else if (request.Inventory != null)
-            {
-                HandleInventory(response, request);
-            }
-            else
-            {
-                throw new ArgumentNullException(nameof(request), "Request has no valid object to process.");
-            }
-        }
-
-        private void HandleClaim(FormResponse response, FormRequest request)
-        {
             IDocument document = null;
             try
             {
@@ -96,47 +78,6 @@ namespace DocAggregator.API.Core
             IEnumerable<Insert> inserts = _editor.GetInserts(document).ToList();
             ParseRequest parseReq = new ParseRequest();
             parseReq.Claim = request.Claim;
-            foreach (Insert insert in inserts)
-            {
-                parseReq.Insertion = insert;
-                ParseResponse parseResp = _parser.Handle(parseReq);
-                if (!parseResp.Success)
-                {
-                    response.AddErrors(parseResp.Errors.ToArray());
-                }
-            }
-            _editor.SetInserts(document, inserts);
-            response.ResultStream = _editor.Finalize(document) as MemoryStream;
-        }
-
-        private void HandleInventory(FormResponse response, FormRequest request)
-        {
-            IDocument document = null;
-            try
-            {
-                document = _editor.OpenTemplate(request.Inventory.Template);
-            }
-            // Шаблон не найден.
-            catch (FileNotFoundException ex)
-            {
-                response.Errors.Add(ex);
-            }
-            // System.Runtime.InteropServices.COMException:
-            // Приложению Word не удалось прочитать документ. Возможно, он поврежден.
-            catch (Exception ex)
-            {
-                Logger.Error(ex, "Непридвиденная ошибка обнаружена при попытке открыть и прочитать шаблон.");
-                response.Errors.Add(ex);
-            }
-            if (document == null)
-            {
-                string errorMessage = string.Format("Ошибка при открытии шаблона по пути {0}.",
-                    Path.Combine(_editor.TemplatesDirectory, request.Inventory.Template));
-                throw new ArgumentException(errorMessage, nameof(request.Inventory.Template));
-            }
-            IEnumerable<Insert> inserts = _editor.GetInserts(document).ToList();
-            ParseRequest parseReq = new ParseRequest();
-            parseReq.Inventory = request.Inventory;
             foreach (Insert insert in inserts)
             {
                 parseReq.Insertion = insert;

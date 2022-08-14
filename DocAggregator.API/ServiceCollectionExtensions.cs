@@ -32,7 +32,6 @@ namespace DocAggregator.API
             // Классы, определённые и используемые ядром.
             serviceCollection.AddSingleton<IEditorService, Infrastructure.OpenXMLProcessing.EditorService>();
             serviceCollection.AddSingleton<IClaimRepository, Infrastructure.OracleManaged.ClaimRepository>();
-            serviceCollection.AddSingleton<IInventoryRepository, Infrastructure.OracleManaged.InventoryRepository>();
             return serviceCollection;
         }
 
@@ -45,7 +44,6 @@ namespace DocAggregator.API
             serviceCollection.AddSingleton<ParseInteractor>();
             serviceCollection.AddSingleton<FormInteractor>();
             serviceCollection.AddSingleton<ClaimInteractor>();
-            serviceCollection.AddSingleton<InventoryInteractor>();
             return serviceCollection;
         }
     }
