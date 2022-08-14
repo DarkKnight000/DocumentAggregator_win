@@ -3,6 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Xml;
+using System.Xml.Linq;
 using System.Xml.Serialization;
 
 namespace DocAggregator.API.Infrastructure.OracleManaged
@@ -16,13 +18,18 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
         /// <summary>
         /// Тип запроса.
         /// </summary>
-        [XmlAttribute("typeID")]
-        public int TypeID { get; set; }
+        //[XmlAttribute("typeID")]
+        //public string TypeID { get; set; }
         /// <summary>
         /// Идентификатор информационной системы.
         /// </summary>
-        [XmlAttribute("systemID")]
-        public int SystemID { get; set; }
+        //[XmlAttribute("systemID")]
+        //public string SystemID { get; set; }
+        /// <summary>
+        /// Ограничивающие выбор признаки.
+        /// </summary>
+        [XmlAnyAttribute]
+        public XmlAttribute[] Filter { get; set; }
         /// <summary>
         /// Имя файла.
         /// </summary>
@@ -36,29 +43,60 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
     public class TemplateMap
     {
         private ILogger _logger;
-        private IEnumerable<TemplateBind> _bindsContainer;
+        private IDictionary<string, IEnumerable<TemplateBind>> _bindsMap;
 
-        public int Count => _bindsContainer.Count();
+        //public int Count => _bindsContainer.Count();
 
         public TemplateMap(IOptionsFactory optionsFactory, ILoggerFactory loggerFactory)
         {
             _logger = loggerFactory.GetLoggerFor<TemplateMap>();
+            _bindsMap = new Dictionary<string, IEnumerable<TemplateBind>>();
             var db = optionsFactory.GetOptionsOf<RepositoryConfigOptions>();
             List<TemplateBind> config;
 
-            using (StreamReader streamReader = new StreamReader(Path.GetFullPath(db.TemplateMap)))
+            foreach (var type in Directory.GetFiles(Path.GetFullPath(db.TemplateMaps), "*.xml"))
             {
-                XmlSerializer deserializer = new XmlSerializer(typeof(List<TemplateBind>));
-                config = (List<TemplateBind>)deserializer.Deserialize(streamReader);
+                using (StreamReader streamReader = new StreamReader(type))
+                {
+                    XmlSerializer deserializer = new XmlSerializer(typeof(List<TemplateBind>));
+                    config = (List<TemplateBind>)deserializer.Deserialize(streamReader);
+                }
+                _bindsMap.Add(Path.GetFileNameWithoutExtension(type).ToLower(), config);
             }
-            _bindsContainer = config;
         }
 
-        public string GetPathByTypeAndSystem(int typeID, int systemID) => GetBindByTypeAndSystem(typeID, systemID)?.FileName;
+        public string GetTemplate(string documentType, XElement model)
+        {
+            if (string.IsNullOrEmpty(documentType) || !_bindsMap.ContainsKey(documentType))
+            {
+                throw new Exception(string.Format("Document type \"{0}\" haven't been recognized.", documentType));
+            }
+            var binds = _bindsMap[documentType];
+            foreach (var bind in binds)
+            {
+                if (bind.Filter?.All( // If we miss a property, ignore this returning 'true'.
+                        attr => model.Element(attr.Name.ToLower())?.Value?.Equals(attr.Value) ?? true
+                    ) ?? true)
+                {
+                    _logger.Trace("Have got a template for a {0} with proprties: {{{1}}}",
+                        documentType,
+                        string.Join(", ", bind.Filter?.Select(
+                            attr => $"\"{attr.Name}\":\"{attr.Value}\""
+                        ) ?? Enumerable.Empty<string>()));
+                    return bind.FileName;
+                }
+            }
+            var msg = string.Format("Template has not found for a {0} with ID = {1}.", documentType, model?.Element("id")?.Value ?? "unknown");
+            var ex = new FileNotFoundException(msg);
+            _logger.Error(ex, msg);
+            throw ex;
+        }
 
-        public TemplateBind GetBindByTypeAndSystem(int typeID, int systemID) =>
-            _bindsContainer.First(bind => bind.TypeID == typeID && bind.SystemID == systemID);
+        [Obsolete]
+        public string GetPathByTypeAndSystem(string typeID, string systemID) => GetBindByTypeAndSystem(typeID, systemID)?.FileName;
 
-        public string GetStocktakingActTemplatePath() => @"..\temp_inv\Акт приема-передачи ТМЦ_в пользование.docx";
+        [Obsolete]
+        public TemplateBind GetBindByTypeAndSystem(string typeID, string systemID) =>
+            _bindsMap["claim"].First(bind => bind.Filter.Any(a => a.Name.Equals("TypeID") && a.Value.Equals(typeID)) && bind.Filter.Any(a => a.Name.Equals("SystemID") && a.Value.Equals(systemID)));
     }
 }

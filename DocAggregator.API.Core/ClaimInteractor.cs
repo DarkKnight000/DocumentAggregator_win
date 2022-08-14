@@ -1,5 +1,6 @@
 ﻿using DocAggregator.API.Core.Models;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -21,6 +22,12 @@ namespace DocAggregator.API.Core
         public string UserIP { get; init; }
     }
 
+    public class DocumentRequest
+    {
+        public string Type { get; set; }
+        public Dictionary<string, string> Args { get; set; }
+    }
+
     /// <summary>
     /// Ответ на обработку заявки.
     /// </summary>
@@ -35,7 +42,7 @@ namespace DocAggregator.API.Core
     /// <summary>
     /// Обработчик заявки.
     /// </summary>
-    public class ClaimInteractor : InteractorBase<ClaimResponse, ClaimRequest>
+    public class ClaimInteractor : InteractorBase<ClaimResponse, DocumentRequest>
     {
         FormInteractor _former;
         IClaimRepository _repo;
@@ -52,16 +59,23 @@ namespace DocAggregator.API.Core
             _repo = repository;
         }
 
-        protected override void Handle(ClaimResponse response, ClaimRequest request)
+        public ClaimResponse Handle(ClaimRequest request)
         {
-            Claim claim = _repo.GetClaim(request.ClaimID);
-            if (string.IsNullOrEmpty(request.UserIP))
-            {
-                throw new ArgumentNullException(nameof(request.UserIP));
-            }
+            return Handle(new DocumentRequest() {
+                Type = "claim",
+                Args = new() {
+                    { "ID", request.ClaimID.ToString() },
+                    { "UserIP", request.UserIP },
+                },
+            });
+        }
+
+        protected override void Handle(ClaimResponse response, DocumentRequest request)
+        {
+            Claim claim = _repo.GetClaim(request);
             if (claim == null)
             {
-                throw new ArgumentException("Заявка не найдена.", nameof(request.ClaimID));
+                throw new ArgumentException("Заявка не найдена.", nameof(request));
             }
             /*claim.ClaimFields = claim.ClaimFields.Append(new ClaimField()
             {

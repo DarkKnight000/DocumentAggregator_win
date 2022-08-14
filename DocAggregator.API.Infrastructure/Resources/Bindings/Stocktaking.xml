@@ -1,9 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <!DOCTYPE DataSource SYSTEM "BindingDoctype.dtd">
-<DataSource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-	documentKind="Stocktaking">
-	<Query arguments="inventoryID">
-select distinct inv.akt_id AS entity,
+<ds:DataSource xmlns:ds="http://ntc.rosneft.ru/DBD/DocumentAggegator/Structure"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	           documentKind="Stocktaking">
+	<ds:Query arguments="id">
+select distinct
     TO_CHAR(inv.create_on, 'DD.MM.YYYY', 'nls_date_language = RUSSIAN') AS created,
     OBD_SYS.GET_FIO_FULL(inv.mover) AS mover_full,
     OBD_SYS.GET_FIO_FULL(inv.accepts) AS acceptor_full,
@@ -21,10 +23,10 @@ from hrd.invent_process inv
     JOIN hrd.dict_room room ON (room.room_id = loc.room_id)
     JOIN hrd.building addr ON (addr.building_id = room.building_id)
 where inv.akt_id = {0}
-	</Query>
-	<Collection name="os">
-		<Query arguments="inventoryID">
-select os_type.name_type || ' ' || os_manufact.manufacturer_name || ' ' || os_model.name_model name,
+	</ds:Query>
+	<ds:Collection name="os" arguments="id"  itemIndexColumn="id">
+select os.id_os id,
+    os_type.name_type || ' ' || os_manufact.manufacturer_name || ' ' || os_model.name_model name,
     os.ser_number serial,
     os.invent_number inventory
 from hrd.invent_process inv
@@ -33,6 +35,5 @@ from hrd.invent_process inv
     join hrd.invent_dict_manufacturer os_manufact on (os_manufact.manufacturer_id = os.manafacture)
     join hrd.invent_dict_model os_model on (os_model.id_model = os.model_os)
 where inv.akt_id = {0}
-        </Query>
-    </Collection>
-</DataSource>
+    </ds:Collection>
+</ds:DataSource>

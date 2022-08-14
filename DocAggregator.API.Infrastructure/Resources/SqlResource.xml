@@ -94,7 +94,7 @@ WHERE req.request_hdr_id = {0}
     AND SYSDATE BETWEEN pkzi.begin_date AND pkzi.end_date
 GROUP BY pkzi.pkzi_name, build.description
 	</SqlQuery>
-	<SqlQuery name="Q_HRDClaimSystemID_ByRequest">
+	<SqlQuery name="Q_HRDClaimSystemID_ByRequest" obsolete="true">
 select distinct req.request_type_id req_type, sys.register_id inf_sys
 from hrd.request_hdr req
     JOIN hrd.it_access_right_request acc ON (acc.request_hdr_id = req.request_hdr_id)

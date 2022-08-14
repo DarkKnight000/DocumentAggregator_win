@@ -81,7 +81,7 @@ namespace DocAggregator.API.Core
                             form.FormValues.Add(line);
                         }
                         break;
-                        int counter = 1;
+                        /*int counter = 1;
                         switch (request.Claim.SystemID)
                         {
                             case 4: // ИС ОДФР
@@ -119,7 +119,7 @@ namespace DocAggregator.API.Core
                             default:
                                 Logger.Warning("Claim of type {0} with ID {1} has an unknown table.", request.Claim.SystemID, request.Claim.ID);
                                 break;
-                        }
+                        }*/
                     }
                     else
                     {

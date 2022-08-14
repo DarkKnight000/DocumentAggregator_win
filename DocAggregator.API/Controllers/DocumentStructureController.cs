@@ -19,12 +19,12 @@ namespace DocAggregator.API.Controllers
 
         [HttpPost]
         [Consumes("application/json")]
-        public IActionResult Post([FromBody] ClaimRequest request)
+        public IActionResult Post([FromBody] DocumentRequest request)
         {
-            Claim claim = _repo.GetClaim(request.ClaimID);
+            Claim claim = _repo.GetClaim(request);
             if (claim == null)
             {
-                _logger.Warning("Claim wasn't processed (id={0})", request.ClaimID);
+                _logger.Warning("Claim wasn't processed (id={0})", request.Args["id"]);
                 return new ObjectResult("A problem has met.")
                 {
                     StatusCode = 500,

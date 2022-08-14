@@ -38,7 +38,7 @@ namespace DocAggregator.API.Pages
         public void OnGet()
         {
             Queries = _sqlResource.Count;
-            Bindings = _templateMap.Count;
+            Bindings = -1;// _templateMap.Count;
             OracleConnection _connection = null;
             try
             {

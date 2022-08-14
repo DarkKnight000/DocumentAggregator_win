@@ -72,7 +72,8 @@ namespace DocAggregator.API.Core
             IDocument document = null;
             try
             {
-                document = _editor.OpenTemplate(request.Claim.Template);
+                // TODO: There is no need for Capitalizing (see template map)
+                document = _editor.OpenTemplate(Path.Combine(System.Threading.Thread.CurrentThread.CurrentCulture.TextInfo.ToTitleCase(request.Claim.Type), request.Claim.Template));
             }
             // Шаблон не найден.
             catch (FileNotFoundException ex)

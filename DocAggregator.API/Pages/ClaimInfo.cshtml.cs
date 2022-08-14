@@ -34,7 +34,7 @@ namespace DocAggregator.API.Pages
                 IsCorrect = false;
                 return;
             }
-            Claim = _claimRepository.GetClaim(claimID.Value);
+            Claim = _claimRepository.GetClaim(new DocumentRequest() { Type = "claim", Args = { ["id"] = claimID.Value.ToString() } });
             ClaimFields = _fieldRepository.GetFiledListByClaimId(Claim, true);
             InformationResources = _fieldRepository.GetInformationalResourcesByClaim(Claim);
             var fullStatus = InformationResources.GetWholeStatus();

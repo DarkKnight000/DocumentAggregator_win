@@ -1,8 +1,5 @@
 ﻿using DocAggregator.API.Core;
 using DocAggregator.API.Core.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Xml.Linq;
 
 namespace DocAggregator.API.Infrastructure.OracleManaged
@@ -31,7 +28,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                 Logger = _logger,
                 SqlReqource = _sqlResource,
             };
-            using (QueryExecuter executer = executerWork.GetExecuterForQuery(desc.Root.Element("SqlQuery").Value, ID))
+            using (QueryExecuter executer = executerWork.GetExecuterForQuery(desc.Root.Element(DSS.Query).Value, ID))
             {
                 while (executer.Reader.Read())
                 {
@@ -42,12 +39,12 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                 }
             }
             XElement oses = new XElement("OSS");
-            using (QueryExecuter executer = executerWork.GetExecuterForQuery(desc.Root.Element("Collection").Element("SqlQuery").Value, ID))
+            using (QueryExecuter executer = executerWork.GetExecuterForQuery(desc.Root.Element(DSS.Collection).Element(DSS.Query).Value, ID))
             {
                 int columns = executer.Reader.FieldCount;
                 while (executer.Reader.Read())
                 {
-                    var row = new XElement(desc.Root.Element("Collection").Attribute("name").Value.ToUpper());
+                    var row = new XElement(desc.Root.Element(DSS.Collection).Attribute(DSS.name).Value.ToUpper());
                     for (int i = 0; i < columns; i++)
                     {
                         row.Add(new XElement(executer.Reader.GetName(i), executer.Reader.IsDBNull(i) ? string.Empty : executer.Reader.GetString(i)));
@@ -58,7 +55,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
             invRoot.Add(oses);
             return new Inventory()
             {
-                Template = _templates.GetStocktakingActTemplatePath(),
+                //Template = _templates.GetStocktakingActTemplatePath(),
                 Root = invRoot,
             };
         }

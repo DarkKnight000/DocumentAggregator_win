@@ -6,8 +6,8 @@
     <h1>
         Инспектируемая заявка &lt;@(Model.Claim.ID)&gt;.
     </h1>
-    <p>Тип: @Model.Claim.TypeID</p>
-    <p>Система: @Model.Claim.SystemID</p>
+    <p>Тип: @Model.Claim.Root.Element("typeid").Value</p>
+    <p>Система: @Model.Claim.Root.Element("systemid").Value</p>
     <table cellspacing="0" border="1">
         <caption>
             Перечень всех доступных полей для шаблона.

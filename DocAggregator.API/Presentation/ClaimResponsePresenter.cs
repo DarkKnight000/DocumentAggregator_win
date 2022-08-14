@@ -26,7 +26,7 @@ namespace DocAggregator.API.Presentation
         /// </summary>
         /// <param name="response">Ответ обработчика заявки.</param>
         /// <returns>Текстовое содержание ошибок, сообщений и стэка вызовов с кодом 500.</returns>
-        public static ObjectResult ToErrorReport(ClaimResponse response)
+        public static ObjectResult ToErrorReport(InteractorResponseBase response)
         {
             StringBuilder result = new StringBuilder();
             foreach (var err in response.Errors)

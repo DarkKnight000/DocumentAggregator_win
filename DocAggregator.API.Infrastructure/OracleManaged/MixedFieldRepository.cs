@@ -37,14 +37,14 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
             {
                 if (_fieldNamesCache.Count == 0)
                 {
-                    using (QueryExecuter executer = executerWork.GetExecuterForQuery(_sqlResource.GetStringByName("Q_HRDClaimFieldNameList_ByRequestType"), claim.TypeID))
+                    /*using (QueryExecuter executer = executerWork.GetExecuterForQuery(_sqlResource.GetStringByName("Q_HRDClaimFieldNameList_ByRequestType"), claim.TypeID))
                         while (executer.Reader.Read())
                         {
                             string categoryName = executer.Reader.GetString(0);
                             string attributeName = executer.Reader.GetString(1);
                             int attributeId = executer.Reader.GetInt32(2);
                             _fieldNamesCache.Add(attributeId, System.Tuple.Create(categoryName, attributeName));
-                        }
+                        }*/
                 }
             }
             using (QueryExecuter executer = executerWork.GetExecuterForQuery(_sqlResource.GetStringByName("Q_HRDAttributeIdsValues_ByRequest"), claim.ID))

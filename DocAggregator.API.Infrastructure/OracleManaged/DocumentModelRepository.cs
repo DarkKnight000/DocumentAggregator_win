@@ -19,7 +19,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
             _sqlResource = sqlResource;
         }
 
-        public Claim GetClaim(int id)
+        public Claim GetClaim(DocumentRequest id)
         {
             XDocument Claim = new XDocument(new XElement("Root"));
             XDocument Schema = XDocument.Load(
@@ -29,7 +29,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
             Load(Schema.Root, root);
             return new Claim()
             {
-                ID = int.Parse(root.XPathSelectElement("/ID").Value),
+                //ID = int.Parse(root.XPathSelectElement("/ID").Value),
             };
         }
 

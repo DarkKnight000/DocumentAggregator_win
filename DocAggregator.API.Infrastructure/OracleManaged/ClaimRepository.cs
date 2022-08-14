@@ -2,6 +2,8 @@
 using DocAggregator.API.Core.Models;
 using Oracle.ManagedDataAccess.Client;
 using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 using System.Xml.XPath;
@@ -16,26 +18,31 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
         private readonly ILogger _logger;
         private readonly TemplateMap _templates;
         private readonly SqlConnectionResource _sqlResource;
-        private readonly MixedFieldRepository _fieldRepository;
+
+        private StringDictionary DataBindings { get; init; }
 
         private const string ROOT_TEMPLATE_NAME = "template";
         private const string ITEM_KEY_NAME = "key";
 
-        public ClaimRepository(SqlConnectionResource sqlResource, TemplateMap templateMap, IClaimFieldRepository fieldRepository, ILoggerFactory loggerFactory)
+        public ClaimRepository(SqlConnectionResource sqlResource, TemplateMap templateMap, ILoggerFactory loggerFactory, IOptionsFactory optionsFactory)
         {
             _logger = loggerFactory.GetLoggerFor<ClaimRepository>();
             _templates = templateMap;
             _sqlResource = sqlResource;
-            _fieldRepository = fieldRepository as MixedFieldRepository;
+            var db = optionsFactory.GetOptionsOf<RepositoryConfigOptions>();
+            DataBindings = new StringDictionary();
+            foreach (var file in from filePath
+                                 in Directory.GetFiles(db.TemplateBindings, "*.xml")
+                                 select (model: Path.GetFileNameWithoutExtension(filePath).ToLower(), path: filePath))
+            {
+                DataBindings.Add(file.model, file.path);
+            }
         }
 
-        public Claim GetClaim(int id)
+        public Claim GetClaim(DocumentRequest req)
         {
-            var filePath = @"D:\Users\akkostin\source\repos\DocumentAggregator\DocAggregator.API.Infrastructure\Resources\DataBindings\TestClaim.xml";
-            XDocument blockDocument = XDocument.Load(filePath);
-            //XElement altRoot = ComputeRoot(desc.Root);
-            int typeID = -1, registerSystemID = -1;
-            XElement partRoot = new XElement("claim", new XElement("id", id));
+            XDocument blockDocument = XDocument.Load(DataBindings[req.Type]);
+            XElement partRoot = new XElement(req.Type, req.Args.Select((pair) => new XElement(pair.Key.ToLower(), pair.Value)));
             OracleConnection connection = QueryExecuter.BuildConnection(_sqlResource);
             connection.Open();
             QueryExecuterWorkspace executerWork = new()
@@ -43,37 +50,6 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                 Connection = connection,
                 Logger = _logger,
                 SqlReqource = _sqlResource,
-            };
-            using (QueryExecuter executer = executerWork.GetExecuterForQuery(_sqlResource.GetStringByName("Q_HRDClaimSystemID_ByRequest"), id))
-            {
-                executer.Reader.Read();
-                //Setting Initials
-                typeID = executer.Reader.GetInt32(0);
-                registerSystemID = executer.Reader.GetInt32(1);
-                if (executer.Reader.Read())
-                {
-                    _logger.Error("When processing a claim with id {0} two or more system bindings were found. The first two: [{1}, {2}] and [{3}, {4}].",
-                        id, typeID, registerSystemID, executer.Reader.GetInt32(0), executer.Reader.GetInt32(1));
-                    throw new System.Exception("One claim had two or more related informational systems. See the log for more info.");
-                }
-            }
-            _logger.Trace("Getting a template for type [{0}, {1}].", typeID, registerSystemID);
-            string template = _templates.GetPathByTypeAndSystem(typeID, registerSystemID);
-            if (template == null)
-            {
-                var msg = string.Format("Template has not found for claim type [{0}, {1}].", typeID, registerSystemID);
-                var ex = new System.IO.FileNotFoundException(msg);
-                _logger.Error(ex, msg);
-                throw ex;
-            }
-            partRoot.Add(new XAttribute(ROOT_TEMPLATE_NAME, template));
-            Claim result = new()
-            {
-                ID = id,
-                TypeID = typeID,
-                Root = partRoot,
-                SystemID = registerSystemID,
-                Template = template,
             };
             foreach(var block in blockDocument.Root.Elements())
             {
@@ -90,10 +66,9 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                     ExtractedTableProcessing(block, partRoot, executerWork);
                 }
             }
-            //result.ClaimFields = _fieldRepository.GetFiledListByClaimId(result, false);
-            //result.InformationResources = _fieldRepository.GetInformationalResourcesByClaim(result);
+            partRoot.Add(new XAttribute(ROOT_TEMPLATE_NAME, _templates.GetTemplate(req.Type, partRoot)));
             connection.Close();
-            return result;
+            return new Claim() { Root = partRoot };
         }
 
         private void ExtractedQueryProcessing(XElement blockQuery, XElement partRoot, QueryExecuterWorkspace executerWork)
@@ -113,16 +88,57 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
         {
             var name = blockCollection.Attribute(DSS.name)?.Value.ToLower();
             var argument = partRoot.XPathSelectElement(blockCollection.Attribute(DSS.arguments).Value.ToLower())?.Value;
-            if (blockCollection.Attributes().Any((a) => a.Name.Equals(DSS.itemIndexColumn)) &&
-                blockCollection.Attributes().Any((a) => a.Name.Equals(DSS.valColumn)))
-            {
-                ; // ?
-            }
             using (QueryExecuter executer = executerWork.GetExecuterForQuery(blockCollection.Value, argument))
                 while (executer.Reader.Read())
                 {
-                    var nodeName = executer.Reader.IsDBNull(0) ? "-" : executer.Reader.GetString(0);
-                    partRoot.Add(new XElement(name, new XAttribute(ITEM_KEY_NAME, nodeName), executer.Reader.IsDBNull(1) ? string.Empty : executer.Reader.GetString(1)));
+                    int columns = executer.Reader.FieldCount;
+                    int indexColumn = -1, valColumn = -1;
+                    for (int i = 0; i < columns; i++)
+                    {
+                        if (executer.Reader.GetName(i).ToLower().Equals(blockCollection.Attribute(DSS.itemIndexColumn)?.Value.ToLower()))
+                        {
+                            indexColumn = i;
+                        }
+                        if (executer.Reader.GetName(i).ToLower().Equals(blockCollection.Attribute(DSS.valColumn)?.Value.ToLower()))
+                        {
+                            valColumn = i;
+                        }
+                    }
+                    string nodeKey;
+                    var node = new XElement(name);
+                    if (valColumn == -1)
+                    {
+                        for (int i = 0; i < columns; i++)
+                        {
+                            if (i == indexColumn)
+                            {
+                                nodeKey = executer.Reader.IsDBNull(indexColumn) ? string.Empty : executer.Reader.GetString(indexColumn);
+                                node.Add(new XAttribute(ITEM_KEY_NAME, nodeKey));
+                                continue;
+                            }
+                            else
+                            {
+                                node.Add(new XElement(executer.Reader.GetName(i).ToLower(), executer.Reader.IsDBNull(i) ? string.Empty : executer.Reader.GetString(i)));
+                            }    
+                        }
+                    }
+                    else
+                    {
+                        for (int i = 0; i < columns; i++)
+                        {
+                            if (i == indexColumn)
+                            {
+                                nodeKey = executer.Reader.IsDBNull(indexColumn) ? string.Empty : executer.Reader.GetString(indexColumn);
+                                node.Add(new XAttribute(ITEM_KEY_NAME, nodeKey));
+                                continue;
+                            }
+                            if (i == valColumn)
+                            {
+                                node.Value = executer.Reader.IsDBNull(valColumn) ? string.Empty : executer.Reader.GetString(valColumn);
+                            }
+                        }
+                    }
+                    partRoot.Add(node);
                 }
         }
 

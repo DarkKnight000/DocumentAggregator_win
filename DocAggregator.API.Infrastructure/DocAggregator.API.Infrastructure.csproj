@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Resources\ClaimTemplateMap.xml" />
+    <Content Include="Resources\Maps\Claim.xml" />
     <Content Include="Resources\SqlResource.xml" />
   </ItemGroup>
 

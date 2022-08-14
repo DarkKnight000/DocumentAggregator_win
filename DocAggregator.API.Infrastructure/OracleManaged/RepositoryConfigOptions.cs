@@ -7,7 +7,8 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
         public const string RepositoryConfig = "DB";
 
         public string QueriesFile { get; set; }
-        public string TemplateMap { get; set; }
+        public string TemplateMaps { get; set; }
+        public string TemplateBindings { get; set; }
         public string DataSource { get; set; }
         public string UserID { get; set; }
         public string Password { get; set; }

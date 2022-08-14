@@ -27,6 +27,11 @@ namespace DocAggregator.API.Core
             _repo = repository;
         }
 
+        public InventoryResponse Handle(DocumentRequest request)
+        {
+            return Handle(new InventoryRequest() { InventoryID = int.Parse(request.Args["InventoryID"]) });
+        }
+
         protected override void Handle(InventoryResponse response, InventoryRequest request)
         {
             Inventory inventory = _repo.GetInventory(request.InventoryID);
