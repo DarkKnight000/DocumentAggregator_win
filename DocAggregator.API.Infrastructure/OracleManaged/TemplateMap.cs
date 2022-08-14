@@ -16,16 +16,6 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
     public class TemplateBind
     {
         /// <summary>
-        /// Тип запроса.
-        /// </summary>
-        //[XmlAttribute("typeID")]
-        //public string TypeID { get; set; }
-        /// <summary>
-        /// Идентификатор информационной системы.
-        /// </summary>
-        //[XmlAttribute("systemID")]
-        //public string SystemID { get; set; }
-        /// <summary>
         /// Ограничивающие выбор признаки.
         /// </summary>
         [XmlAnyAttribute]
@@ -91,12 +81,5 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
             _logger.Error(ex, msg);
             throw ex;
         }
-
-        [Obsolete]
-        public string GetPathByTypeAndSystem(string typeID, string systemID) => GetBindByTypeAndSystem(typeID, systemID)?.FileName;
-
-        [Obsolete]
-        public TemplateBind GetBindByTypeAndSystem(string typeID, string systemID) =>
-            _bindsMap["claim"].First(bind => bind.Filter.Any(a => a.Name.Equals("TypeID") && a.Value.Equals(typeID)) && bind.Filter.Any(a => a.Name.Equals("SystemID") && a.Value.Equals(systemID)));
     }
 }
