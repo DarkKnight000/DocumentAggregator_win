@@ -13,7 +13,7 @@ namespace DocAggregator.API.Controllers
 
         public DocumentStructureController(ILoggerFactory loggerFactory, IClaimRepository repository)
         {
-            _logger = loggerFactory.GetLoggerFor<ClaimFillController>();
+            _logger = loggerFactory.GetLoggerFor<DocumentStructureController>();
             _repo = repository;
         }
 

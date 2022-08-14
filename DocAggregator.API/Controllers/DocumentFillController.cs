@@ -13,7 +13,7 @@ namespace DocAggregator.API.Controllers
 
         public DocumentFillController(ILoggerFactory loggerFactory, ClaimInteractor claimInteractor)
         {
-            _logger = loggerFactory.GetLoggerFor<ClaimFillController>();
+            _logger = loggerFactory.GetLoggerFor<DocumentFillController>();
             _claimInteractor = claimInteractor;
         }
 
