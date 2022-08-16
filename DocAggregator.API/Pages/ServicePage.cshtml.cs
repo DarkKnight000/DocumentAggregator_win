@@ -11,6 +11,9 @@ using System.Text;
 
 namespace DocAggregator.API.Pages
 {
+    /// <summary>
+    /// Служебная страница для отладки сервиса.
+    /// </summary>
     public class ServicePageModel : PageModel
     {
         private readonly ILogger _logger;
@@ -111,7 +114,7 @@ namespace DocAggregator.API.Pages
                     ["userip"] = "0.0.0.0"
                 }
             };
-            ClaimResponse response = _claimInteractor.Handle(request);
+            DocumentResponse response = _claimInteractor.Handle(request);
             if (response.Success)
             {
                 dump.AppendLine("Processed succesful.");

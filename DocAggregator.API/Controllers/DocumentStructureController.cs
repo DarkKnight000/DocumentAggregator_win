@@ -4,6 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace DocAggregator.API.Controllers
 {
+    /// <summary>
+    /// Позволяет получить структуру и содержание модели документа.
+    /// </summary>
     [ApiController]
     [Route("[controller]")]
     public class DocumentStructureController : ControllerBase

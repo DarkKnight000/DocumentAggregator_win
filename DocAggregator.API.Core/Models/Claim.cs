@@ -7,13 +7,16 @@ namespace DocAggregator.API.Core.Models
     /// </summary>
     public class Claim
     {
+        /// <summary>
+        /// Тип документа.
+        /// </summary>
         public string Type
         {
             get => Root?.Name.LocalName;
         }
 
         /// <summary>
-        /// Шаблон соответствующий типу заявки.
+        /// Шаблон соответствующий типу документа.
         /// </summary>
         public string Template
         {
@@ -36,7 +39,7 @@ namespace DocAggregator.API.Core.Models
         }
 
         /// <summary>
-        /// Корень документа
+        /// Корень документа.
         /// </summary>
         public XElement Root { get; set; }
     }

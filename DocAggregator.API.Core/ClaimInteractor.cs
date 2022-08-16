@@ -23,12 +23,12 @@ namespace DocAggregator.API.Core
     }
 
     /// <summary>
-    /// Ответ на обработку заявки.
+    /// Ответ на обработку документа.
     /// </summary>
-    public class ClaimResponse : InteractorResponseBase
+    public class DocumentResponse : InteractorResponseBase
     {
         /// <summary>
-        /// PDF результата обработки заявки.
+        /// PDF результата обработки документа.
         /// </summary>
         public MemoryStream ResultStream { get; set; }
     }
@@ -36,7 +36,7 @@ namespace DocAggregator.API.Core
     /// <summary>
     /// Обработчик заявки.
     /// </summary>
-    public class ClaimInteractor : InteractorBase<ClaimResponse, DocumentRequest>
+    public class ClaimInteractor : InteractorBase<DocumentResponse, DocumentRequest>
     {
         FormInteractor _former;
         IClaimRepository _repo;
@@ -53,7 +53,7 @@ namespace DocAggregator.API.Core
             _repo = repository;
         }
 
-        protected override void Handle(ClaimResponse response, DocumentRequest request)
+        protected override void Handle(DocumentResponse response, DocumentRequest request)
         {
             Claim claim = _repo.GetClaim(request);
             if (claim == null)

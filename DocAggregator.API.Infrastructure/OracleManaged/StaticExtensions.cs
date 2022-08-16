@@ -1,12 +1,8 @@
-﻿using DocAggregator.API.Core;
-using DocAggregator.API.Core.Models;
-using Oracle.ManagedDataAccess.Client;
+﻿using Oracle.ManagedDataAccess.Client;
 using Oracle.ManagedDataAccess.Types;
 using System;
-using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
-using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace DocAggregator.API.Infrastructure.OracleManaged

@@ -4,6 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace DocAggregator.API.Controllers
 {
+    /// <summary>
+    /// Отвечает за генерацию документов.
+    /// </summary>
     [ApiController]
     [Route("[controller]")]
     public class DocumentFillController : ControllerBase
@@ -21,7 +24,7 @@ namespace DocAggregator.API.Controllers
         [Consumes("application/json")]
         public IActionResult Post([FromBody] DocumentRequest request)
         {
-            ClaimResponse response = _claimInteractor.Handle(request);
+            DocumentResponse response = _claimInteractor.Handle(request);
             if (response.Success)
             {
                 // TODO: Remove debug log.
