@@ -2,8 +2,6 @@
 using DocAggregator.API.Core.Models;
 using Oracle.ManagedDataAccess.Client;
 using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 using System.Xml.XPath;
@@ -17,31 +15,23 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
     {
         private readonly ILogger _logger;
         private readonly TemplateMap _templates;
+        private readonly ModelBind _binds;
         private readonly SqlConnectionResource _sqlResource;
-
-        private StringDictionary DataBindings { get; init; }
 
         private const string ROOT_TEMPLATE_NAME = "template";
         private const string ITEM_KEY_NAME = "key";
 
-        public ClaimRepository(SqlConnectionResource sqlResource, TemplateMap templateMap, ILoggerFactory loggerFactory, IOptionsFactory optionsFactory)
+        public ClaimRepository(SqlConnectionResource sqlResource, TemplateMap templateMap, ModelBind modelBind, ILoggerFactory loggerFactory, IOptionsFactory optionsFactory)
         {
             _logger = loggerFactory.GetLoggerFor<ClaimRepository>();
             _templates = templateMap;
+            _binds = modelBind;
             _sqlResource = sqlResource;
-            var db = optionsFactory.GetOptionsOf<RepositoryConfigOptions>();
-            DataBindings = new StringDictionary();
-            foreach (var file in from filePath
-                                 in Directory.GetFiles(db.TemplateBindings, "*.xml")
-                                 select (model: Path.GetFileNameWithoutExtension(filePath).ToLower(), path: filePath))
-            {
-                DataBindings.Add(file.model, file.path);
-            }
         }
 
         public Claim GetClaim(DocumentRequest req)
         {
-            XDocument blockDocument = XDocument.Load(DataBindings[req.Type]);
+            XDocument blockDocument = _binds.GetBind(req.Type);
             XElement partRoot = new XElement(req.Type, req.Args.Select((pair) => new XElement(pair.Key.ToLower(), pair.Value)));
             OracleConnection connection = QueryExecuter.BuildConnection(_sqlResource);
             connection.Open();

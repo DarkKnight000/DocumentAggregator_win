@@ -29,6 +29,7 @@ namespace DocAggregator.API
             // Классы внешних зависимостей, не используемыых ядром.
             serviceCollection.AddSingleton<Infrastructure.OracleManaged.SqlConnectionResource>();
             serviceCollection.AddSingleton<Infrastructure.OracleManaged.TemplateMap>();
+            serviceCollection.AddSingleton<Infrastructure.OracleManaged.ModelBind>();
             // Классы, определённые и используемые ядром.
             serviceCollection.AddSingleton<IEditorService, Infrastructure.OpenXMLProcessing.EditorService>();
             serviceCollection.AddSingleton<IClaimRepository, Infrastructure.OracleManaged.ClaimRepository>();

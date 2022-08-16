@@ -35,7 +35,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
         private ILogger _logger;
         private IDictionary<string, IEnumerable<TemplateBind>> _bindsMap;
 
-        //public int Count => _bindsContainer.Count();
+        public IDictionary<string, IEnumerable<TemplateBind>> BindsMap => _bindsMap;
 
         public TemplateMap(IOptionsFactory optionsFactory, ILoggerFactory loggerFactory)
         {

@@ -1,4 +1,4 @@
-﻿@page
+﻿@page "{handler?}"
 @model DocAggregator.API.Pages.ServicePageModel
 
 @if (Model.IsCorrect)
@@ -9,7 +9,7 @@
         Ресурс запросов -
         @if (Model.Queries.HasValue)
         {
-            <span class="Ready">@Model.Queries.Value запрос(а/ов)</span>
+            <span class="Ready">@Model.Queries.Value @Model.CountableDeclension(Model.Queries.Value,"запрос","","а","ов")</span>
         }
         else
         {
@@ -17,10 +17,10 @@
         }
     </p>
     <p>
-        Привязка типов к шаблонам -
-        @if (Model.Bindings.HasValue)
+        Привязка типов к запросам -
+        @if (Model.Bindings.HasValue && !Model.Bindings.Value.Equals(0))
         {
-            <span class="Ready">@Model.Bindings.Value привязка(и/ок)</span>
+            <span class="Ready">@Model.Bindings.Value @Model.CountableDeclension(Model.Bindings.Value,"привяз","ка","ки","ок")</span>
         }
         else
         {
@@ -39,17 +39,42 @@
         }
     </p>
     <h2>Editor:</h2>
-    <p>
-        Файлы шаблонов -
-        @if (Model.Templates.HasValue && !Model.Templates.Value.Equals(0))
-        {
-            <span class="Ready">@Model.Templates.Value файл(а/ов)</span>
-        }
-        else
-        {
-            <span class="Error">не найдены</span>
-        }
-    </p>
+    @if (Model.Templates.Count() > 0)
+    {
+        <p>
+            Привязки шаблонов -
+        </p>
+        <ul>
+            @foreach (var item in @Model.Templates)
+            {
+                <li>"@item.Item1" <span class="Ready">имеет @item.Item2 @Model.CountableDeclension(@item.Item2,"файл","","а","ов")</span></li>
+            }
+        </ul>
+    }
+    else
+    {
+        <p>
+            Привязки шаблонов - <span class="Error">не найдены</span>
+        </p>
+    }
+    @if (Model.Files.Count() > 0)
+    {
+        <p>
+            Файлы шаблонов -
+        </p>
+        <ul>
+            @foreach (var item in @Model.Files)
+            {
+                <li>"@item.Item1" <span class="Ready">имеет @item.Item2 @Model.CountableDeclension(@item.Item2,"файл","","а","ов")</span></li>
+            }
+        </ul>
+    }
+    else
+    {
+        <p>
+            Файлы шаблонов - <span class="Error">не найдены</span>
+        </p>
+    }
     <p>
         Редактор LibreOffice -
         @if (Model.Editor)
@@ -83,6 +108,11 @@
             <span class="Error">отсутствует</span>
         }
     </p>
+    @if (Model.Dump != null)
+    {
+        <h2>Dump:</h2>
+        <p>@Model.Dump</p>
+    }
 }
 else
 {
