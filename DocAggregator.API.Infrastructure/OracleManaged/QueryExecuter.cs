@@ -1,6 +1,7 @@
 ﻿using DocAggregator.API.Core;
 using Oracle.ManagedDataAccess.Client;
 using System;
+using System.Linq;
 
 namespace DocAggregator.API.Infrastructure.OracleManaged
 {
@@ -16,8 +17,8 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
         public QueryExecuter GetExecuterForQuery(string query)
             => new QueryExecuter(this, query);
 
-        public QueryExecuter GetExecuterForQuery(string query, params object[] args)
-            => new QueryExecuter(this, string.Format(query, args));
+        public QueryExecuter GetExecuterForQuery(string query, params string[] args)
+            => new QueryExecuter(this, /*string.Format(*/query/*, args)*/, args);
     }
 
     /// <summary>
@@ -33,7 +34,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
 
         public OracleDataReader Reader => _reader;
 
-        public QueryExecuter(QueryExecuterWorkspace work, string query)
+        public QueryExecuter(QueryExecuterWorkspace work, string query, params string[] args)
         {
             try
             {
@@ -41,9 +42,22 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                 {
                     throw new Exception("Where is the connection?");
                 }
-                else
+                _command = new OracleCommand(query, work.Connection);
+                OracleDbType paramType;
+                object paramVal;
+                for (int i = 0; i < args.Length; i++)
                 {
-                    _command = new OracleCommand(query, work.Connection);
+                    if (int.TryParse(args[i], out int number))
+                    {
+                        paramType = OracleDbType.Int32;
+                        paramVal = number;
+                    }
+                    else
+                    {
+                        paramType = OracleDbType.Varchar2;
+                        paramVal = args[i];
+                    }
+                    _command.Parameters.Add(new OracleParameter(i.ToString(), paramType, paramVal, System.Data.ParameterDirection.Input));
                 }
                 _reader = _command.ExecuteReader();
             }

@@ -190,7 +190,9 @@ namespace DocAggregator.API.Core.Wml
                                 controls[control] = new Insert(form.FormFields[control].OriginalMask, form.FormFields[control].Kind)
                                 {
                                     ReplacedText = form.FormValues[line][control],
-                                    ReplacedCheckmark = form.FormFields[control].Kind.Equals(InsertKind.CheckMark) ? bool.Parse(form.FormValues[line][control]) : null,
+                                    ReplacedCheckmark = form.FormFields[control].Kind.Equals(InsertKind.CheckMark)
+                                        ? bool.TryParse(form.FormValues[line][control], out bool parsedResult) && parsedResult
+                                        : null,
                                     AssociatedChunk = innerControls[control],
                                 };
                             }

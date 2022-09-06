@@ -56,14 +56,18 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                     ExtractedTableProcessing(block, partRoot, executerWork);
                 }
             }
-            partRoot.Add(new XAttribute(ROOT_TEMPLATE_NAME, _templates.GetTemplate(req.Type, partRoot)));
+            partRoot.Add(new XAttribute(ROOT_TEMPLATE_NAME, _templates.GetTemplate(req.Type.ToLower(), partRoot)));
             connection.Close();
             return new Claim() { Root = partRoot };
         }
 
         private void ExtractedQueryProcessing(XElement blockQuery, XElement partRoot, QueryExecuterWorkspace executerWork)
         {
-            var argument = partRoot.XPathSelectElement(blockQuery.Attribute(DSS.arguments).Value.ToLower())?.Value;
+            string argument = "";
+            if (blockQuery.Attribute(DSS.arguments) != null)
+            {
+                argument = partRoot.XPathSelectElement(blockQuery.Attribute(DSS.arguments).Value.ToLower())?.Value;
+            }
             using (QueryExecuter executer = executerWork.GetExecuterForQuery(blockQuery.Value, argument))
                 while (executer.Reader.Read())
                 {
@@ -77,7 +81,11 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
         private void ExtractedCollectionProcessing(XElement blockCollection, XElement partRoot, QueryExecuterWorkspace executerWork)
         {
             var name = blockCollection.Attribute(DSS.name)?.Value.ToLower();
-            var argument = partRoot.XPathSelectElement(blockCollection.Attribute(DSS.arguments).Value.ToLower())?.Value;
+            string argument = "";
+            if (blockCollection.Attribute(DSS.arguments) != null)
+            {
+                argument = partRoot.XPathSelectElement(blockCollection.Attribute(DSS.arguments).Value.ToLower())?.Value;
+            }
             using (QueryExecuter executer = executerWork.GetExecuterForQuery(blockCollection.Value, argument))
                 while (executer.Reader.Read())
                 {

@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+
+<!DOCTYPE ArrayOfTemplateBind [
+	<!ELEMENT ArrayOfTemplateBind (TemplateBind*)>
+	<!ELEMENT TemplateBind (#PCDATA)>
+]>
+
+<ArrayOfTemplateBind xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<TemplateBind>BP2-03_RGBP-1281_PRIL2_V-4_UL-008.docx</TemplateBind>
+</ArrayOfTemplateBind>

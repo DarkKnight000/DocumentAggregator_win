@@ -1,0 +1,131 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE DataSource SYSTEM "BindingDoctype.dtd">
+<ds:DataSource xmlns:ds="http://ntc.rosneft.ru/DBD/DocumentAggegator/Structure"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	           documentKind="JobDescription">
+    <!--
+     ! Additional parameters:
+     ! ID
+     !-->
+    <!-- Основные поля -->
+	<ds:Query arguments="id">
+select extract(year from sysdate) year
+    ,pos.is_manager
+    ,hrd_doc.get_chief_position() chief_position
+    ,hrd_doc.get_chief_name() chief_name
+    ,hrd_doc.get_department(des.DEPARTMENT_ID) department
+    ,hrd_doc.get_parent_department(des.DEPARTMENT_ID) parent_department
+    ,hrd_doc.GET_POSITION(des.POSITION_ID) position
+    ,hrd_doc.GET_GRADE_INT(des.POSITION_ID) grade
+    ,hrd_doc.GET_CATEGORY_INT(des.POSITION_ID) category
+    ,hrd_doc.GET_POSITION_SHORTINFO(des.POSITION_ID) position_info
+    ,NVL2(pos.s_department_id, ' ('||HRD_DOC.get_department(pos.s_department_id)||')', '') subposition_name
+    ,des.pd_number
+    ,des.general_area
+    ,des.general_order
+    ,hrd_doc.GET_subordination(hrd_doc.GET_SUBORDINATION_CHIEF(des.department_id, pos.is_manager)) subordination
+    ,hrd_doc.GET_EDUCATION_INFO(hrd_doc.GET_GRADE_INT(des.POSITION_ID), hrd_doc.GET_CATEGORY_INT(des.POSITION_ID)) education
+    ,hrd_doc.GET_SPECEDUCATION_INFO(hrd_doc.GET_GRADE_INT(des.POSITION_ID), hrd_doc.GET_CATEGORY_INT(des.POSITION_ID)) speceducation
+    ,des.COMP_EDUCATION compeducation
+    ,hrd_doc.GET_EXPERIENCE_INFO(hrd_doc.GET_GRADE_INT(des.POSITION_ID), hrd_doc.GET_CATEGORY_INT(des.POSITION_ID)) experience
+    ,upper(substr(hrd_doc.GET_POSITION(des.POSITION_ID),1, 1))||substr(hrd_doc.GET_POSITION(des.POSITION_ID), 2)||'(гр.'||hrd_doc.GET_GRADE_INT(des.POSITION_ID)||'/кат.'||hrd_doc.GET_CATEGORY_INT(des.POSITION_ID)||')' full_position
+from hrd_doc.post_description des
+    join hrd_doc.department_position pos on (pos.id = des.position_id)
+where des.id = :0
+	</ds:Query>
+    <!-- Нормативные докумменты -->
+	<ds:Collection name="normdoc" itemIndexColumn="key" valColumn="val">
+select decode(nor.id_section, 1, 'inner', 2, 'outer') as key,
+    LISTAGG(nor.text, chr(13) || chr(10))
+        WITHIN GROUP (ORDER BY nor.id) AS val
+from hrd_doc.dict_normdoc nor
+group by nor.id_section
+    </ds:Collection>
+    <!-- Профессиональные компетенции -->
+	<ds:Query arguments="is_manager">
+select 
+    LISTAGG(pro.text, chr(13) || chr(10))
+        WITHIN GROUP (ORDER BY pro.id) AS profknows
+from hrd_doc.dict_profknows pro
+where 1 = -- когда флаг отмечен
+    case -- выбор флага
+        when 0 = :0 -- если не менеджер
+        then pro.for_coworker
+        else pro.for_manager
+    end
+    </ds:Query>
+    <!-- Навыки -->
+	<ds:Query arguments="id">
+with
+prs as (
+    select pf.skill
+    from hrd_doc.post_description pd, hrd_doc.position_PROFSKILLS pf
+    where pd.position_id = pf.position_id
+        AND pd.id = :0
+),
+skl as (
+    select regexp_substr(
+           skill,
+           '[^:]+',
+           1,
+           level
+         ) as code
+    from prs
+    connect by level &lt;= -- lesser or equals
+        length ( skill ) - 
+        length ( replace ( skill, ':' ) ) + 1
+)
+select hrd_doc.GET_PROFSKILL(code) profskills from skl
+    </ds:Query>
+    <!-- Функциональные обязанности -->
+	<ds:Collection name="functional" arguments="id" itemIndexColumn="key" valColumn="functional">
+with
+prs as (
+    select pf.functional
+    from hrd_doc.post_description pd, hrd_doc.position_functional pf
+    where pd.position_id = pf.position_id
+        AND pd.id = :0
+),
+fun as (
+    select regexp_substr(
+           functional,
+           '[^:]+',
+           1,
+           level
+         ) as code
+    from prs
+    connect by level &lt;= -- lesser or equals
+        length ( functional ) - 
+        length ( replace ( functional, ':' ) ) + 1
+)
+select code key, hrd_doc.get_functional(code) functional
+from fun
+where hrd_doc.ce_department_functional(code) = 1
+	</ds:Collection>
+    <!-- Права -->
+	<ds:Collection name="right" arguments="id" itemIndexColumn="key" valColumn="text">
+select rig.id key
+    ,HRD_DOC.GET_RIGHTS_INFO(rig.text, pd.DEPARTMENT_ID, pd.POSITION_ID) text
+from hrd_doc.dict_rights rig
+    ,hrd_doc.post_description pd
+where rig.actual = 1
+    and rig.visible = 1
+    and rig.for_coworker = 1
+    and rig.department_id = 0
+    and pd.id = :0
+order by rig.id asc
+    </ds:Collection>
+    <!-- Ответственность -->
+	<ds:Collection name="responsibility" arguments="id" itemIndexColumn="key" valColumn="text">
+select res.id key,
+    HRD_DOC.GET_responsibility_INFO(res.text, pd.DEPARTMENT_ID, pd.POSITION_ID) text
+from hrd_doc.dict_responsibility res
+    ,hrd_doc.post_description pd
+where res.actual = 1
+    and res.visible = 1
+    and res.for_coworker=1
+    and pd.id = :0
+order by res.id
+    </ds:Collection>
+</ds:DataSource>

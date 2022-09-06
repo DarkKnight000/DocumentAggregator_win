@@ -4,7 +4,7 @@
 	<!ELEMENT ArrayOfTemplateBind (TemplateBind*)>
 	<!ELEMENT TemplateBind (#PCDATA)>
 	<!ATTLIST TemplateBind typeID CDATA #REQUIRED>
-	<!ATTLIST TemplateBind systemID CDATA #REQUIRED>
+	<!ATTLIST TemplateBind systemID CDATA #IMPLIED>
 	<!ATTLIST TemplateBind remote (true|false) #IMPLIED>
 ]>
 <!--
@@ -12,6 +12,7 @@ Root: D:\Users\akkostin\Documents\Templates\Edited\
 -->
 <ArrayOfTemplateBind xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
 	<!-- Placeholder : Currently working on the document below : Not formatted well -->
+	<TemplateBind typeID="2267905">БПД/Заявка на доступ удаленных сотрудников к ИС.DOCX</TemplateBind>
 	<TemplateBind typeID="10" systemID="1" remote="false">КРР-01 ИС УЛК/Заявка для сотрудников НТЦ УЛК.docx</TemplateBind> <!-- Wasn't processed -->
 	<TemplateBind typeID="10" systemID="1" remote="true">КРР-01 ИС УЛК/Заявка для удаленных сотрудников НТЦ УЛК.docx</TemplateBind> <!-- Wasn't processed -->
 	<TemplateBind typeID="10" systemID="3" remote="false">КРР-03 ИС КП/Заявка для сотрудников НТЦ ИС КП.DOCX</TemplateBind>

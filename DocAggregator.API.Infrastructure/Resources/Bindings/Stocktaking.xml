@@ -22,7 +22,7 @@ from hrd.invent_process inv
     JOIN obd_sys.user_location loc ON (loc.user_id = inv.accepts)
     JOIN hrd.dict_room room ON (room.room_id = loc.room_id)
     JOIN hrd.building addr ON (addr.building_id = room.building_id)
-where inv.akt_id = {0}
+where inv.akt_id = :0
 	</ds:Query>
 	<ds:Collection name="os" arguments="id"  itemIndexColumn="id">
 select os.id_os id,
@@ -34,6 +34,6 @@ from hrd.invent_process inv
     join hrd.invent_dict_type os_type on (os_type.id_type = os.type_os)
     join hrd.invent_dict_manufacturer os_manufact on (os_manufact.manufacturer_id = os.manafacture)
     join hrd.invent_dict_model os_model on (os_model.id_model = os.model_os)
-where inv.akt_id = {0}
+where inv.akt_id = :0
     </ds:Collection>
 </ds:DataSource>
