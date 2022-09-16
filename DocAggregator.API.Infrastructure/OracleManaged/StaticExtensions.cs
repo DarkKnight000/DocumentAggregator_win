@@ -77,5 +77,18 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
             Debugger.Break();
             throw new Exception(message);
         }
+
+        /// <summary>
+        /// Получает строковое представление значения из заданного столбца или <see cref="string.Empty"/>, если его нет.
+        /// </summary>
+        /// <param name="reader">Считыватель результатов запроса.</param>
+        /// <param name="column">Номер столбца</param>
+        /// <returns>Строковое значение столбца или пустая строка.</returns>
+        /// <exception cref="IndexOutOfRangeException"/>
+        /// <exception cref="InvalidCastException"/>
+        internal static string GetStringOrEmpty(this OracleDataReader reader, int column)
+        {
+            return reader.IsDBNull(column) ? string.Empty : reader.GetString(column);
+        }
     }
 }

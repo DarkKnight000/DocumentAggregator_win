@@ -7,7 +7,7 @@
 	<xs:complexType name="Query">
 		<xs:simpleContent>
 			<xs:extension base="xs:string">
-				<xs:attribute name="arguments" type="xs:string"/>
+				<xs:attribute name="arguments" type="xs:string" use="optional"/>
 				<xs:attribute name="itemIndexColumn" type="xs:string"/>
 			</xs:extension>
 		</xs:simpleContent>
@@ -38,9 +38,12 @@
 	</xs:element>
 	<xs:element name="Get">
 		<xs:complexType>
-			<xs:sequence>
-				<xs:element ref="Query"/>
-			</xs:sequence>
+			<xs:complexContent>
+				<xs:extension base="Query">
+					<xs:attribute name="name" type="xs:string"/>
+					<xs:attribute name="groupColumn" type="xs:string"/>
+				</xs:extension>
+			</xs:complexContent>
 		</xs:complexType>
 	</xs:element>
 	<xs:element name="Table">
@@ -58,23 +61,20 @@
 	<xs:element name="Collection">
 		<xs:complexType>
 			<xs:complexContent>
-				<xs:extension base="Container">
-					<xs:sequence>
-						<xs:element ref="Collection"/>
-						<xs:element ref="Table"/>
-						<xs:element ref="Query"/>
-					</xs:sequence>
+				<xs:extension base="Query">
+					<xs:attribute name="name" type="xs:string" use="required"/>
+					<xs:attribute name="valColumn" type="xs:string" use="required"/>
 				</xs:extension>
 			</xs:complexContent>
 		</xs:complexType>
 	</xs:element>
 	<xs:element name="DataSource">
 		<xs:complexType>
-			<xs:sequence>
+			<xs:choice maxOccurs="unbounded" minOccurs="0">
 				<xs:element ref="Collection"/>
 				<xs:element ref="Table"/>
 				<xs:element ref="Query"/>
-			</xs:sequence>
+			</xs:choice>
 			<xs:attribute name="documentKind" type="xs:string" use="required"/>
 		</xs:complexType>
 	</xs:element>

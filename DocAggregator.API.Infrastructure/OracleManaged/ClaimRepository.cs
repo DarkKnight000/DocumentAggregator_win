@@ -73,7 +73,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                 {
                     for (int i = 0; i < executer.Reader.FieldCount; i++)
                     {
-                        partRoot.Add(new XElement(executer.Reader.GetName(i).ToLower(), executer.Reader.IsDBNull(i) ? string.Empty : executer.Reader.GetString(i)));
+                        partRoot.Add(new XElement(executer.Reader.GetName(i).ToLower(), executer.Reader.GetStringOrEmpty(i)));
                     }
                 }
         }
@@ -110,13 +110,13 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                         {
                             if (i == indexColumn)
                             {
-                                nodeKey = executer.Reader.IsDBNull(indexColumn) ? string.Empty : executer.Reader.GetString(indexColumn);
+                                nodeKey = executer.Reader.GetStringOrEmpty(indexColumn);
                                 node.Add(new XAttribute(ITEM_KEY_NAME, nodeKey));
                                 continue;
                             }
                             else
                             {
-                                node.Add(new XElement(executer.Reader.GetName(i).ToLower(), executer.Reader.IsDBNull(i) ? string.Empty : executer.Reader.GetString(i)));
+                                node.Add(new XElement(executer.Reader.GetName(i).ToLower(), executer.Reader.GetStringOrEmpty(i)));
                             }    
                         }
                     }
@@ -126,13 +126,13 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                         {
                             if (i == indexColumn)
                             {
-                                nodeKey = executer.Reader.IsDBNull(indexColumn) ? string.Empty : executer.Reader.GetString(indexColumn);
+                                nodeKey = executer.Reader.GetStringOrEmpty(indexColumn);
                                 node.Add(new XAttribute(ITEM_KEY_NAME, nodeKey));
                                 continue;
                             }
                             if (i == valColumn)
                             {
-                                node.Value = executer.Reader.IsDBNull(valColumn) ? string.Empty : executer.Reader.GetString(valColumn);
+                                node.Value = executer.Reader.GetStringOrEmpty(valColumn);
                             }
                         }
                     }
@@ -165,16 +165,16 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                             indexColumn = i;
                         }
                     }
-                    listOfLines.Add(executer.Reader.GetString(0));
+                    listOfLines.Add(executer.Reader.GetString(indexColumn)); // TEST: If index is null
                     var partItem = new XElement(blockTable.Attribute(DSS.name)?.Value.ToLower());
                     for (int i = 0; i < columns; i++)
                     {
                         if (i == indexColumn)
                         {
-                            partItem.Add(new XAttribute(ITEM_KEY_NAME, executer.Reader.GetString(indexColumn)));
+                            partItem.Add(new XAttribute(ITEM_KEY_NAME, executer.Reader.GetStringOrEmpty(indexColumn)));
                             continue;
                         }
-                        partItem.Add(new XElement(executer.Reader.GetName(i).ToLower(), executer.Reader.GetString(i)));
+                        partItem.Add(new XElement(executer.Reader.GetName(i).ToLower(), executer.Reader.GetStringOrEmpty(i)));
                     }
                     partRoot.Add(partItem);
                 }
@@ -203,15 +203,15 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                         {
                             if (i == groupColumn)
                             {
-                                infoResourceId = executer.Reader.GetString(groupColumn);
+                                infoResourceId = executer.Reader.GetStringOrEmpty(groupColumn);
                                 continue;
                             }
                             if (i == indexColumn)
                             {
-                                partAccessField.Add(new XAttribute(ITEM_KEY_NAME, executer.Reader.GetString(indexColumn)));
+                                partAccessField.Add(new XAttribute(ITEM_KEY_NAME, executer.Reader.GetStringOrEmpty(indexColumn)));
                                 continue;
                             }
-                            partAccessField.Add(new XElement(executer.Reader.GetName(i).ToLower(), executer.Reader.GetString(i)));
+                            partAccessField.Add(new XElement(executer.Reader.GetName(i).ToLower(), executer.Reader.GetStringOrEmpty(i)));
                         }
                         var partFoundedAccessFields = partRoot.Elements(blockTable.Attribute(DSS.name)?.Value.ToLower()).Where((n) => n.Attribute(ITEM_KEY_NAME).Value.Equals(infoResourceId)).SingleOrDefault();
                         if (partFoundedAccessFields != null)

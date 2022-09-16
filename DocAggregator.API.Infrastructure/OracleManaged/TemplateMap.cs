@@ -62,10 +62,15 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                 throw new Exception(string.Format("Document type \"{0}\" haven't been recognized.", documentType));
             }
             var binds = _bindsMap[documentType];
+            HashSet<string> affectedAttributes = new HashSet<string>();
             foreach (var bind in binds)
             {
                 if (bind.Filter?.All( // If we miss a property, ignore this returning 'true'.
-                        attr => model.Element(attr.Name.ToLower())?.Value?.Equals(attr.Value) ?? true
+                        attr =>
+                        {
+                            affectedAttributes.Add(attr.Name.ToLower());
+                            return model.Element(attr.Name.ToLower())?.Value?.Equals(attr.Value) ?? true;
+                        }
                     ) ?? true)
                 {
                     _logger.Trace("Have got a template for a {0} with proprties: {{{1}}}",
@@ -76,7 +81,12 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                     return bind.FileName;
                 }
             }
-            var msg = string.Format("Template has not found for a {0} with ID = {1}.", documentType, model?.Element("id")?.Value ?? "unknown");
+            var msg = string.Format("Template has not found for a {0} with ID = {1}. Affected attributes: {{{2}}}.",
+                documentType,
+                model?.Element("id")?.Value ?? "unknown",
+                string.Join(",", affectedAttributes.Select(
+                    attr => $"\"{attr}\":\"{model.Element(attr).Value}\""
+                ) ?? Enumerable.Empty<string>()));
             var ex = new FileNotFoundException(msg);
             _logger.Error(ex, msg);
             throw ex;

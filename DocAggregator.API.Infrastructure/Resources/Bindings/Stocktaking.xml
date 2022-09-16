@@ -4,6 +4,11 @@
                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 	           documentKind="Stocktaking">
+    <!--
+     ! Additional parameters:
+     ! ID
+     !-->
+     <!-- Основные данные одиночных полей -->
 	<ds:Query arguments="id">
 select distinct
     TO_CHAR(inv.create_on, 'DD.MM.YYYY', 'nls_date_language = RUSSIAN') AS created,
@@ -24,6 +29,7 @@ from hrd.invent_process inv
     JOIN hrd.building addr ON (addr.building_id = room.building_id)
 where inv.akt_id = :0
 	</ds:Query>
+    <!-- Перечисление основных средств -->
 	<ds:Collection name="os" arguments="id"  itemIndexColumn="id">
 select os.id_os id,
     os_type.name_type || ' ' || os_manufact.manufacturer_name || ' ' || os_model.name_model name,

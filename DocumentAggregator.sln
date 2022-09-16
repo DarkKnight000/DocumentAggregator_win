@@ -8,8 +8,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{19DEF07E-0A13-4B0D-BC38-E90FA47A5C31}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
+		ModelSyntax.md = ModelSyntax.md
 		README.md = README.md
-		Syntax.md = Syntax.md
+		TemplateSyntax.md = TemplateSyntax.md
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DocAggregator.API.Core", "DocAggregator.API.Core\DocAggregator.API.Core.csproj", "{18551FDB-A79F-49BD-A68F-AFA626714912}"
