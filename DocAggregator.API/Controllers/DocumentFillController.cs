@@ -32,7 +32,7 @@ namespace DocAggregator.API.Controllers
                 {
                     _logger.Debug("Has found a memory stream.");
                 }
-                _logger.Information("Claim was successfully processed (id={0})", request.Args.ContainsValue("id") ? request.Args["id"] : "?");
+                _logger.Information("{0} was successfully processed (id={1})", request.Type, request.GetID());
 #if DEBUG
                 var outputFile = System.IO.Path.Combine(System.IO.Path.GetTempPath(), string.Concat(System.Guid.NewGuid().ToString(), ".pdf"));
                 var closableStream = System.IO.File.OpenWrite(outputFile);
@@ -48,7 +48,7 @@ namespace DocAggregator.API.Controllers
             }
             else
             {
-                _logger.Warning("Claim wasn't processed (id={0})", request.Args.ContainsValue("id") ? request.Args["id"] : "?");
+                _logger.Warning("{0} wasn't processed (id={1})", request.Type, request.GetID());
                 return ClaimResponsePresenter.ToErrorReport(response);
             }
         }

@@ -20,6 +20,12 @@ namespace DocAggregator.API.Core
         /// Инициализирующие модель поля.
         /// </summary>
         public Dictionary<string, string> Args { get; set; }
+
+        /// <summary>
+        /// Пробует получить идентификатор запрашиваемой модели.
+        /// </summary>
+        /// <returns>Идентификатор модели, либо литерал "unknown".</returns>
+        public string GetID() => Args.ContainsKey("id") ? Args["id"] : "unknown";
     }
 
     /// <summary>

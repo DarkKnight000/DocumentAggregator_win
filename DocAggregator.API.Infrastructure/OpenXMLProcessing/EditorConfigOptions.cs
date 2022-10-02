@@ -12,6 +12,10 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
         public string TemplatesDir { get; set; }
         public string LibreOffice { get; set; }
         public string Scripts { get; set; }
+#if !DEBUG
+        public string UserName { get; set; }
+        public string UserPassword { get; set; }
+#endif
 
         public string GetSection() => EditorConfig;
     }

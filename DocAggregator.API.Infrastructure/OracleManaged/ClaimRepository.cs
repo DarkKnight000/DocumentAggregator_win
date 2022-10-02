@@ -1,6 +1,7 @@
 ﻿using DocAggregator.API.Core;
 using DocAggregator.API.Core.Models;
 using Oracle.ManagedDataAccess.Client;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
@@ -29,6 +30,14 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
             _sqlResource = sqlResource;
         }
 
+        /// <summary>
+        /// Загружает все доступные данные по заявке используя модель запрашиваемого документа,
+        /// информацию из базы данных и карту сопоставлений шаблонов.
+        /// </summary>
+        /// <param name="req">Запрос генератора.</param>
+        /// <returns>Объект документа.</returns>
+        /// <exception cref="System.ArgumentNullException"/>
+        /// <exception cref="SolvableException"/>
         public Claim GetClaim(DocumentRequest req)
         {
             XDocument blockDocument = _binds.GetBind(req.Type);
@@ -63,11 +72,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
 
         private void ExtractedQueryProcessing(XElement blockQuery, XElement partRoot, QueryExecuterWorkspace executerWork)
         {
-            string argument = "";
-            if (blockQuery.Attribute(DSS.arguments) != null)
-            {
-                argument = partRoot.XPathSelectElement(blockQuery.Attribute(DSS.arguments).Value.ToLower())?.Value;
-            }
+            string argument = GetArgument(blockQuery, partRoot);
             using (QueryExecuter executer = executerWork.GetExecuterForQuery(blockQuery.Value, argument))
                 while (executer.Reader.Read())
                 {
@@ -81,11 +86,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
         private void ExtractedCollectionProcessing(XElement blockCollection, XElement partRoot, QueryExecuterWorkspace executerWork)
         {
             var name = blockCollection.Attribute(DSS.name)?.Value.ToLower();
-            string argument = "";
-            if (blockCollection.Attribute(DSS.arguments) != null)
-            {
-                argument = partRoot.XPathSelectElement(blockCollection.Attribute(DSS.arguments).Value.ToLower())?.Value;
-            }
+            string argument = GetArgument(blockCollection, partRoot);
             using (QueryExecuter executer = executerWork.GetExecuterForQuery(blockCollection.Value, argument))
                 while (executer.Reader.Read())
                 {
@@ -151,7 +152,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
             var blockFor = blockTable.Element(DSS.For);
             var blockGet = blockTable.Element(DSS.Get);
             var containerName = blockGet.Attribute(DSS.name)?.Value.ToLower();
-            var argument = partRoot.XPathSelectElement(blockFor.Attribute(DSS.arguments).Value.ToLower())?.Value;
+            var argument = GetArgument(blockFor, partRoot);
             List<string> listOfLines = new List<string>();
             using (QueryExecuter executer = executerWork.GetExecuterForQuery(blockFor.Value, argument))
                 while (executer.Reader.Read())
@@ -165,7 +166,14 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                             indexColumn = i;
                         }
                     }
-                    listOfLines.Add(executer.Reader.GetString(indexColumn)); // TEST: If index is null
+                    try
+                    {
+                        listOfLines.Add(executer.Reader.GetString(indexColumn));
+                    }
+                    catch (IndexOutOfRangeException ex) // If index is null
+                    {
+                        RepositoryExceptionHelper.ThrowIndexOfForElementFailure(ex);
+                    }
                     var partItem = new XElement(blockTable.Attribute(DSS.name)?.Value.ToLower());
                     for (int i = 0; i < columns; i++)
                     {
@@ -220,6 +228,20 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                         }
                     }
             }
+        }
+
+        /// <summary>
+        /// Получает атрибут аргумента заданного блока
+        /// и получает значения элементов полей заданных в запросе значения атрибута.
+        /// </summary>
+        /// <param name="block">Элемент, содержащий (или нет) аргументы.</param>
+        /// <param name="partRoot">Корень собираемой модели документа.</param>
+        /// <returns>Результат запроса из атрибута аргументов или <see cref="string.Empty"/>.</returns>
+        private string GetArgument(XElement block, XElement partRoot)
+        {
+            var argumentQuery = block.Attribute(DSS.arguments);
+            return argumentQuery == null ? string.Empty :
+                partRoot.XPathSelectElement(argumentQuery.Value.ToLower())?.Value ?? string.Empty;
         }
     }
 }

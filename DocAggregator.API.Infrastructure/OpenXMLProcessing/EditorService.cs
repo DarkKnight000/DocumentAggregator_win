@@ -64,6 +64,18 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
         }
         private string _scripts;
 
+#if !DEBUG
+        /// <summary>
+        /// Получает или задаёт имя пользователя, от имени которого будет запущен сервис конвертера.
+        /// </summary>
+        public string UserName { get; set; }
+
+        /// <summary>
+        /// Получает или задаёт пароль пользователя, от имени которого будет запущен сервис конвертера.
+        /// </summary>
+        public string UserPassword { get; set; }
+#endif
+
         private bool initializedValue;
         private bool disposedValue;
 
@@ -77,6 +89,10 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
             TemplatesDirectory = editor.TemplatesDir;
             LibreOfficeFolder = editor.LibreOffice;
             Scripts = editor.Scripts;
+#if !DEBUG
+            UserName = editor.UserName;
+            UserPassword = editor.UserPassword;
+#endif
         }
 
         public void EnsureInitialize()
@@ -120,6 +136,10 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
                     WorkingDirectory = Scripts,
                     FileName = "python",
                     Arguments = $"server.py --executable \"{LibreOfficeExecutable}\"",
+#if !DEBUG
+                    UserName = UserName,
+                    PasswordInClearText = UserPassword,
+#endif
                 };
                 // cmd> python server.py --executable "C:\Program Files\LibreOffice\program\soffice"
                 _serverConverterProc = new Process();
@@ -222,7 +242,7 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
             return outputStream;
         }
 
-        #region IDisposable impl
+#region IDisposable impl
 
         protected virtual void Dispose(bool disposing)
         {
@@ -251,6 +271,6 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
             GC.SuppressFinalize(this);
         }
 
-        #endregion
+#endregion
     }
 }

@@ -45,6 +45,7 @@ namespace DocAggregator.API.Core
         /// </summary>
         /// <param name="response">Объект ответа.</param>
         /// <param name="request">Объект запроса.</param>
+        /// <exception cref="Exception"/>
         protected abstract void Handle(TResponse response, TRequest request);
     }
 }

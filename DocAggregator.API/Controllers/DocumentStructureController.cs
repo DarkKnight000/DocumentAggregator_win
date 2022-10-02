@@ -1,6 +1,8 @@
 ﻿using DocAggregator.API.Core;
 using DocAggregator.API.Core.Models;
+using DocAggregator.API.Presentation;
 using Microsoft.AspNetCore.Mvc;
+using System;
 
 namespace DocAggregator.API.Controllers
 {
@@ -24,10 +26,18 @@ namespace DocAggregator.API.Controllers
         [Consumes("application/json")]
         public IActionResult Post([FromBody] DocumentRequest request)
         {
-            Claim claim = _repo.GetClaim(request);
+            Claim claim;
+            try
+            {
+                claim = _repo.GetClaim(request);
+            }
+            catch (Exception ex)
+            {
+                return ClaimResponsePresenter.ToErrorReport(new DocumentResponse() { Errors = { ex } });
+            }
             if (claim == null)
             {
-                _logger.Warning("Claim wasn't processed (id={0})", request.Args["id"]);
+                _logger.Warning("{0} wasn't processed (id={1})", request.Type, request.GetID());
                 return new ObjectResult("A problem has met.")
                 {
                     StatusCode = 500,

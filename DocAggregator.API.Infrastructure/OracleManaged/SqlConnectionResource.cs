@@ -58,13 +58,19 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
         {
             _logger = loggerFactory.GetLoggerFor<SqlConnectionResource>();
             var db = optionsFactory.GetOptionsOf<RepositoryConfigOptions>();
-            List<SqlQuery> list;
+            List<SqlQuery> list = null;
 
-            // deserialize the xml file
-            using (StreamReader streamReader = new StreamReader(Path.GetFullPath(db.QueriesFile)))
+            try
             {
-                XmlSerializer deserializer = new XmlSerializer(typeof(List<SqlQuery>));
-                list = (List<SqlQuery>)deserializer.Deserialize(streamReader);
+                using (StreamReader streamReader = new StreamReader(Path.GetFullPath(db.QueriesFile)))
+                {
+                    XmlSerializer deserializer = new XmlSerializer(typeof(List<SqlQuery>));
+                    list = (List<SqlQuery>)deserializer.Deserialize(streamReader);
+                }
+            }
+            catch (Exception ex)
+            {
+                RepositoryExceptionHelper.ThrowConfigurationQueriesFileFailure(ex);
             }
             _queriesContainer = new Dictionary<string, SqlQuery>();
             foreach (var item in list)
@@ -89,16 +95,14 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
         /// </summary>
         /// <param name="name">Имя запроса.</param>
         /// <returns>Объект запроса.</returns>
+        /// <exception cref="ArgumentNullException"/>
+        /// <exception cref="KeyNotFoundException"/>
         public SqlQuery GetQueryByName(string name)
         {
-            if (!_queriesContainer.ContainsKey(name))
-            {
-                throw new ArgumentException("The query '" + name + "' is not valid.");
-            }
             SqlQuery query = _queriesContainer[name];
             if (query.IsObsolete)
             {
-                _logger.Warning("Trying to get an obsolete query.");
+                _logger.Warning($"Trying to get an obsolete query by name {name}.");
             }
             return query;
         }

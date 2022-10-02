@@ -8,13 +8,13 @@
      ! Additional parameters:
      ! ID
      ! PKZI
-     ! UserIP
+     ! IP
      !-->
     <!-- Основные данные - тип запроса, IP адрес и ПКЗИ пользователя и адрес места работы -->
 	<ds:Query arguments="id">
 select distinct req.request_type_id typeId
     ,decode(req.work_mode, 2, 'True', 'False') remote
-    ,req.applicant_ip ip
+    --,req.applicant_ip ip
     --,pkzi.pkzi_name AS pkzi
     ,build.description AS address
 from hrd.request_hdr req

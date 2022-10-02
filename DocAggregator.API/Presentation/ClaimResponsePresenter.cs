@@ -35,8 +35,19 @@ namespace DocAggregator.API.Presentation
                 {
                     result.AppendLine(new string('-', 14));
                 }
-                result.AppendLine(err.GetType().ToString());
+                result.Append(err.GetType().ToString());
+                result.Append(": ");
                 result.AppendLine(err.Message);
+                if (err is SolvableException sol)
+                {
+                    for (int i = 0; i < sol.CureOptions.Length; i++)
+                    {
+                        result.Append("Решение #");
+                        result.Append(i + 1);
+                        result.Append(": ");
+                        result.AppendLine(sol.CureOptions[i]);
+                    }
+                }
                 result.AppendLine(err.StackTrace);
             }
             return new ObjectResult(result.ToString())
