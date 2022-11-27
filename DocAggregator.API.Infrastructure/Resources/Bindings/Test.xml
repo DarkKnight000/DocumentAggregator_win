@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ds:DataSource xmlns:ds="http://ntc.rosneft.ru/DBD/DocumentAggegator/Structure"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	           documentKind="Test">
+	<!--
+     ! Additional parameters:
+     ! ID
+     !-->
+
+</ds:DataSource>

@@ -1,5 +1,6 @@
 ﻿using DocAggregator.API.Core;
 using Microsoft.AspNetCore.Mvc;
+using System.Linq;
 using System.Text;
 
 namespace DocAggregator.API.Presentation
@@ -28,6 +29,7 @@ namespace DocAggregator.API.Presentation
         /// <returns>Текстовое содержание ошибок, сообщений и стэка вызовов с кодом 500.</returns>
         public static ObjectResult ToErrorReport(InteractorResponseBase response)
         {
+            int httpCode = 500; // Internal server error. Unhandled exception.
             StringBuilder result = new StringBuilder();
             foreach (var err in response.Errors)
             {
@@ -50,9 +52,13 @@ namespace DocAggregator.API.Presentation
                 }
                 result.AppendLine(err.StackTrace);
             }
+            if (response.Errors.All(ex => ex is SolvableValidationException))
+            {
+                httpCode = 528; // Not registered code. Meaning for the project: Validation error.
+            }
             return new ObjectResult(result.ToString())
             {
-                StatusCode = 500,
+                StatusCode = httpCode,
             };
         }
     }

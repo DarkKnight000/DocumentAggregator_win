@@ -74,22 +74,47 @@
         public string OriginalMask { get; set; }
 
         /// <summary>
+        /// Исходная строка тегов.
+        /// </summary>
+        public string Tag { get; set; }
+
+        /// <summary>
+        /// Обпределяет требование значения для поля.
+        /// </summary>
+        public bool Required => Tag.ToLower().Contains("required");
+
+        /// <summary>
         /// Специфичный объект элемента документа, асоциированный с этой вставкой.
         /// </summary>
         public object AssociatedChunk { get; set; }
+
+        /// <summary>
+        /// Создаёт копию данной вставки.
+        /// </summary>
+        /// <param name="source">Исходная вставка</param>
+        public Insert(Insert source, ILogger logger = null)
+        {
+            _logger = logger;
+            OriginalMask = source.OriginalMask;
+            Tag = source.Tag;
+            Kind = source.Kind;
+            // TODO: DELETE
+            _logger?.Debug($"{GetType()} created with arguments (\"{source.OriginalMask}\", \"{source.Tag}\", {source.Kind}).");
+        }
 
         /// <summary>
         /// Создаёт вставку с заданной строкой формата и типом.
         /// </summary>
         /// <param name="mask">Строка формата, содержащяя поля заявки.</param>
         /// <param name="kind">Тип элемента документа.</param>
-        public Insert(string mask, InsertKind kind = InsertKind.PlainText, ILogger logger = null)
+        public Insert(string mask, string tag, InsertKind kind = InsertKind.PlainText, ILogger logger = null)
         {
             _logger = logger;
             OriginalMask = mask;
+            Tag = tag;
             Kind = kind;
             // TODO: DELETE
-            _logger?.Debug($"{GetType()} created with arguments (\"{mask}\", {kind}).");
+            _logger?.Debug($"{GetType()} created with arguments (\"{mask}\", \"{tag}\", {kind}).");
         }
 
         // override object.Equals

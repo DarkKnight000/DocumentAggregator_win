@@ -30,7 +30,7 @@ namespace DocAggregator.API.Core.Models
         {
             get
             {
-                if (int.TryParse(Root?.Element("ID")?.Value, out int id))
+                if (int.TryParse(Root?.Element("id")?.Value, out int id))
                 {
                     return id;
                 }

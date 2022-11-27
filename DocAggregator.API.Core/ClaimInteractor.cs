@@ -37,6 +37,18 @@ namespace DocAggregator.API.Core
         /// PDF результата обработки документа.
         /// </summary>
         public MemoryStream ResultStream { get; set; }
+
+#if DEBUG
+
+        /// <summary>
+        /// Предположительное имя сгенерированного файла
+        /// </summary>
+        /// <remarks>
+        /// Используется для удобств ручной генерации.
+        /// </remarks>
+        public string PresumptiveFileName { get; set; }
+
+#endif
     }
 
     /// <summary>
@@ -72,6 +84,20 @@ namespace DocAggregator.API.Core
             if (formResponse.Success)
             {
                 response.ResultStream = formResponse.ResultStream;
+#if DEBUG
+                if (claim.Type.ToLower() == "claim")
+                {
+                    var system = claim.Template.Substring(0, claim.Template.IndexOf(Path.AltDirectorySeparatorChar)).Replace(' ', '_');
+                    var fullname = claim.Root?.Elements("attr").SingleOrDefault(a => a.Attribute("key")?.Value?.Equals("125") ?? false)?.Value;
+                    var splittedname = fullname.Split(' ');
+                    var shortname = $"{splittedname[0]}_{splittedname[1][0]}.{splittedname[2][0]}.";
+                    response.PresumptiveFileName = $"{claim.ID}_{system}_{shortname}.pdf";
+                }
+                else
+                {
+                    response.PresumptiveFileName = $"{claim.Type}_id_{claim.ID}.pdf";
+                }
+#endif
             }
             else
             {

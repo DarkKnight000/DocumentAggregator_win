@@ -34,7 +34,7 @@ namespace DocAggregator.API.Controllers
                 }
                 _logger.Information("{0} was successfully processed (id={1})", request.Type, request.GetID());
 #if DEBUG
-                var outputFile = System.IO.Path.Combine(System.IO.Path.GetTempPath(), string.Concat(System.Guid.NewGuid().ToString(), ".pdf"));
+                var outputFile = System.IO.Path.Combine(System.IO.Path.GetTempPath(), response.PresumptiveFileName);
                 var closableStream = System.IO.File.OpenWrite(outputFile);
                 response.ResultStream.CopyTo(closableStream);
                 closableStream.Close();

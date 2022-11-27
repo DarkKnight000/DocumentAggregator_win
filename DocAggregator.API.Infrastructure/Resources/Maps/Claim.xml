@@ -29,8 +29,10 @@ Root: D:\Users\akkostin\Documents\Templates\Edited\
 	<TemplateBind typeID="10" systemID="14">КРР-14 ИС УДФР/Заявка для сотрудников НТЦ УДФР.docx</TemplateBind> <!-- The denied role is missing -->
 	<TemplateBind typeID="-1" systemID="14">КРР-14 ИС УДФР/Заявка для сотрудников ОГ_ДО УДФР.docx</TemplateBind> <!-- The denied role is missing -->
 	<TemplateBind typeID="10" systemID="15">КРР-15 ИС КНИ/Заявка для сотрудников НТЦ КНИ.docx</TemplateBind> <!-- Don't process -->
-	<TemplateBind typeID="10" systemID="17" ><!-->remote="True"><!-->КРР-17 ИС ОиК/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind>
-	<TemplateBind typeID="10" systemID="18" ><!-->remote="True"><!-->КРР-18 ИС СЭД/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind> <!-- Check access right "КП: Протоколы" -->
+	<TemplateBind typeID="10" systemID="17" remote="True">КРР-17 ИС ОиК/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind>
+	<TemplateBind typeID="10" systemID="17" remote="False">КРР-17 ИС ОиК/Заявка для сотрудников НТЦ (ИС ОиК, офис).docx</TemplateBind>
+	<TemplateBind typeID="10" systemID="18" remote="True">КРР-18 ИС СЭД/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind> <!-- Check access right "КП: Протоколы" -->
+	<TemplateBind typeID="10" systemID="18" remote="False">КРР-18 ИС СЭД/Заявка для сотрудников НТЦ (ИС СЭД, офис).docx</TemplateBind> <!-- Check access right "КП: Протоколы" -->
 	<TemplateBind typeID="10" systemID="19" ><!-->remote="True"><!-->КРР-19 ИС РН-КИН/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind>
 	<TemplateBind typeID="10" systemID="20" ><!-->remote="True"><!-->КРР-20 ИС СУПП/Заявка для сотрудников НТЦ.docx</TemplateBind>
 	<TemplateBind typeID="10" systemID="21" ><!-->remote="True"><!-->КРР-21 ИС WDB/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind>
@@ -44,14 +46,15 @@ Root: D:\Users\akkostin\Documents\Templates\Edited\
 	<TemplateBind typeID="10" systemID="38" ><!-->remote="True"><!-->КРР-38 ИС Геобанк-ПТД/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind>
 	<TemplateBind typeID="10" systemID="39" ><!-->remote="True"><!-->КРР-39 ИС ПР/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind>
 	<TemplateBind typeID="10" systemID="41" ><!-->remote="True"><!-->КРР-41 ИС СУРК/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind>
-	<TemplateBind typeID="10" systemID="42" ><!-->remote="True"><!-->КРР-42 ИС Вектор/Заявка для удаленных сотрудников НТЦ ИС Вектор.docx</TemplateBind>
+	<TemplateBind typeID="10" systemID="42" remote="True">КРР-42 ИС Вектор/Заявка для удаленных сотрудников НТЦ ИС Вектор.docx</TemplateBind>
+	<TemplateBind typeID="10" systemID="42" remote="False">КРР-42 ИС Вектор/Заявка для сотрудников НТЦ (ИС Вектор, офис).docx</TemplateBind>
 	<TemplateBind typeID="10" systemID="44" ><!-->remote="True"><!-->КРР-44 ИС УСИЗ/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind>
 	<TemplateBind typeID="10" systemID="45" ><!-->remote="True"><!-->КРР-45 ИС КУЗ/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind>
 	<TemplateBind typeID="10" systemID="46" remote="True">КРР-46 ИС СУТ/Заявка на доступ к системе СУТЗ (для удаленных сотрудников).docx</TemplateBind> <!-- Too much roles just don't exist -->
 	<TemplateBind typeID="10" systemID="46" remote="False">КРР-46 ИС СУТ/Заявка на доступ к системе СУТЗ.docx</TemplateBind> <!-- Too much roles just don't exist -->
-	<TemplateBind typeID="10" systemID="47">КРР-47 ИС Сапсан+/Заявка для сотрудников НТЦ Сапсан+.docx</TemplateBind>
-	<TemplateBind typeID="10" systemID="47">КРР-47 ИС Сапсан+/Заявка для удаленных сотрудников НТЦ Сапсан+.docx</TemplateBind>
+	<TemplateBind typeID="10" systemID="47" remote="False">КРР-47 ИС Сапсан+/Заявка для сотрудников НТЦ Сапсан+.docx</TemplateBind>
+	<TemplateBind typeID="10" systemID="47" remote="True">КРР-47 ИС Сапсан+/Заявка для удаленных сотрудников НТЦ Сапсан+.docx</TemplateBind>
 	<TemplateBind typeID="10" systemID="53">КРР-53 ИС ХКД/Заявка на доступ пользователей в ИС ХКД.docx</TemplateBind>
-	<TemplateBind typeID="10" systemID="57">КРР-57 ИС КП 2.0/Заявка для сотрудников НТЦ ИС КП 2.0.docx</TemplateBind> <!-- Owner role -->
-	<TemplateBind typeID="10" systemID="57">КРР-57 ИС КП 2.0/Заявка для удаленных сотрудников ИС КП2.0.docx</TemplateBind> <!-- Owner role -->
+	<TemplateBind typeID="10" systemID="57" remote="False">КРР-57 ИС КП 2.0/Заявка для сотрудников НТЦ ИС КП 2.0.docx</TemplateBind> <!-- Owner role -->
+	<TemplateBind typeID="10" systemID="57" remote="True">КРР-57 ИС КП 2.0/Заявка для удаленных сотрудников ИС КП2.0.docx</TemplateBind> <!-- Owner role -->
 </ArrayOfTemplateBind>

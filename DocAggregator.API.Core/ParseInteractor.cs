@@ -57,7 +57,7 @@ namespace DocAggregator.API.Core
                             var line = new List<string>();
                             foreach (var field in form.FormFields)
                             {
-                                line.Add(ExtractValue(item.XPathEvaluate(field.OriginalMask)));
+                                line.Add(System.Web.HttpUtility.HtmlDecode(ExtractValue(item.XPathEvaluate(field.OriginalMask))));
                             }
                             form.FormValues.Add(line);
                         }
@@ -69,7 +69,7 @@ namespace DocAggregator.API.Core
                     }
                     break;
                 default: // InsertKind.PlainText
-                    insert.ReplacedText = ParseTextField(request.Claim.Root, insert.OriginalMask);
+                    insert.ReplacedText = System.Web.HttpUtility.HtmlDecode(ParseTextField(request.Claim.Root, insert.OriginalMask));
                     break;
             }
         }

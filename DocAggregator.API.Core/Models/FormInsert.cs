@@ -23,7 +23,7 @@ namespace DocAggregator.API.Core.Models
         /// </remarks>
         public List<List<string>> FormValues { get; protected set; }
 
-        public FormInsert(string mask, ILogger logger = null) : base(mask, InsertKind.MultiField, logger)
+        public FormInsert(string mask, string tag, ILogger logger = null) : base(mask, tag, InsertKind.MultiField, logger)
         {
             OriginalMask = mask;
             FormFields = new List<Insert>();

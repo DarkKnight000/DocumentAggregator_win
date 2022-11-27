@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
 namespace DocAggregator.API.Core.Wml
@@ -71,9 +72,15 @@ namespace DocAggregator.API.Core.Wml
                     continue;
                 }
                 string alias = properties.Element(W.alias)?.Attribute(W.val)?.Value;
+                string tag = properties.Element(W.tag)?.Attribute(W.val)?.Value;
                 if (alias == null)
                 {
                     _logger.Warning("Have found a content control with empty alias.");
+                    continue;
+                }
+                if (tag == null)
+                {
+                    _logger.Warning("Have found a content control with empty tag.");
                     continue;
                 }
                 _logger.Trace("Определение типа элемента управления содержимым.");
@@ -91,7 +98,7 @@ namespace DocAggregator.API.Core.Wml
                     var tableRow = sdt.Element(W.sdtContent).Element(W.tr);
                     if (tableRow != null)
                     {
-                        var result = new FormInsert(alias, _logger) { AssociatedChunk = sdt };
+                        var result = new FormInsert(alias, tag, _logger) { AssociatedChunk = sdt };
                         _logger.Debug("Получаем ВСЕ вложенные элементы управления.");
                         var innerLevelControls = tableRow.DescendantsAndSelf(W.sdt);
                         // WARNING: При дальнейшей вложенности может обнаружиться дублирование элементов,
@@ -108,7 +115,7 @@ namespace DocAggregator.API.Core.Wml
                     }
                     continue;
                 }
-                yield return new Insert(alias, detectedKind.Value, _logger) { AssociatedChunk = sdt };
+                yield return new Insert(alias, tag, detectedKind.Value, _logger) { AssociatedChunk = sdt };
             }
         }
 
@@ -170,11 +177,19 @@ namespace DocAggregator.API.Core.Wml
             switch (insert.Kind)
             {
                 case InsertKind.CheckMark:
+                    if (insert.Required && insert.ReplacedCheckmark == null)
+                    {
+                        throw new SolvableValidationException(insert);
+                    }
                     innerTextContainer.Descendants(W.t).Single().Value = insert.ReplacedCheckmark.Value ? "☒" : "☐";
                     break;
                 case InsertKind.MultiField:
                     if (insert is FormInsert form)
                     {
+                        if (insert.Required && !form.FormValues.Any())
+                        {
+                            throw new SolvableValidationException(form);
+                        }
                         _logger.Trace("Deleting the initial row.");
                         innerTextContainer.Remove();
                         var generatedRows = new List<XElement>();
@@ -184,14 +199,17 @@ namespace DocAggregator.API.Core.Wml
                             var rowCopy = new XElement(innerTextContainer);
                             _logger.Trace("Clonning the initial row.");
                             var innerControls = rowCopy.DescendantsAndSelf(W.sdt).ToArray();
-                            for (int control = 0; control < form.FormValues[line].Count; control++)
+                            var valuesLine = form.FormValues[line];
+                            for (int control = 0; control < valuesLine.Count; control++)
                             {
+                                var formControl = form.FormFields[control];
                                 _logger.Debug("Regenerating inner Insert with local data.");
-                                controls[control] = new Insert(form.FormFields[control].OriginalMask, form.FormFields[control].Kind)
+                                // TODO: Should I cut the assignment out of the function?
+                                controls[control] = new Insert(formControl)
                                 {
-                                    ReplacedText = form.FormValues[line][control],
-                                    ReplacedCheckmark = form.FormFields[control].Kind.Equals(InsertKind.CheckMark)
-                                        ? bool.TryParse(form.FormValues[line][control], out bool parsedResult) && parsedResult
+                                    ReplacedText = valuesLine[control],
+                                    ReplacedCheckmark = formControl.Kind.Equals(InsertKind.CheckMark)
+                                        ? bool.TryParse(valuesLine[control], out bool parsedResult) && parsedResult
                                         : null,
                                     AssociatedChunk = innerControls[control],
                                 };
@@ -211,6 +229,14 @@ namespace DocAggregator.API.Core.Wml
                     }    
                     break;
                 default: // InsertKind.PlainText
+                    if (insert.Required && string.IsNullOrWhiteSpace(insert.ReplacedText))
+                    {
+                        throw new SolvableValidationException(insert);
+                    }
+                    if (insert.Tag != "-" && insert.Tag != "required" && !Regex.IsMatch(insert.ReplacedText, insert.Tag))
+                    {
+                        throw new SolvableValidationException(insert);
+                    }
                     innerTextContainer.Descendants(W.rStyle).SingleOrDefault()?.Remove();
                     XElement tagRunPr = sdt.Element(W.sdtPr)?.Element(W.rPr);
                     XElement run = innerTextContainer.DescendantsAndSelf(W.r).Single();

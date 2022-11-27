@@ -95,7 +95,7 @@ namespace DocAggregator.API.Infrastructure.OfficeInterop
                         _logger.Warning("Unknown control type!");
                         break;
                 }
-                yield return new Insert(control.Title, kind, _logger) { AssociatedChunk = control };
+                yield return new Insert(control.Title, control.Tag, kind, _logger) { AssociatedChunk = control };
             }
         }
 
