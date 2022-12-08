@@ -233,14 +233,74 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
                 _logger.Error("Converter exited with an exit code {0}.", convertingProcess.ExitCode);
                 Debugger.Break();
             }
+            // BASE64 decoding hotfix: white PDF pages
+            MemoryStream hotFixOutput = new MemoryStream();
+            using (BinaryReader reader = new BinaryReader(outputStream))
+            using (BinaryWriter writer = new BinaryWriter(hotFixOutput, System.Text.Encoding.UTF8, true))
+            {
+                var bytes = reader.ReadBytes((int)outputStream.Length);
+                var eofSeq = System.Text.Encoding.UTF8.GetBytes("%%EOF");
+                var eofMatch = Locate(bytes, eofSeq);
+                writer.Write(bytes, 0, eofMatch[0] + eofSeq.Length + 1); // +1 for the '\n'
+            }
+            hotFixOutput.Seek(0, SeekOrigin.Begin);
+            // hotfix end
             File.Delete(documentContainer.TemporaryDocumentPath);
             documentContainer.Finalized = true;
             if (convertingProcess.ExitCode != 0)
             {
                 throw new InvalidOperationException($"Converter exited with an exit code {convertingProcess.ExitCode}.");
             }
-            return outputStream;
+            return hotFixOutput;
         }
+
+#region Byte array pattern search
+
+        /*
+         * Solution from https://stackoverflow.com/questions/283456/byte-array-pattern-search
+         * Made by https://stackoverflow.com/users/36702/jb-evain
+         */
+
+        public static int[] Locate(byte[] self, byte[] candidate)
+        {
+            if (IsEmptyLocate(self, candidate))
+                return Array.Empty<int>();
+
+            var list = new List<int>();
+
+            for (int i = 0; i < self.Length; i++)
+            {
+                if (!IsMatch(self, i, candidate))
+                    continue;
+
+                list.Add(i);
+            }
+
+            return list.Count == 0 ? Array.Empty<int>() : list.ToArray();
+        }
+
+        static bool IsMatch(byte[] array, int position, byte[] candidate)
+        {
+            if (candidate.Length > (array.Length - position))
+                return false;
+
+            for (int i = 0; i < candidate.Length; i++)
+                if (array[position + i] != candidate[i])
+                    return false;
+
+            return true;
+        }
+
+        static bool IsEmptyLocate(byte[] array, byte[] candidate)
+        {
+            return array == null
+                || candidate == null
+                || array.Length == 0
+                || candidate.Length == 0
+                || candidate.Length > array.Length;
+        }
+
+#endregion
 
 #region IDisposable impl
 

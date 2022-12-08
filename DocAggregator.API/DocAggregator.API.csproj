@@ -8,6 +8,10 @@
   <ProjectExtensions><VisualStudio><UserProperties properties_4launchsettings_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>
 
   <ItemGroup>
+    <PackageReference Include="System.Text.Encoding.CodePages" Version="7.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\DocAggregator.API.Core\DocAggregator.API.Core.csproj" />
     <ProjectReference Include="..\DocAggregator.API.Infrastructure\DocAggregator.API.Infrastructure.csproj" />
   </ItemGroup>
