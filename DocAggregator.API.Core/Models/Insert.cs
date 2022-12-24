@@ -106,6 +106,7 @@
         /// Создаёт вставку с заданной строкой формата и типом.
         /// </summary>
         /// <param name="mask">Строка формата, содержащяя поля заявки.</param>
+        /// <param name="tag">Строка валидации.</param>
         /// <param name="kind">Тип элемента документа.</param>
         public Insert(string mask, string tag, InsertKind kind = InsertKind.PlainText, ILogger logger = null)
         {
