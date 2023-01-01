@@ -26,6 +26,10 @@ namespace DocAggregator.API.Controllers
         [Consumes("application/json")]
         public IActionResult Post([FromBody] DocumentRequest request)
         {
+            if (!request.TryDecodeArgs(encoding: System.Text.Encoding.GetEncoding(1251), logger: _logger))
+            {
+                _logger.Warning("Not all arguments was decoded from BASE64.");
+            }
             Claim claim;
             try
             {

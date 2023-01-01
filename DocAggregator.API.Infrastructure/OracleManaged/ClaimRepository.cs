@@ -74,12 +74,9 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
         {
             string argument = GetArgument(blockQuery, partRoot);
             using (QueryExecuter executer = executerWork.GetExecuterForQuery(blockQuery.Value, argument))
-                while (executer.Reader.Read())
+                foreach (var line in executer.GetLines())
                 {
-                    for (int i = 0; i < executer.Reader.FieldCount; i++)
-                    {
-                        partRoot.Add(new XElement(executer.Reader.GetName(i).ToLower(), executer.Reader.GetStringOrEmpty(i)));
-                    }
+                    partRoot.Add(line.Select(f => new XElement(f.ColumnName.ToLower(), f.Value)).ToArray());
                 }
         }
 
@@ -88,57 +85,39 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
             var name = blockCollection.Attribute(DSS.name)?.Value.ToLower();
             string argument = GetArgument(blockCollection, partRoot);
             using (QueryExecuter executer = executerWork.GetExecuterForQuery(blockCollection.Value, argument))
-                while (executer.Reader.Read())
+            {
+                var headers = executer.GetHeaders();
+                int indexColumn = headers.FirstIndexMatch(h => h.ToLower().Equals(blockCollection.Attribute(DSS.itemIndexColumn)?.Value.ToLower())),
+                    valColumn = headers.FirstIndexMatch(h => h.ToLower().Equals(blockCollection.Attribute(DSS.valColumn)?.Value.ToLower()));
+                string nodeKey;
+                foreach (var line in executer.GetLines())
                 {
-                    int columns = executer.Reader.FieldCount;
-                    int indexColumn = -1, valColumn = -1;
-                    for (int i = 0; i < columns; i++)
-                    {
-                        if (executer.Reader.GetName(i).ToLower().Equals(blockCollection.Attribute(DSS.itemIndexColumn)?.Value.ToLower()))
-                        {
-                            indexColumn = i;
-                        }
-                        if (executer.Reader.GetName(i).ToLower().Equals(blockCollection.Attribute(DSS.valColumn)?.Value.ToLower()))
-                        {
-                            valColumn = i;
-                        }
-                    }
-                    string nodeKey;
                     var node = new XElement(name);
                     if (valColumn == -1)
                     {
-                        for (int i = 0; i < columns; i++)
+                        if (indexColumn != -1)
                         {
-                            if (i == indexColumn)
-                            {
-                                nodeKey = executer.Reader.GetStringOrEmpty(indexColumn);
-                                node.Add(new XAttribute(ITEM_KEY_NAME, nodeKey));
-                                continue;
-                            }
-                            else
-                            {
-                                node.Add(new XElement(executer.Reader.GetName(i).ToLower(), executer.Reader.GetStringOrEmpty(i)));
-                            }    
+                            nodeKey = line.ElementAt(indexColumn).Value;
+                            node.Add(new XAttribute(ITEM_KEY_NAME, nodeKey));
                         }
+                        node.Add(line.Where(
+                                (_, index) => index != indexColumn
+                            ).Select(
+                                f => new XElement(f.ColumnName.ToLower(), f.Value)
+                            ));
                     }
                     else
                     {
-                        for (int i = 0; i < columns; i++)
+                        if (indexColumn != -1)
                         {
-                            if (i == indexColumn)
-                            {
-                                nodeKey = executer.Reader.GetStringOrEmpty(indexColumn);
-                                node.Add(new XAttribute(ITEM_KEY_NAME, nodeKey));
-                                continue;
-                            }
-                            if (i == valColumn)
-                            {
-                                node.Value = executer.Reader.GetStringOrEmpty(valColumn);
-                            }
+                            nodeKey = line.ElementAt(indexColumn).Value;
+                            node.Add(new XAttribute(ITEM_KEY_NAME, nodeKey));
                         }
+                        node.Value = line.ElementAt(valColumn).Value;
                     }
                     partRoot.Add(node);
                 }
+            }
         }
 
         /// <summary>
@@ -155,78 +134,58 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
             var argument = GetArgument(blockFor, partRoot);
             List<string> listOfLines = new List<string>();
             using (QueryExecuter executer = executerWork.GetExecuterForQuery(blockFor.Value, argument))
-                while (executer.Reader.Read())
+            {
+                int indexColumn = executer.GetHeaders().FirstIndexMatch(h => h.ToLower().Equals(blockFor.Attribute(DSS.itemIndexColumn)?.Value.ToLower()));
+                foreach (var line in executer.GetLines())
                 {
-                    int columns = executer.Reader.FieldCount;
-                    int indexColumn = -1;
-                    for (int i = 0; i < columns; i++)
-                    {
-                        if (executer.Reader.GetName(i).ToLower().Equals(blockFor.Attribute(DSS.itemIndexColumn).Value.ToLower()))
-                        {
-                            indexColumn = i;
-                        }
-                    }
                     try
                     {
-                        listOfLines.Add(executer.Reader.GetString(indexColumn));
+                        listOfLines.Add(line.ElementAt(indexColumn).Value);
                     }
                     catch (IndexOutOfRangeException ex) // If index is null
                     {
                         RepositoryExceptionHelper.ThrowIndexOfForElementFailure(ex);
                     }
                     var partItem = new XElement(blockTable.Attribute(DSS.name)?.Value.ToLower());
-                    for (int i = 0; i < columns; i++)
-                    {
-                        if (i == indexColumn)
-                        {
-                            partItem.Add(new XAttribute(ITEM_KEY_NAME, executer.Reader.GetStringOrEmpty(indexColumn)));
-                            continue;
-                        }
-                        partItem.Add(new XElement(executer.Reader.GetName(i).ToLower(), executer.Reader.GetStringOrEmpty(i)));
-                    }
+                    partItem.Add(new XAttribute(ITEM_KEY_NAME, line.ElementAt(indexColumn)));
+                    partItem.Add(line.Where(
+                            (_, index) => index != indexColumn
+                        ).Select(
+                            f => new XElement(f.ColumnName.ToLower(), f.Value)
+                        ).ToArray());
                     partRoot.Add(partItem);
                 }
+            }
             var blockTableQuery = blockGet;
             foreach (var lineArg in listOfLines)
             {
                 using (QueryExecuter executer = executerWork.GetExecuterForQuery(blockTableQuery.Value, lineArg, argument))
-                    while (executer.Reader.Read())
+                {
+                    XElement partAccessField = new XElement(containerName);
+                    string infoResourceId = null;
+                    var headers = executer.GetHeaders();
+                    int indexColumn = headers.FirstIndexMatch(h => h.ToLower().Equals(blockTableQuery.Attribute(DSS.itemIndexColumn).Value.ToLower())),
+                        groupColumn = headers.FirstIndexMatch(h => h.ToLower().Equals(blockTableQuery.Attribute(DSS.groupColumn).Value.ToLower()));
+                    foreach (var line in executer.GetLines())
                     {
-                        XElement partAccessField = new XElement(containerName);
-                        string infoResourceId = null;
-                        int columns = executer.Reader.FieldCount;
-                        int indexColumn = -1, groupColumn = -1;
-                        for (int i = 0; i < columns; i++)
-                        {
-                            if (executer.Reader.GetName(i).ToLower().Equals(blockTableQuery.Attribute(DSS.itemIndexColumn).Value.ToLower()))
-                            {
-                                indexColumn = i;
-                            }
-                            if (executer.Reader.GetName(i).ToLower().Equals(blockTableQuery.Attribute(DSS.groupColumn).Value.ToLower()))
-                            {
-                                groupColumn = i;
-                            }
-                        }
-                        for (int i = 0; i < columns; i++)
-                        {
-                            if (i == groupColumn)
-                            {
-                                infoResourceId = executer.Reader.GetStringOrEmpty(groupColumn);
-                                continue;
-                            }
-                            if (i == indexColumn)
-                            {
-                                partAccessField.Add(new XAttribute(ITEM_KEY_NAME, executer.Reader.GetStringOrEmpty(indexColumn)));
-                                continue;
-                            }
-                            partAccessField.Add(new XElement(executer.Reader.GetName(i).ToLower(), executer.Reader.GetStringOrEmpty(i)));
-                        }
-                        var partFoundedAccessFields = partRoot.Elements(blockTable.Attribute(DSS.name)?.Value.ToLower()).Where((n) => n.Attribute(ITEM_KEY_NAME).Value.Equals(infoResourceId)).SingleOrDefault();
+                        infoResourceId = line.ElementAt(groupColumn).Value;
+                        partAccessField.Add(new XAttribute(ITEM_KEY_NAME, line.ElementAt(indexColumn).Value));
+                        partAccessField.Add(line.Where(
+                                (_, index) => index != groupColumn && index != indexColumn
+                            ).Select(
+                                f => new XElement(f.ColumnName.ToLower(), f.Value)
+                            ));
+                        var partFoundedAccessFields = partRoot.Elements(
+                                blockTable.Attribute(DSS.name)?.Value.ToLower()
+                            ).Where(
+                                (n) => n.Attribute(ITEM_KEY_NAME).Value.Equals(infoResourceId)
+                            ).SingleOrDefault();
                         if (partFoundedAccessFields != null)
                         {
                             partFoundedAccessFields.Add(partAccessField);
                         }
                     }
+                }
             }
         }
 

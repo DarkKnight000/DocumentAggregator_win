@@ -1,6 +1,7 @@
 ﻿using Oracle.ManagedDataAccess.Client;
 using Oracle.ManagedDataAccess.Types;
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
@@ -89,6 +90,27 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
         internal static string GetStringOrEmpty(this OracleDataReader reader, int column)
         {
             return reader.IsDBNull(column) ? string.Empty : reader.GetString(column);
+        }
+
+        /// <summary>
+        /// Находит индекс первого элемента в перечислении, подходящего по условию.
+        /// </summary>
+        /// <typeparam name="T">Тип элементов перечисления.</typeparam>
+        /// <param name="source">Перечисление, в котором проводится поиск.</param>
+        /// <param name="predicate">Условие, по первому возвращению <see langword="true"/> которого будет возвращён индекс элемента.</param>
+        /// <returns>Индекс найденного элемента или -1.</returns>
+        internal static int FirstIndexMatch<T>(this IEnumerable<T> source, Func<T, bool> predicate)
+        {
+            int index = 0;
+            foreach (var el in source)
+            {
+                if (predicate(el))
+                {
+                    return index;
+                }
+                index++;
+            }
+            return -1;
         }
     }
 }

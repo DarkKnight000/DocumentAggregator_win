@@ -1,6 +1,7 @@
 ﻿using DocAggregator.API.Core;
 using Oracle.ManagedDataAccess.Client;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace DocAggregator.API.Infrastructure.OracleManaged
@@ -21,6 +22,30 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
             => new QueryExecuter(this, /*string.Format(*/query/*, args)*/, args);
     }
 
+    class QueryObject
+    {
+        public string Value { get; set; }
+        public string ColumnName { get; set; }
+
+        public static QueryObject[] CompactObjectsWithNames(IEnumerable<object> values, IEnumerable<string> columns)
+        {
+            return values.Zip(
+                    columns
+                ).Select(
+                    t => new QueryObject()
+                    {
+                        Value = t.First?.ToString() ?? string.Empty,
+                        ColumnName = t.Second
+                    }
+                ).ToArray();
+        }
+
+        public override string ToString()
+        {
+            return Value;
+        }
+    }
+
     /// <summary>
     /// Объект исполнителя запроса.
     /// </summary>
@@ -32,7 +57,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
         readonly OracleCommand _command = null;
         readonly OracleDataReader _reader = null;
 
-        public OracleDataReader Reader => _reader;
+        protected OracleDataReader Reader => _reader;
 
         public QueryExecuter(QueryExecuterWorkspace work, string query, params string[] args)
         {
@@ -69,6 +94,20 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                     StaticExtensions.ShowExceptionMessage(work.Connection, ex, _command.CommandText, work.SqlReqource);
                 }
                 work.Connection.Close();
+            }
+        }
+
+        public IEnumerable<string> GetHeaders() => Enumerable.Range(0, Reader.FieldCount).Select(i => Reader.GetName(i));
+
+        public IEnumerable<ICollection<QueryObject>> GetLines()
+        {
+            var columnCount = Reader.FieldCount;
+            var columns = GetHeaders();
+            while (Reader.Read())
+            {
+                var results = new object[columnCount];
+                Reader.GetValues(results);
+                yield return QueryObject.CompactObjectsWithNames(results, columns);
             }
         }
 
