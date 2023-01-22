@@ -237,9 +237,34 @@ namespace DocAggregator.API.Core.Wml
                     {
                         throw new SolvableValidationException(insert);
                     }
-                    innerTextContainer.Descendants(W.rStyle).SingleOrDefault()?.Remove();
+                    XElement run = null;
+                    foreach (var extraRun in innerTextContainer.Descendants(W.r))
+                    {
+                        if (run == null)
+                        {
+                            run = extraRun;
+                        }
+                        else
+                        {
+                            if (XNode.DeepEquals(run.Element(W.rPr), extraRun.Element(W.rPr)))
+                            {
+                                run.Element(W.t).Value += extraRun.Element(W.t).Value;
+                            }
+                            else
+                            {
+                                throw new SolvableException(
+                                    string.Format("The text container name of \"{0}\" has several ({1}) so called \"runs\" with different properties. In the {2}({3})({4}).",
+                                        innerTextContainer.Name,
+                                        innerTextContainer.Descendants(W.rStyle).Count(),
+                                        insert.Kind, insert.OriginalMask, insert.Tag
+                                    ),
+                                    "Remove the affected content control and create it again.");
+                            }
+                        }
+                    }
+                    innerTextContainer.Descendants(W.r).Skip(1).Remove();
+                    innerTextContainer.Descendants(W.rStyle).FirstOrDefault()?.Remove();
                     XElement tagRunPr = sdt.Element(W.sdtPr)?.Element(W.rPr);
-                    XElement run = innerTextContainer.DescendantsAndSelf(W.r).Single();
                     if (tagRunPr != null && run != null)
                     {
                         XElement runPr = run.Element(W.rPr);

@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE DataSource SYSTEM "BindingDoctype.dtd">
+<ds:DataSource xmlns:ds="http://ntc.rosneft.ru/DBD/DocumentAggegator/Structure"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	           documentKind="Stocktaking_altTest">
+	<ds:Query arguments="id">
+select distinct
+    TO_CHAR(inv.created_on, 'DD.MM.YYYY', 'nls_date_language = RUSSIAN') AS created,
+    OBD_SYS.GET_FIO_FULL(inv.user_id1) AS mover_full,
+    OBD_SYS.GET_FIO_FULL(inv.user_id2) AS acceptor_full,
+    OBD_SYS.GET_DEPARTMENT_NAME(inv.user_id2) AS department,
+    OBD_SYS.GET_USER_POSITION(inv.user_id1) AS mover_position,
+    OBD_SYS.GET_USER_POSITION(inv.user_id2) AS acceptor_position,
+    case addr.building_id
+        when 3115 then 'удаленно'
+        else 'по адресу – ' || addr.description
+    end AS address,
+    OBD_SYS.GET_FIO(inv.user_id1) AS mover,
+    OBD_SYS.GET_FIO(inv.user_id2) AS acceptor
+from hrd.invent_process_new inv
+    JOIN obd_sys.user_location loc ON (loc.user_id = inv.user_id2)
+    JOIN hrd.dict_room room ON (room.room_id = loc.room_id)
+    JOIN hrd.building addr ON (addr.building_id = room.building_id)
+where inv.proc_id = :0
+	</ds:Query>
+<ds:Collection arguments="id" name="os">
+select os.id_1c_ as id,
+    ro.naimen as name,
+    ro.ser_number as serial,
+    os.inv_num as inventory
+from hrd.invent_process_new inv
+    join hrd.invent_full os on (inv.proc_id = os.act)
+    join hrd.invent_os_1c ro on (trim(os.INV_NUM) =trim(ro.INVENT_NUMBER))
+where inv.proc_id = :0
+    </ds:Collection>
+</ds:DataSource>
