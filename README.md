@@ -4,6 +4,8 @@ Document aggregator - Проект глобального Web-API приложения для автоматизации до
 
 Автор:
 Костин Анатолий (anatoly.kostin.work@gmail.com)
+Редактирование:
+Бадалов Ашот (ashot.badalov@gmail.com)
 
 Редактирование:
 Бадалов Ашот (ashot.badalov@gmail.com)
