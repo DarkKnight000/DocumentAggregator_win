@@ -1,10 +1,17 @@
 ﻿using DocAggregator.API.Core;
 using DocAggregator.API.Core.Models;
 using DocAggregator.API.Core.Wml;
+using DocumentFormat.OpenXml.Bibliography;
+using DocumentFormat.OpenXml.InkML;
+using DocumentFormat.OpenXml.Spreadsheet;
+using DocumentFormat.OpenXml.Wordprocessing;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Xml;
 
 namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
@@ -28,6 +35,8 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
             set
             {
                 _templatesDirectory = Path.GetFullPath(value);
+
+                //_logger.Trace("_templatesDirectory: " + _templatesDirectory);
             }
         }
         private string _templatesDirectory;
@@ -87,6 +96,8 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
 
             var editor = options.GetOptionsOf<EditorConfigOptions>();
             TemplatesDirectory = editor.TemplatesDir;
+
+            //_logger.Trace("TemplatesDirectory: " + TemplatesDirectory);
             LibreOfficeFolder = editor.LibreOffice;
             Scripts = editor.Scripts;
 #if !DEBUG
@@ -107,10 +118,10 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
         private void Initialize()
         {
             _logger.Trace("Check Python.");
-            if (!File.Exists(Path.Combine(LibreOfficeFolder, "python.exe")))
+            /*if (!File.Exists(Path.Combine(LibreOfficeFolder, "python.exe")))
             {
-                Debugger.Break();
-            }
+                //Debugger.Break();
+            }*/
             _logger.Trace("Check scripts.");
             if (!Directory.Exists(Scripts))
             {
@@ -130,27 +141,42 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
             if (Process.GetProcessesByName("soffice").Length == 0)
             {
                 _logger.Information("Did not found a LibreOffice process. Starting a server.");
-                ProcessStartInfo processServerInfo = new ProcessStartInfo()
+                //_logger.Information("Libre path " + LibreOfficeExecutable);
+
+                // Запуск libreoffice(soffice) если не запущен 
+                //_logger.Information("Path LibreOfficeExecutable:   " + LibreOfficeExecutable);
+                /*ProcessStartInfo processServerInfo = new ProcessStartInfo()
                 {
                     // cmd> cd "D:\Users\akkostin\source\repos\DocumentAggregator\unoserver\src\unoserver"
                     WorkingDirectory = Scripts,
-                    FileName = "python",
-                    Arguments = $"server.py --executable \"{LibreOfficeExecutable}\"",
-#if !DEBUG
-                    UserName = UserName,
-                    PasswordInClearText = UserPassword,
-#endif
+
+                    FileName = "sh",
+                    Arguments = $"start_uno.sh",
+
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    CreateNoWindow = true
+                    //#endif
                 };
-                // cmd> python server.py --executable "C:\Program Files\LibreOffice\program\soffice"
-                _serverConverterProc = new Process();
-                _serverConverterProc.StartInfo = processServerInfo;
-                _serverConverterProc.Start();
+
+                Process serverInfoProcess = new Process()
+                {
+                    StartInfo = processServerInfo
+                };
+
+                serverInfoProcess.Start();
+                serverInfoProcess.BeginErrorReadLine();
+                //serverInfoProcess.WaitForExit();
+                Thread.Sleep(500);*/
             }
         }
 
         public IDocument OpenTemplate(string path)
         {
             EnsureInitialize();
+
+            //_logger.Trace("TemplatesDirectory + path: " + TemplatesDirectory + " + " + path);       // E:\DocumentAggregator\Templates + Claim\КРР-04 ИС ОДФР/Заявка для сотрудников НТЦ.docx
             return new WordMLDocument(Path.Combine(TemplatesDirectory, path));
         }
 
@@ -178,13 +204,25 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
         {
             EnsureInitialize();
             WordMLDocument documentContainer = document as WordMLDocument;
+
+            //_logger.Trace("documentContainer + " + documentContainer.TemporaryDocumentPath);
+            //File.Delete(documentContainer.TemporaryDocumentPath);
+
             if (documentContainer.Finalized)
             {
                 throw new InvalidOperationException("The document was already finalized.");
             }
             string inputFile = documentContainer.TemporaryDocumentPath;
+
+            //_logger.Trace("inputFile + " + inputFile);
+
+            //File.Delete(inputFile);
+
+            //_logger.Trace("inputFile: " + inputFile);
             var wordDocument = documentContainer.Content;
             _logger.Trace("Save an edited part back into a stream.");
+
+
             using (var ds = wordDocument.MainDocumentPart.GetStream(FileMode.Create, FileAccess.Write))
             using (var xw = XmlWriter.Create(ds))
             {
@@ -205,56 +243,91 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
                 _logger.Debug("Setting LibreOffice folder in PATH variable.");
                 Environment.SetEnvironmentVariable("PATH", envPATH, EnvironmentVariableTarget.Process);
             }
+
+            // Создание нового процесса запуска конвертации docx в pdf
             ProcessStartInfo processStartInfo = new ProcessStartInfo()
             {
                 // cmd> cd "D:\Users\akkostin\source\repos\DocumentAggregator\unoserver\src\unoserver"
                 WorkingDirectory = Scripts,
-                FileName = "python",
-                Arguments = $"converter.py --convert-to pdf \"{inputFile}\" -",
+
+                //FileName = "python",
+                //Arguments = $"converter.py --convert-to pdf \"{inputFile}\" -",
+ 
+                // for win
+                FileName = Path.Combine(LibreOfficeFolder, "python"),
+                Arguments = $"unoconv.py -f pdf \"{inputFile}\" -",
+                
+                // for lin
+                //FileName = "python3",
+                //Arguments = $"unoconv.py -f pdf \"{inputFile}\"",
+                
+                //FileName = "bash",
+                //Arguments = $"convert.sh \"{inputFile}\"",
+
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
+                //CreateNoWindow = true
             };
+
             Process convertingProcess = new Process() { StartInfo = processStartInfo };
             convertingProcess.ErrorDataReceived += (sender, args) =>
             {
                 _converterLogger.Log(args.Data);
             };
+
+            _logger.Trace($"inputFile {inputFile}");
             _logger.Trace("Start a converter.");
+
             convertingProcess.Start();
             convertingProcess.BeginErrorReadLine();
             _logger.Debug("Reading converter output.");
-            var outputStream = new MemoryStream();
-            convertingProcess.StandardOutput.BaseStream.CopyTo(outputStream);
-            outputStream.Seek(0, SeekOrigin.Begin);
+
+            //var outputStream = new MemoryStream();
+            //convertingProcess.StandardOutput.BaseStream.CopyTo(outputStream);
+            //outputStream.Seek(0, SeekOrigin.Begin);
             convertingProcess.WaitForExit();
-            if (convertingProcess.ExitCode != 0)
+
+            /*if (convertingProcess.ExitCode != 0)
             {
                 _logger.Error("Converter exited with an exit code {0}.", convertingProcess.ExitCode);
                 Debugger.Break();
-            }
+            }*/
+
+
             // BASE64 decoding hotfix: white PDF pages
-            MemoryStream hotFixOutput = new MemoryStream();
-            using (BinaryReader reader = new BinaryReader(outputStream))
+            var hotFixOutput = new MemoryStream();
+            
+            // Чтение pdf из потока
+            /*using (BinaryReader reader = new BinaryReader(outputStream))
             using (BinaryWriter writer = new BinaryWriter(hotFixOutput, System.Text.Encoding.UTF8, true))
             {
+                //_logger.Debug("outputStream.Length: " + outputStream.ToString() + " + " + outputStream.Length);
                 var bytes = reader.ReadBytes((int)outputStream.Length);
+                //_logger.Debug("bytes.Length: " + bytes.ToString() + " + " + bytes.Length);
                 var eofSeq = System.Text.Encoding.UTF8.GetBytes("%%EOF");
+                //_logger.Debug("eofSeq + Length: " + eofSeq.ToString() + " + " + eofSeq.Length);
                 var eofMatch = Locate(bytes, eofSeq);
+                //_logger.Debug($"bytes + eofMatch[0] + eofSeq.Length {bytes} + {eofMatch[0]} + {eofSeq.Length}");
                 writer.Write(bytes, 0, eofMatch[0] + eofSeq.Length + 1); // +1 for the '\n'
-            }
+            }*/
             hotFixOutput.Seek(0, SeekOrigin.Begin);
+
             // hotfix end
-            File.Delete(documentContainer.TemporaryDocumentPath);
-            documentContainer.Finalized = true;
+            File.Delete(documentContainer.TemporaryDocumentPath);     // Удаление .docx
+
+
+            /*documentContainer.Finalized = true;
             if (convertingProcess.ExitCode != 0)
             {
                 throw new InvalidOperationException($"Converter exited with an exit code {convertingProcess.ExitCode}.");
-            }
+            }*/
+            
             return hotFixOutput;
+            //return null;
         }
 
-#region Byte array pattern search
+        #region Byte array pattern search
 
         /*
          * Solution from https://stackoverflow.com/questions/283456/byte-array-pattern-search
@@ -300,9 +373,9 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
                 || candidate.Length > array.Length;
         }
 
-#endregion
+        #endregion
 
-#region IDisposable impl
+        #region IDisposable impl
 
         protected virtual void Dispose(bool disposing)
         {
@@ -331,6 +404,6 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
             GC.SuppressFinalize(this);
         }
 
-#endregion
+        #endregion
     }
 }

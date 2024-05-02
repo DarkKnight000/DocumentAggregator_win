@@ -62,6 +62,7 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
 
             try
             {
+                // TODO: FILEWATCHER
                 using (StreamReader streamReader = new StreamReader(Path.GetFullPath(db.QueriesFile)))
                 {
                     XmlSerializer deserializer = new XmlSerializer(typeof(List<SqlQuery>));

@@ -10,29 +10,29 @@
      !-->
     <!-- Основные поля -->
 	<ds:Query arguments="id">
-select extract(year from sysdate) year
-    ,pos.is_manager
-    ,hrd_doc.get_chief_position() chief_position
-    ,hrd_doc.get_chief_name() chief_name
-    ,hrd_doc.get_department(des.DEPARTMENT_ID) department
-    ,hrd_doc.get_parent_department(des.DEPARTMENT_ID) parent_department
-    ,hrd_doc.GET_POSITION(des.POSITION_ID) position
-    ,hrd_doc.GET_GRADE_INT(des.POSITION_ID) grade
-    ,hrd_doc.GET_CATEGORY_INT(des.POSITION_ID) category
-    ,hrd_doc.GET_POSITION_SHORTINFO(des.POSITION_ID) position_info
-    ,NVL2(pos.s_department_id, ' ('||HRD_DOC.get_department(pos.s_department_id)||')', '') subposition_name
-    ,des.pd_number
-    ,des.general_area
-    ,des.general_order
-    ,hrd_doc.GET_subordination(hrd_doc.GET_SUBORDINATION_CHIEF(des.department_id, pos.is_manager)) subordination
-    ,hrd_doc.GET_EDUCATION_INFO(hrd_doc.GET_GRADE_INT(des.POSITION_ID), hrd_doc.GET_CATEGORY_INT(des.POSITION_ID)) education
-    ,hrd_doc.GET_SPECEDUCATION_INFO(hrd_doc.GET_GRADE_INT(des.POSITION_ID), hrd_doc.GET_CATEGORY_INT(des.POSITION_ID)) speceducation
-    ,des.COMP_EDUCATION compeducation
-    ,hrd_doc.GET_EXPERIENCE_INFO(hrd_doc.GET_GRADE_INT(des.POSITION_ID), hrd_doc.GET_CATEGORY_INT(des.POSITION_ID)) experience
-    ,upper(substr(hrd_doc.GET_POSITION(des.POSITION_ID),1, 1))||substr(hrd_doc.GET_POSITION(des.POSITION_ID), 2)||'(гр.'||hrd_doc.GET_GRADE_INT(des.POSITION_ID)||'/кат.'||hrd_doc.GET_CATEGORY_INT(des.POSITION_ID)||')' full_position
-from hrd_doc.post_description des
-    join hrd_doc.department_position pos on (pos.id = des.position_id)
-where des.id = :0
+		select extract(year from sysdate) year
+		,pos.is_manager
+		,hrd_doc.get_chief_position() chief_position
+		,hrd_doc.get_chief_name() chief_name
+		,hrd_doc.get_department(des.DEPARTMENT_ID) department
+		,hrd_doc.get_parent_department(des.DEPARTMENT_ID) parent_department
+		,hrd_doc.GET_POSITION(des.POSITION_ID) position
+		,hrd_doc.GET_GRADE_INT(des.POSITION_ID) grade
+		,hrd_doc.GET_CATEGORY_INT(des.POSITION_ID) category
+		,hrd_doc.GET_POSITION_SHORTINFO(des.POSITION_ID) position_info
+		,NVL2(pos.s_department_id, ' ('||HRD_DOC.get_department(pos.s_department_id)||')', '') subposition_name
+		,des.pd_number
+		,des.general_area
+		,des.general_order
+		,hrd_doc.GET_subordination(hrd_doc.GET_SUBORDINATION_CHIEF(des.department_id, pos.is_manager)) subordination
+		,hrd_doc.GET_EDUCATION_INFO(hrd_doc.GET_GRADE_INT(des.POSITION_ID), hrd_doc.GET_CATEGORY_INT(des.POSITION_ID)) education
+		,hrd_doc.GET_SPECEDUCATION_INFO(hrd_doc.GET_GRADE_INT(des.POSITION_ID), hrd_doc.GET_CATEGORY_INT(des.POSITION_ID)) speceducation
+		,des.COMP_EDUCATION compeducation
+		,hrd_doc.GET_EXPERIENCE_INFO(hrd_doc.GET_GRADE_INT(des.POSITION_ID), hrd_doc.GET_CATEGORY_INT(des.POSITION_ID)) experience
+		,upper(substr(hrd_doc.GET_POSITION(des.POSITION_ID),1, 1))||substr(hrd_doc.GET_POSITION(des.POSITION_ID), 2)||'(гр.'||hrd_doc.GET_GRADE_INT(des.POSITION_ID)||'/кат.'||hrd_doc.GET_CATEGORY_INT(des.POSITION_ID)||')' full_position
+		from hrd_doc.post_description des
+		join hrd_doc.department_position pos on (pos.id = des.position_id)
+		where des.id = :0
 	</ds:Query>
     <!-- Нормативные докумменты -->
 	<ds:Collection name="normdoc" itemIndexColumn="key" valColumn="val">

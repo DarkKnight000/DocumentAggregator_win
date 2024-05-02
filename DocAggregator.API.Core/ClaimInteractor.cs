@@ -28,6 +28,8 @@ namespace DocAggregator.API.Core
         /// <returns>Идентификатор модели, либо литерал "unknown".</returns>
         public string GetID() => Args.ContainsKey("id") ? Args["id"] : "unknown";
 
+        public static string GetReqID;
+
         /// <summary>
         /// Декодирует каждый элемент поля <see cref="Args"/>, зашифрованных BASE64, в кодировку платформы по-умолчанию.
         /// </summary>
@@ -53,9 +55,16 @@ namespace DocAggregator.API.Core
                 else
                 {
                     logger?.Warning("{0} wasn't decoded, value is \"{1}\"", key, argValue);
+                    if (key.ToUpper() == "ID")
+                    {
+                        GetReqID = argValue;
+                    }
                     success = false;
                 }
+
+                //logger.Trace("Request_id=" + key + argValue);
             }
+            //logger.Trace("Request_id=" + GetID() + Args["id"]);
             return success;
         }
     }

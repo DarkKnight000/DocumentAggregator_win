@@ -143,6 +143,7 @@ namespace DocAggregator.API.Core.Tests
             var WMLDocument = XDocument.Parse(input);
             var WMLEditor = new Wml.WordprocessingMLEditor(Logger);
             var checkInsert = WMLEditor.FindInserts(WMLDocument).First();
+            //checkInsert.ReplacedCheckmark = false;
             checkInsert.ReplacedCheckmark = false;
 
             WMLEditor.SetInserts(checkInsert);

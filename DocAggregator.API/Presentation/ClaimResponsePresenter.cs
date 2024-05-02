@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
 using System.Text;
+using Microsoft.AspNetCore.Http.HttpResults;
+using DocumentFormat.OpenXml.Spreadsheet;
 
 namespace DocAggregator.API.Presentation
 {
@@ -51,10 +53,12 @@ namespace DocAggregator.API.Presentation
                     }
                 }
                 result.AppendLine(err.StackTrace);
+                
             }
             if (response.Errors.All(ex => ex is SolvableValidationException))
             {
                 httpCode = 528; // Not registered code. Meaning for the project: Validation error.
+                
             }
             return new ObjectResult(result.ToString())
             {
