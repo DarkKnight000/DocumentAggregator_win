@@ -33,6 +33,7 @@ namespace DocAggregator.API.Pages
         public bool Scripts { get; set; }
         public string ScriptsPath { get; set; }
         public bool Server { get; set; }
+        public IEnumerable<Presentation.HistoryEntry> LogHistory { get; set; }
         public bool IsCorrect { get; set; } = true;
         public HtmlString Dump { get; set; }
 
@@ -98,6 +99,7 @@ namespace DocAggregator.API.Pages
             {
                 Server = true;
             }
+            LogHistory = Presentation.Logger.GlobalHistory;
             return;
         }
 

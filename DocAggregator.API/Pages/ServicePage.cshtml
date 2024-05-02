@@ -3,111 +3,138 @@
 
 @if (Model.IsCorrect)
 {
-    <h1>Проверка конфигурации.</h1>
-    <h2>Database:</h2>
-    <p>
-        Ресурс запросов -
-        @if (Model.Queries.HasValue)
-        {
-            <span class="Ready">@Model.Queries.Value @Model.CountableDeclension(Model.Queries.Value,"запрос","","а","ов")</span>
-        }
-        else
-        {
-            <span class="Error">отсутствует</span>
-        }
-    </p>
-    <p>
-        Привязка типов к запросам -
-        @if (Model.Bindings.HasValue && !Model.Bindings.Value.Equals(0))
-        {
-            <span class="Ready">@Model.Bindings.Value @Model.CountableDeclension(Model.Bindings.Value,"привяз","ка","ки","ок")</span>
-        }
-        else
-        {
-            <span class="Error">отсутствует</span>
-        }
-    </p>
-    <p>
-        Подключение к базе данных -
-        @if (Model.Connection)
-        {
-            <span class="Ready">готово</span>
-        }
-        else
-        {
-            <span class="Error">отсутствует</span>
-        }
-    </p>
-    <h2>Editor:</h2>
-    @if (Model.Templates.Count() > 0)
-    {
+    <div style="margin-right: 10px; float: left">
+        <h1>Проверка конфигурации.</h1>
+        <h2>Database:</h2>
         <p>
-            Привязки шаблонов -
-        </p>
-        <ul>
-            @foreach (var item in @Model.Templates)
+            Ресурс запросов -
+            @if (Model.Queries.HasValue)
             {
-                <li>"@item.Item1" <span class="Ready">имеет @item.Item2 @Model.CountableDeclension(@item.Item2,"файл","","а","ов")</span></li>
+                <span class="Ready">@Model.Queries.Value @Model.CountableDeclension(Model.Queries.Value,"запрос","","а","ов")</span>
             }
-        </ul>
-    }
-    else
-    {
-        <p>
-            Привязки шаблонов - <span class="Error">не найдены</span>
-        </p>
-    }
-    @if (Model.Files.Count() > 0)
-    {
-        <p>
-            Файлы шаблонов -
-        </p>
-        <ul>
-            @foreach (var item in @Model.Files)
+            else
             {
-                <li>"@item.Item1" <span class="Ready">имеет @item.Item2 @Model.CountableDeclension(@item.Item2,"файл","","а","ов")</span></li>
+                <span class="Wrong">отсутствует</span>
             }
-        </ul>
-    }
-    else
-    {
-        <p>
-            Файлы шаблонов - <span class="Error">не найдены</span>
         </p>
+        <p>
+            Привязка типов к запросам -
+            @if (Model.Bindings.HasValue && !Model.Bindings.Value.Equals(0))
+            {
+                <span class="Ready">@Model.Bindings.Value @Model.CountableDeclension(Model.Bindings.Value,"привяз","ка","ки","ок")</span>
+            }
+            else
+            {
+                <span class="Wrong">отсутствует</span>
+            }
+        </p>
+        <p>
+            Подключение к базе данных -
+            @if (Model.Connection)
+            {
+                <span class="Ready">готово</span>
+            }
+            else
+            {
+                <span class="Wrong">отсутствует</span>
+            }
+        </p>
+        <h2>Editor:</h2>
+        @if (Model.Templates.Count() > 0)
+        {
+            <p>
+                Привязки шаблонов -
+            </p>
+            <ul>
+                @foreach (var item in @Model.Templates)
+                {
+                    <li>"@item.Item1" <span class="Ready">имеет @item.Item2 @Model.CountableDeclension(@item.Item2,"файл","","а","ов")</span></li>
+                }
+            </ul>
+        }
+        else
+        {
+            <p>
+                Привязки шаблонов - <span class="Wrong">не найдены</span>
+            </p>
+        }
+        @if (Model.Files.Count() > 0)
+        {
+            <p>
+                Файлы шаблонов -
+            </p>
+            <ul>
+                @foreach (var item in @Model.Files)
+                {
+                    <li>"@item.Item1" <span class="Ready">имеет @item.Item2 @Model.CountableDeclension(@item.Item2,"файл","","а","ов")</span></li>
+                }
+            </ul>
+        }
+        else
+        {
+            <p>
+                Файлы шаблонов - <span class="Wrong">не найдены</span>
+            </p>
+        }
+        <p>
+            Редактор LibreOffice -
+            @if (Model.Editor)
+            {
+                <span class="Ready">готов</span>
+            }
+            else
+            {
+                <span class="Wrong">отсутствует</span><span> по пути "@Model.EditorPath"</span>
+            }
+        </p>
+        <p>
+            Скрипты конвертера -
+            @if (Model.Scripts)
+            {
+                <span class="Ready">готов</span>
+            }
+            else
+            {
+                <span class="Wrong">отсутствует</span><span> по пути "@Model.ScriptsPath"</span>
+            }
+        </p>
+        <p>
+            Сервер конвертера -
+            @if (Model.Server)
+            {
+                <span class="Ready">готов</span>
+            }
+            else
+            {
+                <span class="Wrong">отсутствует</span>
+            }
+        </p>
+    </div>
+    @if (Model.LogHistory.Any())
+    {
+        <div style="float: left; background: #ccd">
+            <h1>Журнал событий:</h1>
+            <p>@Model.CountableDeclension(@DocAggregator.API.Presentation.Logger.HISTORY_LENGTH, "Записан", "о", "ы", "ы") @Model.CountableDeclension(@DocAggregator.API.Presentation.Logger.HISTORY_LENGTH, "последн", "ее", "ие", "ие") @DocAggregator.API.Presentation.Logger.HISTORY_LENGTH @Model.CountableDeclension(@DocAggregator.API.Presentation.Logger.HISTORY_LENGTH, "событи", "е", "й", "й")</p>
+            <ul style="list-style-type: none; padding-left: 0px;">
+                @foreach (var entry in Model.LogHistory)
+                {
+                <li>
+                    <span title="@entry.StackTrace" class="Dot @entry.Severity.ToString()"></span>
+                    @entry.Time: @entry.Message
+                    @if (entry.Exception != null)
+                    {
+                        <br />
+                        <span>@entry.Exception.GetType().ToString()</span>
+                        <br />
+                        <span>@entry.Exception.Message</span>
+                        <br />
+                        <span>@entry.Exception.StackTrace</span>
+                    }
+                </li>
+                }
+            </ul>
+        </div>
     }
-    <p>
-        Редактор LibreOffice -
-        @if (Model.Editor)
-        {
-            <span class="Ready">готов</span>
-        }
-        else
-        {
-            <span class="Error">отсутствует</span><span> по пути "@Model.EditorPath"</span>
-        }
-    </p>
-    <p>
-        Скрипты конвертера -
-        @if (Model.Scripts)
-        {
-            <span class="Ready">готов</span>
-        }
-        else
-        {
-            <span class="Error">отсутствует</span><span> по пути "@Model.ScriptsPath"</span>
-        }
-    </p>
-    <p>
-        Сервер конвертера -
-        @if (Model.Server)
-        {
-            <span class="Ready">готов</span>
-        }
-        else
-        {
-            <span class="Error">отсутствует</span>
-        }
-    </p>
     @if (Model.Dump != null)
     {
         <h2>Dump:</h2>

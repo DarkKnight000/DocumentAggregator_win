@@ -34,7 +34,16 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
         {
             MemoryStream tempStream = new MemoryStream();
             //File.OpenRead(path).CopyTo(tempStream);
-            TemporaryDocumentPath = Path.Combine(Path.GetTempPath(), System.Guid.NewGuid().ToString() + ".docx");
+            //TemporaryDocumentPath = Path.Combine(Path.GetTempPath(), System.Guid.NewGuid().ToString() + ".docx");
+            TemporaryDocumentPath = Path.Combine(Path.GetTempPath(), $"{DocumentRequest.GetReqID}{FormInteractor.GetType}.docx");
+            // Удалить docx, если такой уже есть
+            try
+            {
+                File.Delete(TemporaryDocumentPath);
+            }
+            catch { }
+
+                //{DocumentRequest.GetReqID}{FormInteractor.GetType} + ".docx");
             File.Copy(path, TemporaryDocumentPath);
 
             ResultStream = tempStream;
@@ -54,6 +63,7 @@ namespace DocAggregator.API.Infrastructure.OpenXMLProcessing
             {
                 return null;
             }
+
             var part = source.Annotation<XDocument>();
             if (part != null)
             {

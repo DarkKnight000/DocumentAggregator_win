@@ -57,13 +57,13 @@
             get
             {
                 // TODO: DELETE
-                _logger?.Debug($"{GetType()}.{nameof(ReplacedCheckmark)} returns \"{replacedCheckmark}\".");
+                //_logger?.Debug($"{GetType()}.{nameof(ReplacedCheckmark)} returns \"{replacedCheckmark}\".");
                 return replacedCheckmark;
             }
             set
             {
                 // TODO: DELETE
-                _logger?.Debug($"{GetType()}.{nameof(ReplacedCheckmark)} has changed from \"{replacedCheckmark}\" to \"{value}\".");
+               // _logger?.Debug($"{GetType()}.{nameof(ReplacedCheckmark)} has changed from \"{replacedCheckmark}\" to \"{value}\".");
                 replacedCheckmark = value;
             }
         }
@@ -99,7 +99,7 @@
             Tag = source.Tag;
             Kind = source.Kind;
             // TODO: DELETE
-            _logger?.Debug($"{GetType()} created with arguments (\"{source.OriginalMask}\", \"{source.Tag}\", {source.Kind}).");
+            //_logger?.Debug($"{GetType()} created with arguments (\"{source.OriginalMask}\", \"{source.Tag}\", {source.Kind}).");
         }
 
         /// <summary>
@@ -115,7 +115,7 @@
             Tag = tag;
             Kind = kind;
             // TODO: DELETE
-            _logger?.Debug($"{GetType()} created with arguments (\"{mask}\", \"{tag}\", {kind}).");
+            //_logger?.Debug($"{GetType()} created with arguments (\"{mask}\", \"{tag}\", {kind}).");
         }
 
         // override object.Equals

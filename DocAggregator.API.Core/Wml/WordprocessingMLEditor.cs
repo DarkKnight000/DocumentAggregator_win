@@ -31,10 +31,10 @@ namespace DocAggregator.API.Core.Wml
         {
             if (document == null || document.Root == null)
             {
-                _logger.Trace("Будет возвращена пустая коллекция вставок.");
+                //_logger.Trace("Будет возвращена пустая коллекция вставок.");
                 return Enumerable.Empty<Insert>();
             }
-            _logger.Debug("Получаем все не вложенные элементы управления.");
+            //_logger.Debug("Получаем все не вложенные элементы управления.");
             var topLevelControls = from control in document.Root.DescendantsAndSelf(W.sdt)
                                    where !control.Ancestors(W.sdt).Any()
                                    select control;
@@ -64,7 +64,7 @@ namespace DocAggregator.API.Core.Wml
                     }
                     detectedKind = insertKind;
                 }
-                _logger.Trace("Обработка повреждений структуры документа.");
+                //_logger.Trace("Обработка повреждений структуры документа.");
                 XElement properties = sdt.Element(W.sdtPr);
                 if (properties == null)
                 {
@@ -83,7 +83,7 @@ namespace DocAggregator.API.Core.Wml
                     _logger.Warning("Have found a content control with empty tag.");
                     continue;
                 }
-                _logger.Trace("Определение типа элемента управления содержимым.");
+                //_logger.Trace("Определение типа элемента управления содержимым.");
                 if (properties.Element(W.text) != null)
                 {
                     SetDetectedInsertKind(InsertKind.PlainText);
@@ -94,12 +94,12 @@ namespace DocAggregator.API.Core.Wml
                 }
                 if (!detectedKind.HasValue)
                 {
-                    _logger.Trace("Проверка на строку таблицы.");
+                    //_logger.Trace("Проверка на строку таблицы.");
                     var tableRow = sdt.Element(W.sdtContent).Element(W.tr);
                     if (tableRow != null)
                     {
                         var result = new FormInsert(alias, tag, _logger) { AssociatedChunk = sdt };
-                        _logger.Debug("Получаем ВСЕ вложенные элементы управления.");
+                        //_logger.Debug("Получаем ВСЕ вложенные элементы управления.");
                         var innerLevelControls = tableRow.DescendantsAndSelf(W.sdt);
                         // WARNING: При дальнейшей вложенности может обнаружиться дублирование элементов,
                         // так как innerLevelControls будет содержать как элементы следующего в порядке уровня, так и остальных.
@@ -132,28 +132,29 @@ namespace DocAggregator.API.Core.Wml
                 XElement row = innerContent.Element(W.tr);
                 if (row != null)
                 {
-                    _logger.Debug("Processing a table row.");
+                    //_logger.Debug("Processing a table row.");
                     ReplaceContentControl(sdt, row, insert);
                     continue;
                 }
                 XElement cell = innerContent.Element(W.tc);
                 if (cell != null)
                 {
-                    _logger.Debug("Processing a table cell.");
+                    //_logger.Debug("Processing a table cell.");
                     ReplaceContentControl(sdt, cell, insert);
                     continue;
                 }
                 XElement par = innerContent.Element(W.p);
                 if (par != null)
                 {
-                    _logger.Debug("Processing a paragraph.");
+                    //_logger.Debug("Processing a paragraph.");
                     ReplaceContentControl(sdt, par, insert);
                     continue;
                 }
+                // checkbox и ещё что-то
                 XElement run = innerContent.Element(W.r);
                 if (run != null)
                 {
-                    _logger.Debug("Processing a text range.");
+                    //_logger.Debug("Processing a text range.");
                     ReplaceContentControl(sdt, run, insert);
                     continue;
                 }
@@ -181,7 +182,16 @@ namespace DocAggregator.API.Core.Wml
                     {
                         throw new SolvableValidationException(insert);
                     }
+
+                    //_logger.Trace("before innerTextContainer.Descendants(W.t).Single().Value   " + (innerTextContainer.Descendants(W.t).Single().Value.ToString() == "☒" ? "1" : "0"));
+                    //_logger.Trace("innerTextContainer   " + innerTextContainer);
                     innerTextContainer.Descendants(W.t).Single().Value = insert.ReplacedCheckmark.Value ? "☒" : "☐";
+                    //_logger.Trace("insert.ReplacedCheckmark.Value   " + insert.ReplacedCheckmark.Value);
+                    //_logger.Trace("innerTextContainer   " + innerTextContainer);
+                    //_logger.Trace("innerTextContainer   " + innerTextContainer.Descendants(W.t).Single().Value + "     " + insert.ReplacedCheckmark.Value);
+                    //_logger.Trace("after innerTextContainer.Descendants(W.t).Single().Value   " + (innerTextContainer.Descendants(W.t).Single().Value.ToString() == "☒" ? "1" : "0"));
+
+
                     break;
                 case InsertKind.MultiField:
                     if (insert is FormInsert form)

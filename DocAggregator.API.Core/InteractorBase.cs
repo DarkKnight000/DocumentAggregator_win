@@ -35,6 +35,8 @@ namespace DocAggregator.API.Core
             {
                 Logger?.Error(ex, "An error occured in {0} while handling a request.", GetType().Name);
                 response.Errors.Add(ex);
+                //response.Errors.Clear();
+                //return response;
             }
             return response;
         }

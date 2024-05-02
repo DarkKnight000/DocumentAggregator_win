@@ -8,7 +8,7 @@
 	<!ATTLIST TemplateBind remote (True|False) #IMPLIED>
 ]>
 <!--
-Root: D:\Users\akkostin\Documents\Templates\Edited\
+Root: D:\Users\shot\source\repos\DocumentAggregator\Templates\Edited\
 -->
 <ArrayOfTemplateBind xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
 	<TemplateBind typeID="2267905">БПД/Заявка на доступ удаленных сотрудников к ИС.DOCX</TemplateBind>
@@ -17,7 +17,7 @@ Root: D:\Users\akkostin\Documents\Templates\Edited\
 	<TemplateBind typeID="10" systemID="1" remote="True">КРР-01 ИС УЛК/Заявка для удаленных сотрудников НТЦ УЛК.docx</TemplateBind> <!-- Integraph SmartPlant & CADWorx -->
 	<TemplateBind typeID="10" systemID="3" remote="False">КРР-03 ИС КП/Заявка для сотрудников НТЦ ИС КП.DOCX</TemplateBind>
 	<TemplateBind typeID="10" systemID="3" remote="True">КРР-03 ИС КП/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind>
-	<TemplateBind typeID="10" systemID="4" remote="False">КРР-04 ИС ОДФР/Заявка для сотрудников НТЦ.DOCX</TemplateBind>
+	<TemplateBind typeID="10" systemID="4" remote="False">КРР-04 ИС ОДФР/Заявка для сотрудников НТЦ.docx</TemplateBind>
 	<TemplateBind typeID="10" systemID="4" remote="True">КРР-04 ИС ОДФР/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind>
 	<TemplateBind typeID="10" systemID="5" ><!-->remote="False"><!-->КРР-05 ИС ОИСД/Заявка для сотрудников НТЦ ИС ОИСД.docx</TemplateBind> <!-- Don't process -->
 	<TemplateBind typeID="10" systemID="8" ><!-->remote="True"><!-->КРР-08 ИС 1С БУНУ/Заявка для сотрудников НТЦ.docx</TemplateBind>
@@ -44,7 +44,8 @@ Root: D:\Users\akkostin\Documents\Templates\Edited\
 	<TemplateBind typeID="10" systemID="35" ><!-->remote="True"><!-->КРР-35 ИС ПП/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind>
 	<TemplateBind typeID="10" systemID="37" ><!-->remote="True"><!-->КРР-37 ИС ВОТ/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind>
 	<TemplateBind typeID="10" systemID="38" ><!-->remote="True"><!-->КРР-38 ИС Геобанк-ПТД/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind>
-	<TemplateBind typeID="10" systemID="39" ><!-->remote="True"><!-->КРР-39 ИС ПР/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind>
+	<TemplateBind typeID="10" systemID="39" remote="False">КРР-39 ИС ПР/Заявка для сотрудников НТЦ.DOCX</TemplateBind>
+	<TemplateBind typeID="10" systemID="39" remote="True">КРР-39 ИС ПР/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind>
 	<TemplateBind typeID="10" systemID="41" ><!-->remote="True"><!-->КРР-41 ИС СУРК/Заявка для удаленных сотрудников НТЦ.docx</TemplateBind>
 	<TemplateBind typeID="10" systemID="42" remote="True">КРР-42 ИС Вектор/Заявка для удаленных сотрудников НТЦ ИС Вектор.docx</TemplateBind>
 	<TemplateBind typeID="10" systemID="42" remote="False">КРР-42 ИС Вектор/Заявка для сотрудников НТЦ (ИС Вектор, офис).docx</TemplateBind>
@@ -57,4 +58,5 @@ Root: D:\Users\akkostin\Documents\Templates\Edited\
 	<TemplateBind typeID="10" systemID="53">КРР-53 ИС ХКД/Заявка на доступ пользователей в ИС ХКД.docx</TemplateBind>
 	<TemplateBind typeID="10" systemID="57" remote="False">КРР-57 ИС КП 2.0/Заявка для сотрудников НТЦ ИС КП 2.0.docx</TemplateBind> <!-- Owner role -->
 	<TemplateBind typeID="10" systemID="57" remote="True">КРР-57 ИС КП 2.0/Заявка для удаленных сотрудников ИС КП2.0.docx</TemplateBind> <!-- Owner role -->
+	<TemplateBind typeID="10" systemID="101" ><!-->remote="True"><!-->КРР-101 ИС КонсультантПлюс/Заявка для сотрудников НТЦ КОНСУЛЬТАНТПЛЮС.docx</TemplateBind> <!-- In work -->
 </ArrayOfTemplateBind>

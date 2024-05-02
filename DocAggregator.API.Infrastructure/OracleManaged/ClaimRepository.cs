@@ -1,5 +1,7 @@
 ﻿using DocAggregator.API.Core;
 using DocAggregator.API.Core.Models;
+using DocumentFormat.OpenXml.EMMA;
+using DocumentFormat.OpenXml.Spreadsheet;
 using Oracle.ManagedDataAccess.Client;
 using System;
 using System.Collections.Generic;
@@ -65,7 +67,11 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                     ExtractedTableProcessing(block, partRoot, executerWork);
                 }
             }
+
+            // ИЗМЕНИЛ 23.04.2024
             partRoot.Add(new XAttribute(ROOT_TEMPLATE_NAME, _templates.GetTemplate(req.Type.ToLower(), partRoot)));
+
+            //_logger.Information("\npartRoot: " + partRoot.ToString());
             connection.Close();
             return new Claim() { Root = partRoot };
         }
@@ -87,13 +93,17 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
             using (QueryExecuter executer = executerWork.GetExecuterForQuery(blockCollection.Value, argument))
             {
                 var headers = executer.GetHeaders();
+                // TEST
+                //_logger.Error("Look at this!");
+                //_logger.Critical(new Exception("aaaaa"), "You've messed up!");
+                // TEST'S END
                 int indexColumn = headers.FirstIndexMatch(h => h.ToLower().Equals(blockCollection.Attribute(DSS.itemIndexColumn)?.Value.ToLower())),
                     valColumn = headers.FirstIndexMatch(h => h.ToLower().Equals(blockCollection.Attribute(DSS.valColumn)?.Value.ToLower()));
                 string nodeKey;
                 foreach (var line in executer.GetLines())
                 {
                     var node = new XElement(name);
-                    if (valColumn == -1)
+                    if (valColumn == -1)            // ИЗМЕНИЛ на 0, не помогло
                     {
                         if (indexColumn != -1)
                         {
@@ -105,6 +115,8 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                             ).Select(
                                 f => new XElement(f.ColumnName.ToLower(), f.Value)
                             ));
+
+                        //_logger.Information("\nif valColumn = -1 valColumn + indexColumn : " + valColumn.ToString() + " + " + indexColumn.ToString());
                     }
                     else
                     {
@@ -116,6 +128,8 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                         node.Value = line.ElementAt(valColumn).Value;
                     }
                     partRoot.Add(node);
+                    //_logger.Information("\nvalColumn + indexColumn : " + valColumn.ToString() + " + " + indexColumn.ToString());
+                    //_logger.Information("\nnode: " + node.ToString());
                 }
             }
         }
@@ -148,20 +162,26 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                     }
                     var partItem = new XElement(blockTable.Attribute(DSS.name)?.Value.ToLower());
                     partItem.Add(new XAttribute(ITEM_KEY_NAME, line.ElementAt(indexColumn)));
+
+                    //_logger.Information("\npartItem: " + partItem.ToString());
+
                     partItem.Add(line.Where(
                             (_, index) => index != indexColumn
                         ).Select(
                             f => new XElement(f.ColumnName.ToLower(), f.Value)
                         ).ToArray());
                     partRoot.Add(partItem);
+
                 }
+
             }
+
             var blockTableQuery = blockGet;
             foreach (var lineArg in listOfLines)
             {
+
                 using (QueryExecuter executer = executerWork.GetExecuterForQuery(blockTableQuery.Value, lineArg, argument))
                 {
-                    XElement partAccessField = new XElement(containerName);
                     string infoResourceId = null;
                     var headers = executer.GetHeaders();
                     int indexColumn = headers.FirstIndexMatch(h => h.ToLower().Equals(blockTableQuery.Attribute(DSS.itemIndexColumn).Value.ToLower())),
@@ -169,21 +189,34 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
                     foreach (var line in executer.GetLines())
                     {
                         infoResourceId = line.ElementAt(groupColumn).Value;
-                        partAccessField.Add(new XAttribute(ITEM_KEY_NAME, line.ElementAt(indexColumn).Value));
+                        XElement partAccessField = new XElement(containerName);
+
+
+                        if (partAccessField.Attribute(ITEM_KEY_NAME)==null)
+                        {
+                            partAccessField.Add(new XAttribute(ITEM_KEY_NAME, line.ElementAt(indexColumn).Value));
+
+                            //_logger.Information("\npartAccessField: " + partAccessField.ToString());
+                        }
+
                         partAccessField.Add(line.Where(
                                 (_, index) => index != groupColumn && index != indexColumn
                             ).Select(
                                 f => new XElement(f.ColumnName.ToLower(), f.Value)
                             ));
+                        
                         var partFoundedAccessFields = partRoot.Elements(
                                 blockTable.Attribute(DSS.name)?.Value.ToLower()
                             ).Where(
                                 (n) => n.Attribute(ITEM_KEY_NAME).Value.Equals(infoResourceId)
                             ).SingleOrDefault();
+                        
                         if (partFoundedAccessFields != null)
                         {
                             partFoundedAccessFields.Add(partAccessField);
                         }
+
+                        //_logger.Information("\npartFoundedAccessFields: " + partFoundedAccessFields.ToString());
                     }
                 }
             }

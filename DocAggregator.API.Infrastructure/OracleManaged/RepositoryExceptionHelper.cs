@@ -1,10 +1,13 @@
 ﻿using DocAggregator.API.Core;
 using System;
+using System.Diagnostics;
 
 namespace DocAggregator.API.Infrastructure.OracleManaged
 {
     public static class RepositoryExceptionHelper
     {
+        public static string eroe;
+        public static bool da;
         public static void ThrowConfigurationQueriesFileFailure(Exception ex)
         {
             var message = "не удалось загрузить файл именованных запросов по заданному пути";
@@ -29,12 +32,18 @@ namespace DocAggregator.API.Infrastructure.OracleManaged
             throw new SolvableException(message, ex, cure);
         }
 
-        public static void ThrowConfigurationTemplateFileFailure(string document, Exception ex)
+        public static string ThrowConfigurationTemplateFileFailure(string document, Exception ex)
         {
-            var message = "не удалось загрузить карту шаблонов документа по заданому пути";
-            var cure = $"перейдите по пути в поле {RepositoryConfigOptions.RepositoryConfig}:{nameof(RepositoryConfigOptions.TemplateMaps)} " +
+            string message = "не удалось загрузить карту шаблонов документа по заданому пути";
+            string cure = $"перейдите по пути в поле {RepositoryConfigOptions.RepositoryConfig}:{nameof(RepositoryConfigOptions.TemplateMaps)} " +
                 $"конфигурации и убедитесь в наличии доступа к файлу {document}"; // document is a fullpath
-            throw new SolvableException(message, ex, cure);
+            //Debug.WriteLine(cure + "\n================" + message);
+            eroe = message +"\n"+ cure + "\n"+ex.Message;
+            da = true;
+            return eroe;
+            //new SolvableException(message, ex, cure);
+            
+            //return cure;
         }
 
         public static void ThrowTemplateNotFoundFailure(string document)

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection.Metadata;
 
 namespace DocAggregator.API.Core
 {
@@ -36,6 +37,8 @@ namespace DocAggregator.API.Core
         ParseInteractor _parser;
         IEditorService _editor;
 
+        public static string GetType;
+
         /// <summary>
         /// Создаёт обработчик документа с использованием обработчика вставки и редактора документа.
         /// </summary>
@@ -56,6 +59,7 @@ namespace DocAggregator.API.Core
             {
                 // TODO: There is no need for Capitalizing (see template map)
                 document = _editor.OpenTemplate(Path.Combine(System.Threading.Thread.CurrentThread.CurrentCulture.TextInfo.ToTitleCase(request.Claim.Type), request.Claim.Template));
+                GetType = request.Claim.Type;
             }
             // Шаблон не найден.
             catch (FileNotFoundException ex)

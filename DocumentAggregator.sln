@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31205.134
+# Visual Studio Version 17
+VisualStudioVersion = 17.6.33815.320
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DocAggregator.API", "DocAggregator.API\DocAggregator.API.csproj", "{EB7ACD70-04D4-407E-9849-E2B11AF804E6}"
 EndProject
@@ -19,7 +19,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DocAggregator.API.Infrastru
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DocAggregator.API.Core.Tests", "DocAggregator.API.Core.Tests\DocAggregator.API.Core.Tests.csproj", "{2811B57A-156E-4A50-8C03-5DD46AACF68B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DocAggregator.Proxy", "DocAggregator.Proxy\DocAggregator.Proxy.csproj", "{953EF0EA-97E8-4A46-818F-8FE2CD2E2385}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Элементы решения", "Элементы решения", "{546B6D62-FF34-47BB-A543-714BABB02560}"
+	ProjectSection(SolutionItems) = preProject
+		TextFile1.txt = TextFile1.txt
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -43,10 +46,6 @@ Global
 		{2811B57A-156E-4A50-8C03-5DD46AACF68B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2811B57A-156E-4A50-8C03-5DD46AACF68B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2811B57A-156E-4A50-8C03-5DD46AACF68B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{953EF0EA-97E8-4A46-818F-8FE2CD2E2385}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{953EF0EA-97E8-4A46-818F-8FE2CD2E2385}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{953EF0EA-97E8-4A46-818F-8FE2CD2E2385}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{953EF0EA-97E8-4A46-818F-8FE2CD2E2385}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
